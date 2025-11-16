@@ -1,0 +1,38 @@
+.listContainer {
+  margin: 0%;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  border-radius: 10px;
+  width: 70vw;
+  overflow-y: auto;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background-color: #f6f6f6;
+}
+
+.listItem {
+  display: flex;
+}
+
+.listHead {
+  padding: 0 10px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.listHeadItem {
+  width: 25%;
+  text-align: center;
+}
+
+.listHeadItem:first-child {
+  text-align: left;
+}
+
+.listHeadItem:last-child {
+  text-align: right;
+}
