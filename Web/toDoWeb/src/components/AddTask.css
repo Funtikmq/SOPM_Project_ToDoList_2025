@@ -23,6 +23,10 @@
   outline: none;
 }
 
+.taskInput {
+  font-weight: 700;
+}
+
 .taskText {
   height: 8vh;
   font-weight: 500;
@@ -31,9 +35,16 @@
 .taskSubmit {
   width: 30%;
   height: 5vh;
+  font-weight: 700;
   background-color: #b447ba;
+  color: #f9f9f9;
   border-radius: 10px;
   border: none;
   margin: 20% auto 0;
   cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.taskSubmit:hover {
+  scale: 1.05;
 }
