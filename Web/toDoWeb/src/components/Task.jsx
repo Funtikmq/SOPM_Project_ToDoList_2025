@@ -1,13 +1,12 @@
-// Task.jsx
 import { useState, useRef, useEffect } from "react";
 import "./Task.css";
 
 const Task = ({ taskData, onDelete, onUpdate }) => {
   const [expandDelete, setExpandDelete] = useState(false);
-  const [showStatusSelector, setShowStatusSelector] = useState(false);
-  const [showPrioritySelector, setShowPrioritySelector] = useState(false);
   const [showModifyButton, setShowModifyButton] = useState(false);
   const [showDateInput, setShowDateInput] = useState(false);
+  const [closingModify, setClosingModify] = useState(false);
+  const [closingDateInput, setClosingDateInput] = useState(false);
 
   const [status, setStatus] = useState(taskData.status);
   const [priority, setPriority] = useState(taskData.priority);
@@ -15,28 +14,25 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
   const [tempDeadline, setTempDeadline] = useState(taskData.deadline);
 
   const wrapperRef = useRef(null);
-  const statusRef = useRef(null);
-  const priorityRef = useRef(null);
   const deadlineRef = useRef(null);
 
-  // Click outside handler pentru selectori (nu expandDelete)
+  // Funcție pentru formatarea datei din YYYY-MM-DD în DD/MM/YYYY
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
+  // click outside (doar pentru delete + deadline)
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (statusRef.current && !statusRef.current.contains(event.target)) {
-        setShowStatusSelector(false);
-      }
-
-      if (priorityRef.current && !priorityRef.current.contains(event.target)) {
-        setShowPrioritySelector(false);
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setExpandDelete(false);
       }
 
       if (deadlineRef.current && !deadlineRef.current.contains(event.target)) {
         setShowModifyButton(false);
         setShowDateInput(false);
-      }
-
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
-        setExpandDelete(false);
       }
     };
 
@@ -44,14 +40,7 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Închide toate celelalte selectori când deschidem unul
-  const closeAllSelectors = () => {
-    setShowStatusSelector(false);
-    setShowPrioritySelector(false);
-    setShowModifyButton(false);
-    setShowDateInput(false);
-  };
-
+  // toggle expand doar daca clickul nu vine de pe select/input/button
   const handleTaskClick = (e) => {
     if (
       e.target.tagName !== "SELECT" &&
@@ -63,44 +52,26 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
     }
   };
 
-  // Capitalize first letter pentru display
-  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
-
   return (
     <div className="taskWrapper" ref={wrapperRef}>
       <div className="task" onClick={handleTaskClick}>
         {/* STATUS */}
-        <div className="taskItem" ref={statusRef}>
-          <h3
-            className={`taskBadge taskStatus taskStatus-${status}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              const wasOpen = showStatusSelector;
-              closeAllSelectors();
-              setShowStatusSelector(!wasOpen);
+        <div className="taskItem">
+          <select
+            className={`taskSelectBadge taskStatus-${status}`}
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value);
+              onUpdate(taskData.id, { status: e.target.value });
             }}
+            onClick={(e) => e.stopPropagation()}
           >
-            {capitalize(status)}
-          </h3>
-          <div
-            className={`selectorWrapper ${showStatusSelector ? "open" : ""}`}
-          >
-            <select
-              className="taskSelect"
-              value={status}
-              onChange={(e) => {
-                setStatus(e.target.value);
-                onUpdate(taskData.id, { status: e.target.value });
-                setShowStatusSelector(false);
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <option value="upcoming">Upcoming</option>
-              <option value="overdue">Overdue</option>
-              <option value="canceled">Canceled</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
+            <option value="upcoming">Upcoming</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+            <option value="overdue">Overdue</option>
+            <option value="canceled">Canceled</option>
+          </select>
         </div>
 
         {/* TITLE */}
@@ -109,36 +80,20 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
         </div>
 
         {/* PRIORITY */}
-        <div className="taskItem" ref={priorityRef}>
-          <h3
-            className={`taskBadge taskPriority taskPriority-${priority}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              const wasOpen = showPrioritySelector;
-              closeAllSelectors();
-              setShowPrioritySelector(!wasOpen);
+        <div className="taskItem">
+          <select
+            className={`taskSelectBadge taskPriority-${priority}`}
+            value={priority}
+            onChange={(e) => {
+              setPriority(e.target.value);
+              onUpdate(taskData.id, { priority: e.target.value });
             }}
+            onClick={(e) => e.stopPropagation()}
           >
-            {capitalize(priority)}
-          </h3>
-          <div
-            className={`selectorWrapper ${showPrioritySelector ? "open" : ""}`}
-          >
-            <select
-              className="taskSelect"
-              value={priority}
-              onChange={(e) => {
-                setPriority(e.target.value);
-                onUpdate(taskData.id, { priority: e.target.value });
-                setShowPrioritySelector(false);
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
-          </div>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
         </div>
 
         {/* DEADLINE */}
@@ -147,52 +102,69 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
             className="taskDeadline"
             onClick={(e) => {
               e.stopPropagation();
-              const wasOpen = showModifyButton;
-              closeAllSelectors();
-              setShowModifyButton(!wasOpen);
-              if (!wasOpen) {
+              if (showModifyButton) {
+                setClosingModify(true);
+                setTimeout(() => {
+                  setShowModifyButton(false);
+                  setClosingModify(false);
+                }, 500);
+              } else {
+                setShowModifyButton(true);
                 setTempDeadline(deadline);
               }
             }}
           >
-            {deadline}
+            {formatDate(deadline)}
           </h3>
-          <div className={`modifyWrapper ${showModifyButton ? "open" : ""}`}>
-            <button
-              className="taskModifyButton"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDateInput((prev) => !prev);
-                if (showDateInput) {
-                  setDeadline(tempDeadline);
-                  onUpdate(taskData.id, { deadline: tempDeadline });
-                }
-              }}
-            >
-              Modify
-            </button>
-          </div>
 
-          <div className={`modifyWrapper ${showDateInput ? "open" : ""}`}>
-            <input
-              type="date"
-              className="taskDateInput"
-              value={tempDeadline}
-              onChange={(e) => setTempDeadline(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
+          {showModifyButton && (
+            <div className={`modifyWrapper ${closingModify ? "closing" : ""}`}>
+              <button
+                className="taskModifyButton"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (showDateInput) {
+                    setClosingDateInput(true);
+                    setTimeout(() => {
+                      setShowDateInput(false);
+                      setClosingDateInput(false);
+                      setDeadline(tempDeadline);
+                      onUpdate(taskData.id, { deadline: tempDeadline });
+                    }, 500);
+                  } else {
+                    setShowDateInput(true);
+                  }
+                }}
+              >
+                Modify
+              </button>
+            </div>
+          )}
+
+          {showDateInput && (
+            <div
+              className={`modifyWrapper ${closingDateInput ? "closing" : ""}`}
+            >
+              <input
+                type="date"
+                className="taskDateInput"
+                value={tempDeadline}
+                onChange={(e) => setTempDeadline(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* EXPAND DELETE */}
-
+      {/* EXPAND DELETE – se deschide doar la click pe task */}
       <div className={`taskExpand ${expandDelete ? "open" : ""}`}>
         {taskData.description && (
           <p className="taskDescription">
             <strong>Descriere:</strong> {taskData.description}
           </p>
         )}
+
         <div className="taskExpandButtons">
           <button className="deleteBtn" onClick={() => onDelete(taskData.id)}>
             <svg

@@ -2,6 +2,8 @@
    TASK WRAPPER & ROW
 ------------------------------------------------------- */
 .taskWrapper {
+  position: relative; /* deja ai? */
+  overflow: visible;
   width: 100%;
   margin-bottom: 12px;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -17,7 +19,7 @@
   background-color: #ffffff;
   border-radius: 12px;
   border: 1px solid #e8eef5;
-  padding: 16px 20px;
+  padding: 8px 20px;
 
   cursor: pointer;
 
@@ -42,7 +44,7 @@
 }
 
 /* ------------------------------------------------------
-   BADGES
+   BADGES (folosite pentru deadline)
 ------------------------------------------------------- */
 .taskBadge {
   display: inline-flex;
@@ -65,12 +67,55 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* STATUS COLORS */
-.taskStatus-active {
-  background: #e6f0fa;
-  color: #4a90e2;
-  border-color: #4a90e2;
+/* ------------------------------------------------------
+   SELECTOR BADGE DIRECT (pentru status + priority)
+------------------------------------------------------- */
+.taskSelectBadge {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 2px solid transparent;
+
+  background: #ffffff00;
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  cursor: pointer;
+  outline: none;
+
+  transition: all 0.2s ease;
+  text-align: center;
 }
+
+.taskSelectBadge option {
+  background-color: #f9f9f9;
+  color: #302d2d;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+}
+
+.taskSelectBadge:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.taskSelectBadge option {
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------
+   STATUS COLORS
+------------------------------------------------------- */
+.taskStatus-active {
+  background: #e6f7ff;
+  color: #0077b6;
+  border-color: #0077b6;
+}
+
 .taskStatus-upcoming {
   background: #fff6e5;
   color: #f5a623;
@@ -92,7 +137,9 @@
   border-color: #7ed321;
 }
 
-/* PRIORITY COLORS */
+/* ------------------------------------------------------
+   PRIORITY COLORS
+------------------------------------------------------- */
 .taskPriority-high {
   background: #fdecea;
   color: #e94f37;
@@ -137,39 +184,11 @@
 }
 
 /* ------------------------------------------------------
-   UNIVERSAL SLIDE/FADE ANIMATION
+   DATE INPUT
 ------------------------------------------------------- */
-.selectorWrapper,
-.modifyWrapper,
-.taskExpand {
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  transform: translateY(-6px);
-  transition: max-height 0.35s ease, opacity 0.35s ease, transform 0.35s ease;
-}
-
-.selectorWrapper.open,
-.modifyWrapper.open,
-.taskExpand.open {
-  max-height: 250px;
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.selectorWrapper select,
-.modifyWrapper button,
-.modifyWrapper input {
-  margin-top: 4px;
-}
-
-/* ------------------------------------------------------
-   FORM ELEMENTS (Select, Input)
-------------------------------------------------------- */
-.taskSelect,
 .taskDateInput {
   padding: 8px 12px;
-  min-width: 120px;
+  min-width: 140px;
 
   font-size: 0.85rem;
   font-weight: 500;
@@ -185,19 +204,46 @@
   transition: all 0.2s ease;
 }
 
-.taskDateInput {
-  min-width: 140px;
+.taskDateInput:hover {
+  border-color: #bdbdbd;
 }
 
-.taskSelect:focus,
 .taskDateInput:focus {
   border-color: #4a90e2;
   box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
 }
 
-.taskSelect:hover,
-.taskDateInput:hover {
-  border-color: #bdbdbd;
+/* Animație de apariție */
+@keyframes slideInFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animație de dispariție */
+@keyframes slideOutFade {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* Wrapper pentru Modify și Date input */
+.modifyWrapper {
+  animation: slideInFade 0.5s ease forwards;
+}
+
+.modifyWrapper.closing {
+  animation: slideOutFade 0.5s ease forwards;
 }
 
 /* ------------------------------------------------------
@@ -225,10 +271,6 @@
   transform: translateY(-1px);
 }
 
-.taskModifyButton:active {
-  transform: translateY(0);
-}
-
 /* ------------------------------------------------------
    EXPAND SECTION CONTENT
 ------------------------------------------------------- */
@@ -244,10 +286,20 @@
 
   margin-top: 4px;
   font-size: 0.9rem;
+
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+}
+
+.taskExpand.open {
+  max-height: 100px;
+  opacity: 1;
 }
 
 .taskDescription {
-  margin: 0 0 12px 0;
+  margin: 0 0 4px;
   color: #5f6368;
   line-height: 1.6;
 }
