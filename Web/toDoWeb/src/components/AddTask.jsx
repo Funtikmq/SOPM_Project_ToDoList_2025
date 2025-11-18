@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { db } from "../firebase/firebase";
 import { doc, setDoc } from "firebase/firestore";
+import { useAuth } from "../context/AuthContext";
 import "./AddTask.css";
 
 const AddTask = () => {
@@ -8,6 +9,8 @@ const AddTask = () => {
   const [desc, setDesc] = useState("");
   const [priority, setPriority] = useState("medium");
   const [deadline, setDeadline] = useState("");
+
+  const { user } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,6 +33,7 @@ const AddTask = () => {
         priority,
         deadline,
         createdAt: timestamp,
+        userId: user.uid,
       });
 
       alert("Task salvat!");
@@ -48,7 +52,7 @@ const AddTask = () => {
       <h3 className="containerTitle">Adauga Sarcina</h3>
 
       <form className="taskForm" onSubmit={handleSubmit}>
-        <h5>Titlu *</h5>
+        <h5>Titlu</h5>
         <input
           type="text"
           className="taskInput"
@@ -57,7 +61,7 @@ const AddTask = () => {
           required
         />
 
-        <h5>Descriere (optional)</h5>
+        <h5>Descriere</h5>
         <textarea
           className="taskInput taskText"
           value={desc}
@@ -75,7 +79,7 @@ const AddTask = () => {
           <option value="low">Mica</option>
         </select>
 
-        <h5>Deadline *</h5>
+        <h5>Deadline</h5>
         <input
           type="date"
           className="taskInput"

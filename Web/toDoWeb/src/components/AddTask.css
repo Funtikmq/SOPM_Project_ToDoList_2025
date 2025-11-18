@@ -1,50 +1,131 @@
 .taskFormContainer {
-  width: 20vw;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-  border-radius: 10px;
-  overflow: auto;
+  width: 22vw;
+  min-width: 280px;
+  background: linear-gradient(145deg, #ffffff, #f5f5f5);
+  box-shadow: 0 10px 30px rgba(180, 71, 186, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 1.5rem 0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.taskFormContainer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 40px rgba(180, 71, 186, 0.2),
+    0 6px 12px rgba(0, 0, 0, 0.12);
 }
 
 .taskForm {
   margin: 0 auto;
-  width: 80%;
+  width: 85%;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
 }
 
 .taskForm h5 {
-  margin: 4vh 0 1vh 0;
+  margin: 0 0 0.3rem 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+  letter-spacing: 0.3px;
 }
 
-.taskInput {
-  height: 4vh;
-  border-radius: 5px;
-  border: 1px solid #d3d3d3;
+.taskForm h5::after {
+  content: "";
+  display: block;
+  width: 25px;
+  height: 2px;
+  background: linear-gradient(90deg, #b447ba, #d66fdb);
+  margin-top: 0.25rem;
+  border-radius: 2px;
+}
+
+.taskInput,
+.taskText {
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
   outline: none;
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  background-color: #fafafa;
+}
+
+.taskInput:focus,
+.taskText:focus {
+  border-color: #b447ba;
+  background-color: #fff;
+  box-shadow: 0 0 0 4px rgba(180, 71, 186, 0.1);
+  transform: translateY(-1px);
 }
 
 .taskInput {
-  font-weight: 700;
+  height: 3.5vh;
+  min-height: 36px;
+  font-weight: 600;
+  color: #2c2c2c;
 }
 
 .taskText {
-  height: 8vh;
+  height: 7vh;
+  min-height: 70px;
   font-weight: 500;
+  resize: vertical;
+  color: #444;
+  line-height: 1.4;
+}
+
+.taskInput::placeholder,
+.taskText::placeholder {
+  color: #999;
+  font-weight: 400;
 }
 
 .taskSubmit {
-  width: 30%;
-  height: 5vh;
+  width: 100%;
+  max-width: 180px;
+  height: 4.5vh;
+  min-height: 42px;
   font-weight: 700;
-  background-color: #b447ba;
-  color: #f9f9f9;
-  border-radius: 10px;
+  font-size: 0.95rem;
+  background: linear-gradient(135deg, #b447ba, #d66fdb);
+  color: #ffffff;
+  border-radius: 12px;
   border: none;
-  margin: 20% auto 0;
+  margin: 1rem auto 0;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(180, 71, 186, 0.3);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .taskSubmit:hover {
-  scale: 1.05;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(180, 71, 186, 0.4);
+  background: linear-gradient(135deg, #9e3ba4, #c55dd1);
+}
+
+.taskSubmit:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 10px rgba(180, 71, 186, 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .taskFormContainer {
+    width: 90vw;
+    max-width: 400px;
+  }
+
+  .taskForm {
+    width: 90%;
+  }
+
+  .taskSubmit {
+    width: 100%;
+    max-width: none;
+  }
 }

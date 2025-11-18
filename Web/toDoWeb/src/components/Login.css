@@ -1,0 +1,121 @@
+/* Background full page */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+  background: #f5f5f5; /* light gray */
+}
+
+/* Center the container */
+.login-container {
+  width: 360px;
+  margin: 120px auto;
+  padding: 32px;
+  border-radius: 18px;
+
+  background: #fff; /* card alb */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+
+  color: #333;
+  text-align: center;
+}
+
+/* Title */
+.login-container h2 {
+  margin-bottom: 18px;
+  font-size: 26px;
+  font-weight: 600;
+  color: #222;
+}
+
+/* Form */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Inputs */
+input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #333;
+  font-size: 15px;
+  outline: none;
+  transition: 0.2s ease-in-out;
+}
+
+input::placeholder {
+  color: #aaa;
+}
+
+input:focus {
+  border-color: #d80fc4;
+  box-shadow: 0 0 4px rgba(26, 115, 232, 0.4);
+}
+
+/* Main button */
+.login-btn {
+  padding: 12px;
+  background: #d80fc4;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+
+.login-btn:hover {
+  background: #d80fc4;
+}
+
+/* Google button */
+.google-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: #fff;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+
+.google-btn:hover {
+  background: #e7e7e7;
+}
+
+.google-btn svg {
+  display: block;
+}
+
+/* Separator */
+.separator {
+  margin: 18px 0;
+  color: #888;
+  letter-spacing: 1px;
+  font-size: 13px;
+}
+
+/* Link to signup/login */
+.auth-switch {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #333;
+}
+
+.auth-switch a {
+  color: #d80fc4;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}

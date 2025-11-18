@@ -8,6 +8,9 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
   const [closingModify, setClosingModify] = useState(false);
   const [closingDateInput, setClosingDateInput] = useState(false);
 
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [tempTitle, setTempTitle] = useState(taskData.title);
+
   const [status, setStatus] = useState(taskData.status);
   const [priority, setPriority] = useState(taskData.priority);
   const [deadline, setDeadline] = useState(taskData.deadline);
@@ -21,6 +24,21 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
     if (!dateString) return "";
     const [year, month, day] = dateString.split("-");
     return `${day}/${month}/${year}`;
+  };
+
+  const isUrgent = (dateString) => {
+    if (!dateString) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const date = new Date(dateString);
+    date.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    return date <= tomorrow;
   };
 
   // click outside (doar pentru delete + deadline)
@@ -75,10 +93,46 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
         </div>
 
         {/* TITLE */}
-        <div className="taskItem">
-          <h3 className="taskTitle">{taskData.title}</h3>
+        <div className="taskItem" onClick={(e) => e.stopPropagation()}>
+          {!isEditingTitle ? (
+            <h3
+              className="taskTitle"
+              onClick={() => {
+                setTempTitle(taskData.title);
+                setIsEditingTitle(true);
+              }}
+            >
+              {taskData.title}
+            </h3>
+          ) : (
+            <input
+              className="taskTitleInput"
+              type="text"
+              autoFocus
+              value={tempTitle}
+              onChange={(e) => setTempTitle(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              onBlur={() => {
+                setIsEditingTitle(false);
+                if (tempTitle.trim() !== taskData.title) {
+                  onUpdate(taskData.id, { title: tempTitle.trim() });
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setIsEditingTitle(false);
+                  if (tempTitle.trim() !== taskData.title) {
+                    onUpdate(taskData.id, { title: tempTitle.trim() });
+                  }
+                }
+                if (e.key === "Escape") {
+                  setIsEditingTitle(false);
+                  setTempTitle(taskData.title);
+                }
+              }}
+            />
+          )}
         </div>
-
         {/* PRIORITY */}
         <div className="taskItem">
           <select
@@ -99,7 +153,9 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
         {/* DEADLINE */}
         <div className="taskItem" ref={deadlineRef}>
           <h3
-            className="taskDeadline"
+            className={`taskDeadline ${
+              isUrgent(deadline) ? "deadlineUrgent" : ""
+            }`}
             onClick={(e) => {
               e.stopPropagation();
               if (showModifyButton) {

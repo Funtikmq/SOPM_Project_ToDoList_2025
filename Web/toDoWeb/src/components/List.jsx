@@ -1,38 +1,45 @@
 import { useState, useEffect } from "react";
+
+import { db } from "../firebase/firebase";
 import {
   collection,
-  getDocs,
+  query,
+  where,
+  onSnapshot,
   doc,
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { useAuth } from "../context/AuthContext";
 
 import ListHead from "./ListHead";
 import Task from "./Task";
 
 import "./List.css";
 
-const List = () => {
+const List = ({ onToggleAddTask }) => {
   const [tasks, setTasks] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [filterVisible, setFilterVisible] = useState(false);
   const [filter, setFilter] = useState({ status: "", priority: "", month: "" });
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      const taskCollection = collection(db, "tasks");
-      const taskSnapshot = await getDocs(taskCollection);
+  const { user } = useAuth();
 
-      const taskList = taskSnapshot.docs.map((doc) => ({
+  useEffect(() => {
+    if (!user) return;
+
+    const q = query(collection(db, "tasks"), where("userId", "==", user.uid));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const taskList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-
       setTasks(taskList);
-    };
-    fetchTasks();
-  }, []);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   const handleUpdate = async (id, updatedFields) => {
     const taskRef = doc(db, "tasks", id);
@@ -113,22 +120,37 @@ const List = () => {
     <div className="listContainer">
       <div className="listHeaderTop">
         <h3 className="containerTitle">Lista Sarcini</h3>
-        <button
-          className="filterButton"
-          onClick={() => setFilterVisible((prev) => !prev)}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 432 472"
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            className="filterButton"
+            onClick={() => setFilterVisible((prev) => !prev)}
           >
-            <path
-              fill="currentColor"
-              d="m169 399l43 32q10 9 25 9q6 0 20-4q23-12 23-39V246L419 73q17-21 4-45q-15-25-38-25H47Q18 3 9 26q-10 26 4 45l139 175v119q0 22 17 34zM47 45h338L237 229v168l-42-32V229z"
-            />
-          </svg>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 432 472"
+            >
+              <path
+                fill="currentColor"
+                d="m169 399l43 32q10 9 25 9q6 0 20-4q23-12 23-39V246L419 73q17-21 4-45q-15-25-38-25H47Q18 3 9 26q-10 26 4 45l139 175v119q0 22 17 34zM47 45h338L237 229v168l-42-32V229z"
+              />
+            </svg>
+          </button>
+          <button className="filterButton" onClick={onToggleAddTask}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {filterVisible && (
@@ -189,6 +211,26 @@ const List = () => {
             />
           </li>
         ))}
+
+        {sortedTasks.length <= 3 && (
+          <li className="listItem addTaskListItem">
+            <button className="addTaskInlineButton" onClick={onToggleAddTask}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                className="addTaskIcon"
+              >
+                <path
+                  fill="currentColor"
+                  d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                />
+              </svg>
+              <span>Adaugă sarcină nouă</span>
+            </button>
+          </li>
+        )}
       </ul>
     </div>
   );
