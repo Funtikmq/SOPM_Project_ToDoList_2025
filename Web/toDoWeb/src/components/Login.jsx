@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslate } from "../translation";
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
@@ -9,6 +10,7 @@ import "./Login.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
+  const { t } = useTranslate();
   const [password, setPassword] = useState("");
 
   const handleLogin = async (e) => {

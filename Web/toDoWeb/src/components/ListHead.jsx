@@ -1,3 +1,6 @@
+import { useTranslate } from "../translation";
+  const { t } = useTranslate();
+
 const ListHead = ({ onSort, sortConfig }) => {
   const getArrow = (key) => {
     if (sortConfig.key !== key) return "";
@@ -13,28 +16,28 @@ const ListHead = ({ onSort, sortConfig }) => {
         style={headStyle}
         onClick={() => onSort("status")}
       >
-        Status{getArrow("status")}
+        {t("status")}{getArrow("status")}
       </h3>
       <h3
         className="listHeadItem"
         style={headStyle}
         onClick={() => onSort("title")}
       >
-        Titlu{getArrow("title")}
+        {t("title")}{getArrow("title")}
       </h3>
       <h3
         className="listHeadItem"
         style={headStyle}
         onClick={() => onSort("priority")}
       >
-        Prioritate{getArrow("priority")}
+        {t("priority")}{getArrow("priority")}
       </h3>
       <h3
         className="listHeadItem"
         style={headStyle}
         onClick={() => onSort("deadline")}
       >
-        Deadline{getArrow("deadline")}
+        {t("deadline")}{getArrow("deadline")}
       </h3>
     </div>
   );

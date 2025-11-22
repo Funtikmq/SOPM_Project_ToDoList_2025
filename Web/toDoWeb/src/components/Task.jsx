@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import "./Task.css";
+import { useTranslate } from "../translation";
 
 const Task = ({ taskData, onDelete, onUpdate }) => {
   const [expandDelete, setExpandDelete] = useState(false);
@@ -15,6 +16,7 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
   const [priority, setPriority] = useState(taskData.priority);
   const [deadline, setDeadline] = useState(taskData.deadline);
   const [tempDeadline, setTempDeadline] = useState(taskData.deadline);
+  const { t } = useTranslate();
 
   const wrapperRef = useRef(null);
   const deadlineRef = useRef(null);
@@ -84,11 +86,11 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <option value="upcoming">Upcoming</option>
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
-            <option value="overdue">Overdue</option>
-            <option value="canceled">Canceled</option>
+            <option value="upcoming">{t("upcoming")}</option>
+            <option value="active">{t("active")}</option>
+            <option value="completed">{t("completed")}</option>
+            <option value="overdue">{t("overdue")}</option>
+            <option value="canceled">{t("canceled")}</option>
           </select>
         </div>
 
@@ -144,9 +146,9 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option value="high">{t("high")}</option>
+            <option value="medium">{t("medium")}</option>
+            <option value="low">{t("low")}</option>
           </select>
         </div>
 
@@ -192,7 +194,7 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
                   }
                 }}
               >
-                Modify
+                                {t("modify")}
               </button>
             </div>
           )}
@@ -217,7 +219,7 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
       <div className={`taskExpand ${expandDelete ? "open" : ""}`}>
         {taskData.description && (
           <p className="taskDescription">
-            <strong>Descriere:</strong> {taskData.description}
+            <strong>{t("descriptionLabel")}</strong> {taskData.description}
           </p>
         )}
 

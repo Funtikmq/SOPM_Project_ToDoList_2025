@@ -1,10 +1,36 @@
+import { useState, useEffect } from "react";
 import "./Header.css";
 import { useAuth } from "../context/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebase";
+import { useTranslate } from "../translation";
 
 const Header = () => {
   const { user } = useAuth();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+const { t } = useTranslate();
+
+  // Load theme from localStorage on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      setIsDarkMode(true);
+      document.body.classList.add("dark-mode");
+    }
+  }, []);
+
+  // Toggle theme
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    
+    if (!isDarkMode) {
+      document.body.classList.add("dark-mode");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.body.classList.remove("dark-mode");
+      localStorage.setItem("theme", "light");
+    }
+  };
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -25,7 +51,12 @@ const Header = () => {
       </div>
 
       <div className="headerButtons">
-        <button>
+        <button onClick={() => {
+          const currentLang = localStorage.getItem("language") || "ro";
+          const newLang = currentLang === "ro" ? "en" : "ro";
+          localStorage.setItem("language", newLang);
+          window.location.reload();
+        }}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -39,28 +70,34 @@ const Header = () => {
           </svg>
         </button>
 
-        <button>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 48 48"
-          >
-            <path
-              fill="none"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M24.288 42.47C13.91 42.412 5.498 34.2 5.498 24S13.91 5.53 24.288 5.53c6.602 0 12.328 3.64 15.76 8.41c1.63 2.265 3.133 5.465 2.131 10.278c-1 4.813-5.944 7.888-8.723 7.888H28.95c-3.896 0-4.265 3.667-2.635 5.396c1.53 1.623.41 4.982-2.028 4.968"
-            />
-            <path
-              fill="none"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M15.93 20.832a3.21 3.21 0 0 1-3.21 3.211h0a3.211 3.211 0 0 1 0-6.422h0a3.21 3.21 0 0 1 3.21 3.211m22.557 0a3.21 3.21 0 0 1-3.211 3.211h0a3.21 3.21 0 0 1-3.211-3.21h0a3.21 3.21 0 0 1 3.21-3.212h0a3.21 3.21 0 0 1 3.212 3.211m-6.043-8.215a3.211 3.211 0 0 1-6.422 0h0a3.21 3.21 0 0 1 3.211-3.211h0a3.21 3.21 0 0 1 3.211 3.21m-10.471.001a3.21 3.21 0 0 1-3.21 3.21h0a3.211 3.211 0 1 1 3.21-3.21"
-            />
-          </svg>
+        <button onClick={toggleTheme} className="theme-toggle-btn">
+          {isDarkMode ? (
+            // Sun icon for light mode
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M12 17q-2.075 0-3.537-1.463T7 12t1.463-3.537T12 7t3.538 1.463T17 12t-1.463 3.538T12 17M2 13v-2h4v2zm16 0v-2h4v2zM11 2h2v4h-2zm0 16h2v4h-2zM6.4 7.75L4.975 6.325L7.75 3.55L9.175 4.975zm12.3 12.3l-1.425-1.425l2.775-2.775l1.425 1.425zM16.25 6.4l1.425-1.425l2.775 2.775L19.025 9.175zM3.55 19.725l2.775-2.775l1.425 1.425l-2.775 2.775z"
+              />
+            </svg>
+          ) : (
+            // Moon icon for dark mode
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M12 21q-3.775 0-6.387-2.613T3 12t2.613-6.387T12 3q.35 0 .688.025t.662.075q-1.025.725-1.638 1.888T11.1 7.5q0 2.25 1.575 3.825T16.5 12.9q1.375 0 2.525-.613T20.9 10.65q.05.325.075.662T21 12q0 3.775-2.613 6.388T12 21"
+              />
+            </svg>
+          )}
         </button>
 
         <button onClick={handleLogout}>

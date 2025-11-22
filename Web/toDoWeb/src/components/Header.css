@@ -5,6 +5,13 @@
   font-family: "Inter", sans-serif;
 }
 
+/* LIGHT MODE (default) */
+body {
+  background: #f5f5f5;
+  color: #333;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 /* Header principal */
 .headerLayout {
   height: 10vh;
@@ -13,10 +20,10 @@
   align-items: center;
   padding: 0 24px;
 
-  background: #fff; /* alb simplu */
+  background: #fff;
   border-bottom: 1px solid #ddd;
-
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* User info (avatar + nume) */
@@ -38,6 +45,7 @@
   font-size: 16px;
   font-weight: 600;
   color: #333;
+  transition: color 0.3s ease;
 }
 
 /* Butoane header */
@@ -53,14 +61,165 @@
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  transition: 0.2s ease-in-out;
+  transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .headerButtons button:hover {
   color: #d80fc4;
+  transform: translateY(-2px);
 }
 
-/* Responsive mic */
+.theme-toggle-btn {
+  position: relative;
+}
+
+.theme-toggle-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.theme-toggle-btn:hover svg {
+  transform: rotate(20deg) scale(1.1);
+}
+
+/* DARK MODE */
+body.dark-mode {
+  background: #1a1a1a;
+  color: #e0e0e0;
+}
+
+body.dark-mode .headerLayout {
+  background: #2d2d2d;
+  border-bottom: 1px solid #444;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .userInfo {
+  color: #e0e0e0;
+}
+
+body.dark-mode .headerButtons button {
+  color: #e0e0e0;
+}
+
+body.dark-mode .headerButtons button:hover {
+  color: #d80fc4;
+}
+
+/* Dark mode pentru List Container */
+body.dark-mode .listContainer {
+  background: #2d2d2d;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .listHead,
+body.dark-mode .listHeaderTop {
+  background-color: #3a3a3a;
+  color: #e0e0e0;
+}
+
+body.dark-mode .filterPanel {
+  background-color: #3a3a3a;
+}
+
+body.dark-mode .filterPanel label {
+  color: #e0e0e0;
+}
+
+body.dark-mode .filterPanel select,
+body.dark-mode .filterPanel input {
+  background: #2d2d2d;
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+/* Dark mode pentru Tasks */
+body.dark-mode .task {
+  background-color: #333;
+  border-color: #444;
+}
+
+body.dark-mode .task:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .taskTitle {
+  color: #e0e0e0;
+}
+
+body.dark-mode .taskTitleInput {
+  background: #2d2d2d;
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+body.dark-mode .taskExpand {
+  background-color: #2d2d2d;
+  border-color: #444;
+}
+
+body.dark-mode .taskDescription {
+  color: #b0b0b0;
+}
+
+body.dark-mode .taskDateInput {
+  background: #2d2d2d;
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+body.dark-mode .taskDeadline {
+  color: #b0b0b0;
+}
+
+/* Dark mode pentru AddTask */
+body.dark-mode .taskFormContainer {
+  background: linear-gradient(145deg, #2d2d2d, #252525);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .taskForm h5 {
+  color: #e0e0e0;
+}
+
+body.dark-mode .taskInput,
+body.dark-mode .taskText {
+  background-color: #333;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+body.dark-mode .taskInput:focus,
+body.dark-mode .taskText:focus {
+  background-color: #2d2d2d;
+  border-color: #d80fc4;
+}
+
+body.dark-mode .taskInput::placeholder,
+body.dark-mode .taskText::placeholder {
+  color: #777;
+}
+
+body.dark-mode .addTaskInlineButton {
+  background: linear-gradient(145deg, #2d2d2d, #252525);
+  border-color: #555;
+  color: #b0b0b0;
+}
+
+body.dark-mode .addTaskInlineButton:hover {
+  background: linear-gradient(145deg, #333, #2d2d2d);
+  border-color: #d80fc4;
+  color: #d80fc4;
+}
+
+body.dark-mode .containerTitle {
+  color: #e0e0e0;
+}
+
+/* Responsive design */
 @media (max-width: 600px) {
   .headerLayout {
     flex-direction: column;

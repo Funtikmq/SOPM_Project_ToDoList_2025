@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslate } from "../translation";
 import { db } from "../firebase/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
@@ -9,14 +10,14 @@ const AddTask = () => {
   const [desc, setDesc] = useState("");
   const [priority, setPriority] = useState("medium");
   const [deadline, setDeadline] = useState("");
-
+  const { t } = useTranslate();
   const { user } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (title.trim() === "" || deadline.trim() === "") {
-      alert("Completeaza titlul si deadline-ul!");
+      alert(t("fillRequired"));
       return;
     }
 
@@ -36,7 +37,7 @@ const AddTask = () => {
         userId: user.uid,
       });
 
-      alert("Task salvat!");
+      alert(t("taskSaved"));
 
       setTitle("");
       setDesc("");
@@ -49,10 +50,10 @@ const AddTask = () => {
 
   return (
     <div className="taskFormContainer">
-      <h3 className="containerTitle">Adauga Sarcina</h3>
+      <h3 className="containerTitle">{t("addTask")}</h3>
 
       <form className="taskForm" onSubmit={handleSubmit}>
-        <h5>Titlu</h5>
+        <h5>{t("title")}</h5>
         <input
           type="text"
           className="taskInput"
@@ -61,25 +62,24 @@ const AddTask = () => {
           required
         />
 
-        <h5>Descriere</h5>
+        <h5>{t("description")}</h5>
         <textarea
           className="taskInput taskText"
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
         ></textarea>
 
-        <h5>Prioritate</h5>
+        <h5>{t("priority")}</h5>
         <select
           className="taskInput"
           value={priority}
           onChange={(e) => setPriority(e.target.value)}
         >
-          <option value="high">Mare</option>
-          <option value="medium">Medie</option>
-          <option value="low">Mica</option>
+          <option value="high">{t("high")}</option>
+          <option value="medium">{t("medium")}</option>
+          <option value="low">{t("low")}</option>
         </select>
-
-        <h5>Deadline</h5>
+        <h5>{t("deadline")}</h5>
         <input
           type="date"
           className="taskInput"
@@ -88,7 +88,7 @@ const AddTask = () => {
           required
         />
 
-        <input type="submit" className="taskSubmit" value="Save" />
+        <input type="submit" className="taskSubmit" value={t("save")} />
       </form>
     </div>
   );

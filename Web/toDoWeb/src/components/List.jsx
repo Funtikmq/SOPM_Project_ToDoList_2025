@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+import { useTranslate } from "../translation";
 import { db } from "../firebase/firebase";
 import {
   collection,
@@ -24,7 +24,7 @@ const List = ({ onToggleAddTask }) => {
   const [filter, setFilter] = useState({ status: "", priority: "", month: "" });
 
   const { user } = useAuth();
-
+const { t } = useTranslate();
   useEffect(() => {
     if (!user) return;
 
@@ -119,7 +119,7 @@ const List = ({ onToggleAddTask }) => {
   return (
     <div className="listContainer">
       <div className="listHeaderTop">
-        <h3 className="containerTitle">Lista Sarcini</h3>
+        <h3 className="containerTitle">{t("taskList")}</h3>
         <div style={{ display: "flex", gap: "10px" }}>
           <button
             className="filterButton"
@@ -156,39 +156,39 @@ const List = ({ onToggleAddTask }) => {
       {filterVisible && (
         <div className="filterPanel">
           <label>
-            Status:
+            {t("status")}:
             <select
               value={filter.status}
               onChange={(e) => setFilter({ ...filter, status: e.target.value })}
             >
-              <option value="">All</option>
+              <option value="">{t("all")}</option>
               {statusOrder.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {t(s)}
                 </option>
               ))}
             </select>
           </label>
 
           <label>
-            Prioritate:
+            {t("priority")}:
             <select
               value={filter.priority}
               onChange={(e) =>
                 setFilter({ ...filter, priority: e.target.value })
               }
             >
-              <option value="">All</option>
+              <option value="">{t("all")}</option>
               {priorityOrder.map((p) => (
                 <option key={p} value={p}>
-                  {p}
+                  {t(p)}
                 </option>
               ))}
             </select>
           </label>
 
           <label>
-            Până în:
+            {t("untilDate")}:
             <input
               type="date"
               value={filter.date}
@@ -227,7 +227,7 @@ const List = ({ onToggleAddTask }) => {
                   d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
                 />
               </svg>
-              <span>Adaugă sarcină nouă</span>
+              <span>{t("addNewTask")}</span>
             </button>
           </li>
         )}
