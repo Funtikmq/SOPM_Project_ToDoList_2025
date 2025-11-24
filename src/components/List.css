@@ -1,0 +1,330 @@
+.listContainer {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 860px;
+  background: linear-gradient(
+    145deg,
+    rgba(216, 15, 196, 0.06),
+    rgba(155, 14, 146, 0.03)
+  );
+  border-radius: 24px;
+  box-shadow: var(--shadow-soft);
+  padding: 22px 24px 24px 24px;
+  overflow: hidden;
+}
+
+.listHeaderTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+}
+
+.containerTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.listHeaderTopActions {
+  display: flex;
+  gap: 8px;
+}
+
+.filterButton,
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+  cursor: pointer;
+  transition: background var(--transition-fast),
+    transform var(--transition-fast), box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.filterButton svg,
+.addButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+.filterButton:hover,
+.addButton:hover {
+  background: rgba(216, 15, 196, 0.08);
+  box-shadow: 0 6px 18px rgba(216, 15, 196, 0.28);
+  transform: translateY(-1px);
+}
+
+.filterPanel {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+}
+
+.filterPanel label {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-right: 4px;
+}
+
+.filterPanel select,
+.filterPanel input {
+  border-radius: 10px;
+  border: 1px solid var(--color-border-subtle);
+  padding: 6px 10px;
+  font-size: 13px;
+  outline: none;
+  min-width: 120px;
+}
+
+.filterPanel select:focus,
+.filterPanel input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px rgba(216, 15, 196, 0.25);
+}
+
+/* lista propriu-zisa */
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.listItem {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* header-ul de coloane */
+
+.listHead {
+  display: grid;
+  grid-template-columns: 140px 1fr 160px 160px;
+  align-items: center;
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 18px 18px 0 0;
+  border-bottom: 1px solid rgba(15, 15, 30, 0.06);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.listHeadItem {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: center;
+}
+
+.listHeadItem:nth-child(2) {
+  justify-content: flex-start;
+}
+
+.listHeadItem span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+
+/* wrapper pt randurile de task */
+
+.taskListWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* bara “Adauga sarcina noua” */
+
+.addTaskListItem {
+  margin-top: 12px;
+}
+
+.addTaskInlineButton {
+  width: 100%;
+  border-radius: 16px;
+  border: 2px dashed rgba(216, 15, 196, 0.9);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background var(--transition-normal),
+    border-color var(--transition-normal), transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.addTaskInlineButton span {
+  position: relative;
+  z-index: 1;
+}
+
+.addTaskIcon {
+  font-size: 18px;
+  position: relative;
+  z-index: 1;
+}
+
+.addTaskInlineButton::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 0 0,
+    rgba(216, 15, 196, 0.12),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.addTaskInlineButton:hover::before {
+  opacity: 1;
+}
+
+.addTaskInlineButton:hover {
+  background: rgba(216, 15, 196, 0.05);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(216, 15, 196, 0.25);
+}
+
+.addTaskInlineButton:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* mesaj cand nu sunt taskuri */
+
+.emptyListMessage {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.emptyListMessage svg {
+  width: 52px;
+  height: 52px;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+
+/* responsive */git pull origin stilizare-dark-light
+
+@media (max-width: 960px) {
+  .listContainer {
+    max-width: 100%;
+  }
+
+  .listHead {
+    grid-template-columns: 130px 1fr 140px 140px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 720px) {
+  .listContainer {
+    padding: 18px 14px 18px 14px;
+    border-radius: 18px;
+  }
+
+  .listHead {
+    padding-inline: 14px;
+  }
+
+  .addTaskInlineButton {
+    padding-inline: 14px;
+  }
+}
+
+body.dark-mode .listContainer {
+  background: radial-gradient(circle at 0 0, rgba(216, 15, 196, 0.14), transparent 55%),
+    radial-gradient(circle at 100% 100%, rgba(120, 88, 255, 0.18), transparent 55%),
+    #120b24;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+}
+
+body.dark-mode .listHead {
+  background: rgba(28, 22, 52, 0.96);
+  border-bottom-color: rgba(255, 255, 255, 0.04);
+  color: rgba(231, 222, 255, 0.9);
+}
+
+body.dark-mode .addTaskInlineButton {
+  background: rgba(23, 14, 43, 0.95);
+  border-color: #ff5ae0;
+  color: #ff9df0;
+}
+
+body.dark-mode .addTaskInlineButton:hover {
+  background: rgba(255, 90, 224, 0.12);
+  box-shadow: 0 14px 40px rgba(255, 90, 224, 0.6);
+}
+
+.filterButton,
+.addButton {
+  background: #ffffff;
+  border: 1px solid rgba(216, 15, 196, 0.4);
+  color: #111111;
+}
+
+.filterButton svg,
+.addButton svg {
+  color: #111111;
+}
+
+.filterButton:hover,
+.addButton:hover {
+  background: rgba(216, 15, 196, 0.08);
+  box-shadow: 0 10px 30px rgba(216, 15, 196, 0.45);
+}
+
+/* DARK MODE */
+
+body.dark-mode .filterButton,
+body.dark-mode .addButton {
+  background: linear-gradient(
+    135deg,
+    rgba(216, 15, 196, 0.25),
+    rgba(120, 88, 255, 0.25)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+body.dark-mode .filterButton svg,
+body.dark-mode .addButton svg {
+  color: #ffffff;
+}
+
+body.dark-mode .filterButton:hover,
+body.dark-mode .addButton:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(216, 15, 196, 0.6),
+    rgba(120, 88, 255, 0.6)
+  );
+  box-shadow: 0 16px 45px rgba(255, 90, 224, 0.7);
+}

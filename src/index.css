@@ -1,0 +1,187 @@
+/* ---------- THEME VARIABLES ---------- */
+
+:root {
+  /* Font principal – modern, curat */
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+
+  /* Paleta de baza (light mode) */
+  --color-primary: #d80fc4; /* magenta principal */
+  --color-primary-soft: rgba(216, 15, 196, 0.08);
+  --color-primary-strong: #9b0e92;
+
+  --color-bg: #f5f5f8;
+  --color-card: #ffffff;
+
+  --color-text-main: #1f1724;
+  --color-text-muted: #6c6a7a;
+
+  --color-border-subtle: rgba(15, 15, 30, 0.06);
+  --shadow-soft: 0 18px 45px rgba(9, 9, 26, 0.08);
+
+  /* Culori pentru stari (le putem folosi mai tarziu in Task.css etc.) */
+  --status-upcoming: #9b9bff;
+  --status-active: #33c28a;
+  --status-completed: #7b7eff;
+  --status-overdue: #ff6b6b;
+  --status-canceled: #b0b0c0;
+
+  --priority-high: #ff4b8b;
+  --priority-medium: #ffb84b;
+  --priority-low: #5ac8fa;
+
+  /* Durate pentru tranzitii */
+  --transition-fast: 0.15s ease-out;
+  --transition-normal: 0.25s ease-out;
+}
+
+/* ---------- RESET MIC + GLOBAL ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Radial gradient discret in fundal, pentru vibe modern */
+#root {
+  min-height: 100vh;
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  background:
+    radial-gradient(
+      circle at 0% 0%,
+      var(--color-primary-soft),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(155, 14, 146, 0.12),
+      transparent 55%
+    ),
+    var(--color-bg);
+}
+
+/* Ca sa nu fie totul lipit de margini pe ecrane mici */
+@media (max-width: 768px) {
+  #root {
+    padding: 16px;
+  }
+}
+
+/* ---------- ELEMENTE DE BAZA ---------- */
+
+body,
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-sans);
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: var(--color-primary-strong);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  text-decoration: underline;
+  color: var(--color-primary);
+}
+
+/* Scrollbar discret (optional, doar in browserele care suporta) */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 155, 0.35);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 120, 155, 0.6);
+}
+
+/* ---------- DARK MODE ---------- */
+/* Se activeaza cand in JS adaugi clasa "dark-mode" pe <body> */
+
+body.dark-mode {
+  background-color: #171320;
+  color: #f7f5ff;
+}
+
+/* Fundal root in dark mode – mov inchis, modern */
+body.dark-mode #root {
+  background:
+    radial-gradient(
+      circle at 0% 0%,
+      rgba(216, 15, 196, 0.16),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(90, 88, 255, 0.16),
+      transparent 55%
+    ),
+    #171320;
+}
+
+/* Linkuri in dark mode */
+body.dark-mode a {
+  color: #f48ee8;
+}
+
+body.dark-mode a:hover {
+  color: #ffffff;
+}
+
+/* Putem folosi aceste clase generale in componente, daca vrem */
+.app-surface {
+  background-color: var(--color-card);
+  border-radius: 18px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--color-border-subtle);
+}
+
+/* Varianta pentru dark mode */
+body.dark-mode .app-surface {
+  background-color: #22192e;
+  border-color: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.6);
+}
+
+/* Clase pentru text muted – utile in descrieri / subtitluri */
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+body.dark-mode .text-muted {
+  color: rgba(214, 209, 235, 0.78);
+}

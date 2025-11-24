@@ -1,0 +1,10 @@
+.MenuLayout {
+  height: 80vh;
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.containerTitle {
+  text-align: center;
+}

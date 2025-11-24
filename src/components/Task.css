@@ -1,0 +1,348 @@
+.taskWrapper {
+  width: 100%;
+}
+
+.task {
+  display: grid;
+  grid-template-columns: 140px 1fr 160px 160px;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 0 0 18px 18px;
+  border-bottom: 1px solid rgba(15, 15, 30, 0.04);
+  transition: box-shadow var(--transition-normal),
+    transform var(--transition-fast), background var(--transition-fast);
+}
+
+.task:hover {
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(17, 12, 40, 0.14);
+  transform: translateY(-1px);
+}
+
+.taskItem {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.taskItem:nth-child(1),
+.taskItem:nth-child(3) {
+  align-items: center;
+}
+
+.taskItem:nth-child(2) {
+  align-items: flex-start;
+}
+
+.taskItem:nth-child(4) {
+  align-items: flex-end;
+}
+
+.taskSelectBadge {
+  min-width: 96px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border-width: 1.5px;
+  border-style: solid;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  background: #ffffff;
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition-fast),
+    background var(--transition-fast), color var(--transition-fast),
+    box-shadow var(--transition-fast), transform var(--transition-fast);
+  appearance: none;
+}
+
+.taskSelectBadge:focus {
+  box-shadow: 0 0 0 1px rgba(216, 15, 196, 0.25);
+  transform: translateY(-1px);
+}
+
+.taskStatus-upcoming {
+  border-color: var(--status-upcoming);
+  color: var(--status-upcoming);
+  background: rgba(155, 155, 255, 0.06);
+}
+
+.taskStatus-active {
+  border-color: var(--status-active);
+  color: var(--status-active);
+  background: rgba(51, 194, 138, 0.08);
+}
+
+.taskStatus-completed {
+  border-color: var(--color-primary);
+  color: var(--color-primary-strong);
+  background: rgba(216, 15, 196, 0.06);
+}
+
+.taskStatus-overdue {
+  border-color: var(--status-overdue);
+  color: var(--status-overdue);
+  background: rgba(255, 107, 107, 0.06);
+}
+
+.taskStatus-canceled {
+  border-color: var(--status-canceled);
+  color: var(--status-canceled);
+  background: rgba(176, 176, 192, 0.12);
+}
+
+.taskPriority-high {
+  border-color: var(--priority-high);
+  color: var(--priority-high);
+  background: rgba(255, 75, 139, 0.06);
+}
+
+.taskPriority-medium {
+  border-color: var(--priority-medium);
+  color: var(--priority-medium);
+  background: rgba(255, 184, 75, 0.06);
+}
+
+.taskPriority-low {
+  border-color: var(--priority-low);
+  color: var(--priority-low);
+  background: rgba(90, 200, 250, 0.06);
+}
+
+.taskTitle {
+  font-size: 15px;
+  font-weight: 500;
+  margin: 0;
+  cursor: text;
+  color: var(--color-text-main);
+  transition: color var(--transition-fast);
+}
+
+.taskTitle:hover {
+  color: var(--color-primary-strong);
+}
+
+.taskTitleInput {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--color-border-subtle);
+  padding: 6px 8px;
+  font-size: 15px;
+  outline: none;
+  background: #ffffff;
+  transition: border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.taskTitleInput:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px rgba(216, 15, 196, 0.25);
+}
+
+.taskDeadline {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-main);
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(15, 15, 30, 0.02);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  text-align: center;
+  transition: background var(--transition-fast),
+    color var(--transition-fast), box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+
+.taskDeadline:hover {
+  background: rgba(216, 15, 196, 0.06);
+  box-shadow: 0 0 0 1px rgba(216, 15, 196, 0.15);
+  transform: translateY(-1px);
+}
+
+.deadlineUrgent {
+  color: var(--status-overdue);
+  background: rgba(255, 107, 107, 0.12);
+}
+
+.modifyWrapper {
+  position: absolute;
+  margin-top: 8px;
+  padding: 10px 10px 8px 10px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 12px 26px rgba(9, 9, 26, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transform-origin: top right;
+  transform: scale(1);
+  opacity: 1;
+  transition: transform var(--transition-normal),
+    opacity var(--transition-normal);
+  z-index: 10;
+}
+
+.modifyWrapper.closing {
+  transform: scale(0.96);
+  opacity: 0;
+}
+
+.taskModifyButton {
+  align-self: flex-end;
+  border-radius: 999px;
+  border: none;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #d80fc4, #9b0e92);
+  color: #ffffff;
+  cursor: pointer;
+  transition: transform var(--transition-fast),
+    box-shadow var(--transition-fast), filter var(--transition-fast);
+}
+
+.taskModifyButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(216, 15, 196, 0.55);
+  filter: brightness(1.02);
+}
+
+.taskModifyButton:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.taskDateInput {
+  border-radius: 10px;
+  border: 1px solid var(--color-border-subtle);
+  padding: 6px 10px;
+  font-size: 13px;
+  outline: none;
+  background: #ffffff;
+  width: 170px;
+  transition: border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.taskDateInput:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px rgba(216, 15, 196, 0.25);
+}
+
+.taskExpand {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: max-height var(--transition-normal),
+    opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+.taskExpand.open {
+  max-height: 200px;
+  opacity: 1;
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 0 0 18px 18px;
+  border-top: 1px solid rgba(15, 15, 30, 0.04);
+  padding: 10px 18px 12px 18px;
+}
+
+.taskDescription {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: var(--color-text-main);
+}
+
+.taskExpandButtons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.deleteBtn {
+  border: none;
+  background: transparent;
+  padding: 4px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background var(--transition-fast),
+    transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.deleteBtn svg {
+  width: 18px;
+  height: 18px;
+  color: rgba(230, 57, 70, 0.7);
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.deleteBtn:hover {
+  background: rgba(230, 57, 70, 0.08);
+  box-shadow: 0 6px 18px rgba(230, 57, 70, 0.35);
+  transform: translateY(-1px);
+}
+
+.deleteBtn:hover svg {
+  color: rgba(230, 57, 70, 0.9);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 960px) {
+  .task {
+    grid-template-columns: 130px 1fr 140px 140px;
+    padding-inline: 14px;
+  }
+
+  .taskSelectBadge {
+    min-width: 90px;
+    padding-inline: 10px;
+  }
+}
+
+@media (max-width: 720px) {
+  .task {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 2.4fr);
+    row-gap: 6px;
+  }
+
+  .taskItem:nth-child(3),
+  .taskItem:nth-child(4) {
+    align-items: flex-start;
+  }
+}
+
+body.dark-mode .task {
+  background: rgba(22, 16, 44, 0.98);
+  border-bottom-color: rgba(255, 255, 255, 0.03);
+}
+
+body.dark-mode .task:hover {
+  background: rgba(28, 20, 58, 1);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.85);
+}
+
+body.dark-mode .taskTitle {
+  color: #f5efff;
+}
+
+body.dark-mode .taskDescription {
+  color: rgba(230, 221, 255, 0.9);
+}
+
+body.dark-mode .taskDeadline {
+  background: rgba(255, 158, 230, 0.18);
+  color: #ffe4ff;
+}
+
+body.dark-mode .deadlineUrgent {
+  background: rgba(255, 107, 107, 0.3);
+  color: #ffe7e7;
+}
