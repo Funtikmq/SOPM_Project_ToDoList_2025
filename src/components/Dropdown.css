@@ -1,0 +1,247 @@
+.dropdown {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dropdown.open {
+  z-index: 999;
+}
+
+.dropdownLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.dropdownTrigger {
+  min-width: 140px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text-main);
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+.dropdownTrigger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+  border-color: rgba(200, 0, 255, 0.25);
+}
+
+/* Colored triggers */
+.dropdownTrigger.statusBadge,
+.dropdownTrigger.priorityBadge {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+.dropdownTrigger.status-active {
+  background: rgba(194, 58, 208, 0.12);
+  border-color: rgba(194, 58, 208, 0.22);
+  color: var(--accent-hover);
+}
+.dropdownTrigger.status-upcoming {
+  background: rgba(140, 122, 230, 0.14);
+  border-color: rgba(140, 122, 230, 0.2);
+  color: #6b5cd9;
+}
+.dropdownTrigger.status-completed {
+  background: rgba(122, 220, 180, 0.16);
+  border-color: rgba(122, 220, 180, 0.22);
+  color: #2f9f7a;
+}
+.dropdownTrigger.status-overdue {
+  background: rgba(233, 79, 55, 0.14);
+  border-color: rgba(233, 79, 55, 0.22);
+  color: #d6423a;
+}
+.dropdownTrigger.status-canceled {
+  background: rgba(127, 120, 152, 0.14);
+  border-color: rgba(127, 120, 152, 0.2);
+  color: #7f7898;
+}
+
+.dropdownTrigger.priority-high {
+  background: rgba(233, 79, 55, 0.14);
+  border-color: rgba(233, 79, 55, 0.22);
+  color: #d6423a;
+}
+.dropdownTrigger.priority-medium {
+  background: rgba(255, 190, 118, 0.16);
+  border-color: rgba(255, 190, 118, 0.24);
+  color: #d17a1c;
+}
+.dropdownTrigger.priority-low {
+  background: rgba(122, 220, 180, 0.16);
+  border-color: rgba(122, 220, 180, 0.22);
+  color: #2f9f7a;
+}
+
+.dropdownValue {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.dropdownIcon {
+  display: grid;
+  place-items: center;
+  transition: transform 0.2s ease;
+  color: var(--text-muted);
+}
+
+.dropdownIcon.open {
+  transform: rotate(180deg);
+}
+
+.dropdownMenu {
+  position: fixed;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 16px 36px rgba(160, 0, 255, 0.15);
+  animation: dropdownIn 0.18s ease;
+  z-index: 20;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  border-radius: 16px;
+}
+
+.dropdownMenu.open {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dropdownOption {
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.dropdownOption:hover {
+  background: linear-gradient(135deg, rgba(200, 0, 255, 0.12), rgba(140, 122, 230, 0.14));
+  box-shadow: inset 0 0 0 1px rgba(200, 0, 255, 0.18);
+}
+
+.dropdownOption.active {
+  background: rgba(200, 0, 255, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(200, 0, 255, 0.25);
+}
+
+.dropdownDate input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--text-main);
+}
+
+.dropdownDate input:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(200, 0, 255, 0.14);
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-theme="dark"] .dropdownTrigger {
+  background: rgba(45, 35, 70, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .dropdownMenu {
+  background: rgba(38, 28, 56, 0.9);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 10px 24px rgba(200, 0, 255, 0.15);
+}
+
+[data-theme="dark"] .dropdownOption:hover {
+  background: rgba(200, 0, 255, 0.12);
+}
+
+[data-theme="dark"] .dropdownOption.active {
+  background: rgba(200, 0, 255, 0.16);
+  border-color: rgba(200, 0, 255, 0.3);
+}
+.statusBadge {
+  background: rgba(200, 0, 255, 0.08);
+  border-color: rgba(200, 0, 255, 0.18);
+  color: var(--accent);
+}
+.status-active {
+  background: rgba(200, 0, 255, 0.12);
+}
+.status-upcoming {
+  background: rgba(140, 122, 230, 0.14);
+  border-color: rgba(140, 122, 230, 0.24);
+}
+.status-completed {
+  background: rgba(122, 220, 180, 0.16);
+  border-color: rgba(122, 220, 180, 0.26);
+  color: #2f9f7a;
+}
+.status-overdue {
+  background: rgba(233, 79, 55, 0.14);
+  border-color: rgba(233, 79, 55, 0.26);
+  color: #d6423a;
+}
+.status-canceled {
+  background: rgba(127, 120, 152, 0.14);
+  border-color: rgba(127, 120, 152, 0.24);
+  color: #7f7898;
+}
+
+.priorityBadge {
+  background: rgba(200, 0, 255, 0.08);
+  border-color: rgba(200, 0, 255, 0.18);
+  color: var(--accent);
+}
+.priority-high {
+  background: rgba(233, 79, 55, 0.14);
+  border-color: rgba(233, 79, 55, 0.26);
+  color: #d6423a;
+}
+.priority-medium {
+  background: rgba(255, 190, 118, 0.16);
+  border-color: rgba(255, 190, 118, 0.26);
+  color: #d17a1c;
+}
+.priority-low {
+  background: rgba(122, 220, 180, 0.16);
+  border-color: rgba(122, 220, 180, 0.26);
+  color: #2f9f7a;
+}

@@ -1,0 +1,505 @@
+/* ------------------------------------------------------
+   TASK WRAPPER & ROW
+------------------------------------------------------- */
+.taskWrapper {
+  position: relative;
+  overflow: visible;
+  width: 100%;
+  margin-bottom: 12px;
+  font-family: "Inter", system-ui, sans-serif;
+  z-index: 0;
+}
+
+.taskWrapper.dropdown-open {
+  z-index: 999;
+}
+
+.task {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  padding: 12px 18px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+}
+
+.subtaskProgressBar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  width: 100%;
+  background: rgba(200, 0, 255, 0.08);
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+}
+
+.subtaskProgressFill {
+  height: 100%;
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  transition: width 0.3s ease;
+}
+
+.task-open {
+  z-index: 50;
+}
+.task:hover {
+  box-shadow: 0 16px 32px rgba(200, 0, 255, 0.14), 0 12px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.taskItem {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ------------------------------------------------------
+   SELECTOR BADGE DIRECT (status + priority)
+------------------------------------------------------- */
+.taskSelectBadge {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 0.85rem;
+  font-weight: 700;
+
+  cursor: pointer;
+  outline: none;
+
+  transition: all 0.2s ease;
+  text-align: center;
+  min-width: 105px;
+  position: relative;
+  z-index: 1;
+}
+
+.taskSelectBadge option {
+  background-color: #f9f9f9;
+  color: #302d2d;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+}
+
+.taskSelectBadge:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.taskSelectBadge:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(200, 0, 255, 0.15);
+}
+
+.taskSelectBadge::-ms-expand {
+  display: none;
+}
+
+.taskSelectBadge option {
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.taskSelectBadge:focus-visible {
+  outline: none;
+}
+
+/* custom dropdown menu via datalist-like styling (WebKit) */
+.taskSelectBadge:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(200, 0, 255, 0.15);
+}
+
+/* STATUS COLORS */
+.taskStatus-active {
+  background: rgba(194, 58, 208, 0.12);
+  color: var(--accent-hover);
+  border-color: rgba(194, 58, 208, 0.3);
+}
+.taskStatus-upcoming {
+  background: rgba(140, 122, 230, 0.12);
+  color: #6b5cd9;
+  border-color: rgba(140, 122, 230, 0.35);
+}
+.taskStatus-overdue {
+  background: rgba(233, 79, 55, 0.12);
+  color: #e94f37;
+  border-color: rgba(233, 79, 55, 0.35);
+}
+.taskStatus-canceled {
+  background: rgba(127, 120, 152, 0.12);
+  color: #7f7898;
+  border-color: rgba(127, 120, 152, 0.3);
+}
+.taskStatus-completed {
+  background: rgba(122, 220, 180, 0.14);
+  color: #2f9f7a;
+  border-color: rgba(122, 220, 180, 0.35);
+}
+
+/* PRIORITY COLORS */
+.taskPriority-high {
+  background: rgba(233, 79, 55, 0.12);
+  color: #d6423a;
+  border-color: rgba(233, 79, 55, 0.35);
+}
+.taskPriority-medium {
+  background: rgba(255, 190, 118, 0.18);
+  color: #d17a1c;
+  border-color: rgba(255, 190, 118, 0.45);
+}
+.taskPriority-low {
+  background: rgba(122, 220, 180, 0.14);
+  color: #2f9f7a;
+  border-color: rgba(122, 220, 180, 0.35);
+}
+
+/* ------------------------------------------------------
+   TEXT ELEMENTS
+------------------------------------------------------- */
+.taskTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+  text-align: center;
+}
+
+.taskTitleInput {
+  width: 100%;
+  font-size: 1rem;
+  padding: 6px 8px;
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text-main);
+}
+
+.taskDeadline {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(194, 58, 208, 0.08);
+  border: 1px solid rgba(194, 58, 208, 0.2);
+}
+
+.taskDeadline:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.deadlineUrgent {
+  color: #e94f37;
+  border-color: rgba(233, 79, 55, 0.35);
+  background: rgba(233, 79, 55, 0.12);
+}
+
+/* DATE INPUT */
+.taskDateInput {
+  padding: 8px 12px;
+  min-width: 140px;
+
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  outline: none;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.taskDateInput:hover {
+  border-color: var(--accent);
+}
+
+.taskDateInput:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(194, 58, 208, 0.12);
+}
+
+/* Animations */
+@keyframes slideInFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutFade {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.modifyWrapper {
+  animation: slideInFade 0.3s ease forwards;
+}
+
+.modifyWrapper.closing {
+  animation: slideOutFade 0.3s ease forwards;
+}
+
+/* MODIFY BUTTON */
+.taskModifyButton {
+  padding: 6px 16px;
+  font-size: 0.85rem;
+  font-weight: 700;
+
+  border: none;
+  border-radius: 10px;
+
+  background-color: var(--accent);
+  color: white;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(194, 58, 208, 0.25);
+}
+
+.taskModifyButton:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0 4px 10px rgba(194, 58, 208, 0.35);
+  transform: translateY(-1px);
+}
+
+/* EXPAND SECTION CONTENT */
+.taskExpand {
+  width: 100%;
+  padding: 0 20px;
+
+  background-color: rgba(255, 255, 255, 0.75);
+  border-left: 1px solid var(--glass-border);
+  border-right: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border);
+  border-radius: 0 0 12px 12px;
+
+  margin-top: 4px;
+  font-size: 0.9rem;
+
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+}
+
+.taskExpand.open {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.taskDescription {
+  margin: 0 0 4px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.subtaskSection {
+  margin: 8px 0 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
+
+.subtaskHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.subtaskTitle {
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subtaskProgress {
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.subtaskAdd {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.subtaskAdd input {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.9);
+  min-width: 180px;
+}
+
+.subtaskAdd button {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(200, 0, 255, 0.2);
+}
+
+.subtaskAdd .markAll {
+  background: rgba(200, 0, 255, 0.14);
+  color: var(--text-main);
+  box-shadow: none;
+  border: 1px solid rgba(200, 0, 255, 0.2);
+}
+
+.subtaskList {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.subtaskItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--glass-border);
+}
+
+.subtaskItem label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.subtaskItem input[type="checkbox"] {
+  accent-color: #c800ff;
+  width: 16px;
+  height: 16px;
+}
+
+.subtaskItem .done {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.subtaskDelete {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.subtaskEmpty {
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.taskExpandButtons {
+  display: flex;
+  justify-content: center;
+}
+
+/* DELETE BUTTON */
+.deleteBtn {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 8px;
+  border: 1px solid var(--glass-border);
+
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.deleteBtn:hover svg {
+  transform: translateY(-2px);
+  color: rgba(233, 79, 55, 0.7);
+}
+
+.deleteBtn:hover {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="dark"] .task {
+  background: rgba(38, 28, 56, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55), 0 10px 24px rgba(200, 0, 255, 0.18);
+}
+
+[data-theme="dark"] .task:hover {
+  background: rgba(45, 35, 70, 0.9);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.58), 0 12px 26px rgba(200, 0, 255, 0.2);
+}
+
+[data-theme="dark"] .taskExpand {
+  background: rgba(38, 28, 56, 0.75);
+}
+
+[data-theme="dark"] .subtaskSection,
+[data-theme="dark"] .subtaskItem {
+  background: rgba(45, 35, 70, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+[data-theme="dark"] .subtaskAdd input {
+  background: rgba(38, 28, 56, 0.9);
+  color: var(--text-main);
+}
