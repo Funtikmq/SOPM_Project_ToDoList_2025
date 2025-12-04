@@ -1,7 +1,7 @@
 import "./Header.css";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { signOut } from "firebase/auth";
+import { signOut, updateProfile } from "firebase/auth";
 import { auth, db } from "../firebase/firebase";
 import { useTranslate } from "../translation";
 import { useTheme } from "../context/ThemeContext";
@@ -14,6 +14,8 @@ const Header = () => {
   const { theme, toggleTheme } = useTheme();
   const [showBin, setShowBin] = useState(false);
   const [binCount, setBinCount] = useState(0);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -22,8 +24,20 @@ const Header = () => {
     return () => unsub();
   }, [user]);
 
+  useEffect(() => {
+    setNameInput(user?.displayName || user?.email || "");
+  }, [user]);
+
   const handleLogout = async () => {
     await signOut(auth);
+  };
+
+  const handleSaveName = async () => {
+    if (!user) return;
+    const trimmed = nameInput.trim();
+    if (!trimmed) return;
+    await updateProfile(auth.currentUser, { displayName: trimmed });
+    setIsEditingName(false);
   };
 
   return (
@@ -36,7 +50,45 @@ const Header = () => {
             alt="user"
           />
           <div className="userInfo">
-            <div className="userName">{user?.displayName || user?.email || "User"}</div>
+            <div className="userNameRow">
+              {isEditingName ? (
+                <>
+                  <input
+                    className="userNameInput"
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSaveName();
+                      if (e.key === "Escape") setIsEditingName(false);
+                    }}
+                  />
+                  <button className="smallIconButton" aria-label="Save name" onClick={handleSaveName}>
+                    ✓
+                  </button>
+                  <button
+                    className="smallIconButton ghost"
+                    aria-label="Cancel edit name"
+                    onClick={() => {
+                      setNameInput(user?.displayName || user?.email || "");
+                      setIsEditingName(false);
+                    }}
+                  >
+                    ×
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="userName">{user?.displayName || user?.email || "User"}</div>
+                  <button
+                    className="smallIconButton"
+                    aria-label="Edit display name"
+                    onClick={() => setIsEditingName(true)}
+                  >
+                    ✎
+                  </button>
+                </>
+              )}
+            </div>
             <div className="userMail">{user?.email}</div>
           </div>
         </div>

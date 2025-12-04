@@ -62,6 +62,20 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   transition: background 0.4s ease, color 0.3s ease;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(0, 0, 0, 0.04), transparent 24%),
+    radial-gradient(circle at 80% 0%, rgba(0, 0, 0, 0.035), transparent 22%),
+    radial-gradient(circle at 40% 60%, rgba(0, 0, 0, 0.03), transparent 26%);
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
 }
 
 a {
@@ -71,4 +85,6 @@ a {
 
 #root {
   min-height: 100vh;
+  position: relative;
+  z-index: 1;
 }

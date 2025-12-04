@@ -50,6 +50,49 @@
   font-weight: 600;
 }
 
+.userNameRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.userNameInput {
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  color: var(--text-main);
+  min-width: 140px;
+}
+
+.smallIconButton {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text-main);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.smallIconButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(194, 58, 208, 0.16);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--accent);
+}
+
+.smallIconButton.ghost {
+  background: transparent;
+  box-shadow: none;
+}
+
 .userMail {
   font-size: 0.8rem;
   color: var(--text-muted);
@@ -122,4 +165,34 @@
     width: 100%;
     justify-content: space-between;
   }
+}
+
+[data-theme="dark"] .headerLayout {
+  color: #f5f1ff;
+}
+
+[data-theme="dark"] .headerUser {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .userNameInput {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f5f1ff;
+}
+
+[data-theme="dark"] .smallIconButton,
+[data-theme="dark"] .iconButton {
+  color: #d2b5ff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  filter: drop-shadow(0 0 4px rgba(162, 82, 255, 0.4));
+}
+
+[data-theme="dark"] .smallIconButton:hover,
+[data-theme="dark"] .iconButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 }

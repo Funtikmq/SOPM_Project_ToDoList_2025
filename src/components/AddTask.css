@@ -118,13 +118,13 @@
 }
 
 .taskSubmit:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 14px 30px rgba(200, 0, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(168, 55, 255, 0.25);
   background: linear-gradient(135deg, #8c7ae6, #c800ff);
 }
 
 .taskSubmit:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0);
   box-shadow: 0 2px 10px rgba(194, 58, 208, 0.3);
 }
 
@@ -146,9 +146,11 @@
 }
 
 [data-theme="dark"] .taskFormContainer {
-  background: linear-gradient(145deg, rgba(40, 30, 60, 0.9), rgba(32, 24, 50, 0.86));
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6), 0 12px 28px rgba(200, 0, 255, 0.22);
+  background: radial-gradient(circle at 20% 20%, rgba(140, 122, 230, 0.14), transparent 38%),
+    radial-gradient(circle at 80% 80%, rgba(200, 0, 255, 0.16), transparent 42%),
+    linear-gradient(145deg, rgba(26, 18, 38, 0.95), rgba(20, 14, 30, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.65), 0 12px 28px rgba(168, 85, 247, 0.24);
 }
 
 [data-theme="dark"] .taskForm h5 {

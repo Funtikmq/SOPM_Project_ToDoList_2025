@@ -1,6 +1,6 @@
 import { useTranslate } from "../translation";
 
-const ListHead = ({ onSort, sortConfig }) => {
+const ListHead = ({ onSort, sortConfig, className = "" }) => {
   const { t } = useTranslate();
 
   const getArrow = (key) => {
@@ -11,7 +11,7 @@ const ListHead = ({ onSort, sortConfig }) => {
   const headStyle = { cursor: "pointer" };
 
   return (
-    <div className="listHead">
+    <div className={`listHead ${className}`.trim()}>
       <h3 className="listHeadItem" style={headStyle} onClick={() => onSort("status")}>
         {t("status")}
         {getArrow("status")}

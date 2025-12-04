@@ -8,9 +8,9 @@ const Menu = () => {
 
   return (
     <>
-      <div className={`MenuLayout ${showAddTask ? "" : "single"}`}>
+      <div className={`MenuLayout ${showAddTask ? "hasAdd" : "single"}`}>
         <List onToggleAddTask={() => setShowAddTask(!showAddTask)} />
-        <div style={{ display: showAddTask ? "block" : "none" }}>
+        <div className={`addTaskPanel ${showAddTask ? "is-visible" : ""}`}>
           <AddTask />
         </div>
       </div>

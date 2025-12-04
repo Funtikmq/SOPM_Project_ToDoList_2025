@@ -1,300 +1,243 @@
-import { useState, useRef, useEffect } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import "./Task.css";
-import { useTranslate } from "../translation";
 import Dropdown from "./Dropdown";
 
-const Task = ({ taskData, onDelete, onUpdate }) => {
-  const [expandDelete, setExpandDelete] = useState(false);
-  const [showModifyButton, setShowModifyButton] = useState(false);
-  const [showDateInput, setShowDateInput] = useState(false);
-  const [closingModify, setClosingModify] = useState(false);
-  const [closingDateInput, setClosingDateInput] = useState(false);
+const STATUS_OPTIONS = [
+  { value: "upcoming", label: "Upcoming" },
+  { value: "active", label: "Active" },
+  { value: "overdue", label: "Overdue" },
+  { value: "canceled", label: "Canceled" },
+];
+
+const PRIORITY_OPTIONS = [
+  { value: "high", label: "High" },
+  { value: "medium", label: "Medium" },
+  { value: "low", label: "Low" },
+];
+
+const randomId = () => Math.random().toString(36).slice(2, 9);
+
+const isNearDeadline = (dateStr) => {
+  if (!dateStr) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return false;
+  const diff = d.getTime() - today.getTime();
+  return diff >= 0 && diff <= 3 * 24 * 60 * 60 * 1000;
+};
+
+const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, expanded, t }) => {
+  const task = taskProp || taskData;
+  const [localExpanded, setLocalExpanded] = useState(false);
+  const isExpanded = expanded !== undefined ? expanded : localExpanded;
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [tempTitle, setTempTitle] = useState(taskData.title);
+  const [tempTitle, setTempTitle] = useState(task?.title || "");
+  const [subtasks, setSubtasks] = useState(task?.subtasks || []);
+  const [showDateInput, setShowDateInput] = useState(false);
+  const [tempDeadline, setTempDeadline] = useState(task?.deadline || "");
 
-  const [status, setStatus] = useState(taskData.status);
-  const [priority, setPriority] = useState(taskData.priority);
-  const [deadline, setDeadline] = useState(taskData.deadline);
-  const [tempDeadline, setTempDeadline] = useState(taskData.deadline);
-  const { t } = useTranslate();
-  const [openDropdown, setOpenDropdown] = useState(null);
-  const [subtasks, setSubtasks] = useState(taskData.subtasks || []);
-  const [newSubtask, setNewSubtask] = useState("");
+  useEffect(() => {
+    setTempTitle(task?.title || "");
+    setSubtasks(task?.subtasks || []);
+    setTempDeadline(task?.deadline || "");
+  }, [task]);
 
-  const wrapperRef = useRef(null);
-  const deadlineRef = useRef(null);
+  if (!task) return null;
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
+  const progress = useMemo(() => {
+    if (!subtasks.length) return { done: 0, total: 0 };
+    const done = subtasks.filter((s) => s.done).length;
+    return { done, total: subtasks.length };
+  }, [subtasks]);
+  const progressPercent = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
+
+  const handleUpdate = (patch) => onUpdate?.(task.id, patch);
+
+  const toggleExpand = () => {
+    if (expanded !== undefined) onToggleExpand?.(task.id);
+    else setLocalExpanded((prev) => !prev);
   };
 
-  const isUrgent = (dateString) => {
-    if (!dateString) return false;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const date = new Date(dateString);
-    date.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    return date <= tomorrow;
+  const handleRowClick = () => toggleExpand();
+
+  const handleTitleSave = () => {
+    const clean = tempTitle.trim();
+    setIsEditingTitle(false);
+    if (clean && clean !== task.title) handleUpdate({ title: clean });
+    else setTempTitle(task.title || "");
+  };
+
+  const addSubtask = (title) => {
+    const clean = title.trim();
+    if (!clean) return;
+    const next = [...subtasks, { id: randomId(), title: clean, done: false }];
+    setSubtasks(next);
+    handleUpdate({ subtasks: next });
   };
 
   const toggleSubtask = (sid) => {
-    const updated = subtasks.map((s) =>
-      s.id === sid ? { ...s, done: !s.done } : s
-    );
-    setSubtasks(updated);
-    onUpdate(taskData.id, { subtasks: updated });
+    const next = subtasks.map((s) => (s.id === sid ? { ...s, done: !s.done } : s));
+    setSubtasks(next);
+    handleUpdate({ subtasks: next });
   };
 
   const removeSubtask = (sid) => {
-    const updated = subtasks.filter((s) => s.id !== sid);
-    setSubtasks(updated);
-    onUpdate(taskData.id, { subtasks: updated });
+    const next = subtasks.filter((s) => s.id !== sid);
+    setSubtasks(next);
+    handleUpdate({ subtasks: next });
   };
-
-  const addSubtask = () => {
-    const title = newSubtask.trim();
-    if (!title) return;
-    const fresh = { id: Date.now().toString(), title, done: false };
-    const updated = [...subtasks, fresh];
-    setSubtasks(updated);
-    onUpdate(taskData.id, { subtasks: updated });
-    setNewSubtask("");
-  };
-
-  const subtaskProgress = () => {
-    if (!subtasks.length) return "0/0";
-    const done = subtasks.filter((s) => s.done).length;
-    return `${done}/${subtasks.length}`;
-  };
+  const handleDeleteSubtask = (sid) => removeSubtask(sid);
 
   const markAllDone = () => {
     if (!subtasks.length) return;
-    const updated = subtasks.map((s) => ({ ...s, done: true }));
-    setSubtasks(updated);
-    onUpdate(taskData.id, { subtasks: updated });
+    const next = subtasks.map((s) => ({ ...s, done: true }));
+    setSubtasks(next);
+    handleUpdate({ subtasks: next });
   };
 
-  const progressRatio = subtasks.length
-    ? subtasks.filter((s) => s.done).length / subtasks.length
-    : 0;
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
-        setExpandDelete(false);
-      }
-      if (deadlineRef.current && !deadlineRef.current.contains(event.target)) {
-        setShowModifyButton(false);
-        setShowDateInput(false);
-      }
-      setOpenDropdown(null);
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    setStatus(taskData.status);
-    setPriority(taskData.priority);
-    setDeadline(taskData.deadline);
-    setTempDeadline(taskData.deadline);
-    setTempTitle(taskData.title);
-    setSubtasks(taskData.subtasks || []);
-  }, [taskData]);
-
-  const handleTaskClick = (e) => {
-    if (
-      e.target.tagName !== "SELECT" &&
-      e.target.tagName !== "OPTION" &&
-      e.target.tagName !== "INPUT" &&
-      e.target.tagName !== "BUTTON"
-    ) {
-      setExpandDelete((prev) => !prev);
-    }
+  const saveDeadline = () => {
+    handleUpdate({ deadline: tempDeadline || "" });
+    setShowDateInput(false);
   };
 
   return (
-    <div className={`taskWrapper ${openDropdown ? "dropdown-open" : ""}`} ref={wrapperRef}>
-      <div className={`task ${openDropdown ? "task-open" : ""}`} onClick={handleTaskClick}>
-        {subtasks.length > 0 && (
-          <div className="subtaskProgressBar">
-            <div className="subtaskProgressFill" style={{ width: `${Math.round(progressRatio * 100)}%` }} />
-          </div>
-        )}
-        <div className="taskItem">
+    <div className="taskWrapper">
+      <div className="task taskRowCard taskRowClickable" data-expanded={isExpanded} onClick={handleRowClick}>
+        <div
+          className="taskItem"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
           <Dropdown
-            value={status}
-            onChange={(val) => {
-              setStatus(val);
-              onUpdate(taskData.id, { status: val });
-            }}
-            badgeClass={`statusBadge status-${status}`}
-            open={openDropdown === "status"}
-            onOpenChange={(next) => setOpenDropdown(next ? "status" : null)}
-            options={[
-              { value: "upcoming", label: t("upcoming") },
-              { value: "active", label: t("active") },
-              { value: "completed", label: t("completed") },
-              { value: "overdue", label: t("overdue") },
-              { value: "canceled", label: t("canceled") },
-            ]}
-            placeholder={t("status")}
+            value={task.status}
+            onChange={(val) => handleUpdate({ status: val })}
+            options={STATUS_OPTIONS.map((opt) => ({ ...opt, label: t ? t(opt.value) : opt.label }))}
+            placeholder={t ? t("status") : "Status"}
+            variant="status"
           />
         </div>
 
-        <div className="taskItem" onClick={(e) => e.stopPropagation()}>
+        <div className="taskItem">
           {!isEditingTitle ? (
             <h3
               className="taskTitle"
-              onClick={() => {
-                setTempTitle(taskData.title);
+              onClick={(e) => {
+                e.stopPropagation();
                 setIsEditingTitle(true);
               }}
             >
-              {taskData.title}
+              {task.title || (t ? t("noTitle") : "Untitled")}
             </h3>
           ) : (
             <input
-              className="taskTitleInput"
-              type="text"
-              autoFocus
+              className="taskTitleInput glassInput"
               value={tempTitle}
-              onChange={(e) => setTempTitle(e.target.value)}
+              autoFocus
               onClick={(e) => e.stopPropagation()}
-              onBlur={() => {
-                setIsEditingTitle(false);
-                if (tempTitle.trim() !== taskData.title) {
-                  onUpdate(taskData.id, { title: tempTitle.trim() });
-                }
-              }}
+              onChange={(e) => setTempTitle(e.target.value)}
+              onBlur={handleTitleSave}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  setIsEditingTitle(false);
-                  if (tempTitle.trim() !== taskData.title) {
-                    onUpdate(taskData.id, { title: tempTitle.trim() });
-                  }
-                }
+                if (e.key === "Enter") handleTitleSave();
                 if (e.key === "Escape") {
+                  setTempTitle(task.title || "");
                   setIsEditingTitle(false);
-                  setTempTitle(taskData.title);
                 }
               }}
             />
           )}
         </div>
 
-        <div className="taskItem">
+        <div
+          className="taskItem"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
           <Dropdown
-            value={priority}
-            onChange={(val) => {
-              setPriority(val);
-              onUpdate(taskData.id, { priority: val });
-            }}
-            className={`priorityBadge priority-${priority}`}
-            badgeClass={`priorityBadge priority-${priority}`}
-            open={openDropdown === "priority"}
-            onOpenChange={(next) => setOpenDropdown(next ? "priority" : null)}
-            options={[
-              { value: "high", label: t("high") },
-              { value: "medium", label: t("medium") },
-              { value: "low", label: t("low") },
-            ]}
-            placeholder={t("priority")}
+            value={task.priority}
+            onChange={(val) => handleUpdate({ priority: val })}
+            options={PRIORITY_OPTIONS.map((opt) => ({ ...opt, label: t ? t(opt.value) : opt.label }))}
+            placeholder={t ? t("priority") : "Priority"}
+            variant="priority"
           />
         </div>
 
-        <div className="taskItem" ref={deadlineRef}>
-          <h3
-            className={`taskDeadline ${isUrgent(deadline) ? "deadlineUrgent" : ""}`}
+        <div className="taskItem">
+          <button
+            className={`taskDeadline deadlineChip taskDeadlineBadge ${isNearDeadline(task.deadline) ? "deadlineWarning" : ""}`}
             onClick={(e) => {
               e.stopPropagation();
-              if (showModifyButton) {
-                setClosingModify(true);
-                setTimeout(() => {
-                  setShowModifyButton(false);
-                  setClosingModify(false);
-                }, 300);
-              } else {
-                setShowModifyButton(true);
-                setTempDeadline(deadline);
-              }
+              setShowDateInput((prev) => !prev);
             }}
           >
-            {formatDate(deadline)}
-          </h3>
-
-          {showModifyButton && (
-            <div className={`modifyWrapper ${closingModify ? "closing" : ""}`}>
-              <button
-                className="taskModifyButton"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (showDateInput) {
-                    setClosingDateInput(true);
-                    setTimeout(() => {
-                      setShowDateInput(false);
-                      setClosingDateInput(false);
-                      setDeadline(tempDeadline);
-                      onUpdate(taskData.id, { deadline: tempDeadline });
-                    }, 300);
-                  } else {
-                    setShowDateInput(true);
-                  }
-                }}
-              >
-                {t("modify")}
-              </button>
-            </div>
-          )}
-
+            {task.deadline ? task.deadline : t ? t("noDeadline") : "No deadline"}
+          </button>
           {showDateInput && (
-            <div className={`modifyWrapper ${closingDateInput ? "closing" : ""}`}>
+            <div className="deadlinePicker" onClick={(e) => e.stopPropagation()}>
               <input
                 type="date"
-                className="taskDateInput"
                 value={tempDeadline}
                 onChange={(e) => setTempDeadline(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
+                className="taskDateInput glassInput"
               />
+              <div className="deadlinePickerActions">
+                <button type="button" className="deadlineSave" onClick={saveDeadline}>
+                  {t ? t("save") : "Save"}
+                </button>
+                <button
+                  type="button"
+                  className="deadlineCancel"
+                  onClick={() => {
+                    setTempDeadline(task.deadline || "");
+                    setShowDateInput(false);
+                  }}
+                >
+                  {t ? t("cancel") : "Cancel"}
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      <div className={`taskExpand ${expandDelete ? "open" : ""}`}>
-        {taskData.description && (
-          <p className="taskDescription">
-            <strong>{t("descriptionLabel")}</strong> {taskData.description}
-          </p>
-        )}
-
-        <div className="subtaskSection">
-          <div className="subtaskHeader">
-            <div className="subtaskTitle">
-              {t("subtasks")} <span className="subtaskProgress">{t("progress")}: {subtaskProgress()}</span>
-            </div>
-            <div className="subtaskAdd">
-              <input
-                type="text"
-                value={newSubtask}
-                placeholder={t("subtaskPlaceholder")}
-                onChange={(e) => setNewSubtask(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    addSubtask();
-                  }
-                }}
-              />
-              <button type="button" onClick={(e) => { e.stopPropagation(); addSubtask(); }}>
-                {t("addSubtask")}
-              </button>
-              {subtasks.length > 0 && (
+      <div className={`subtasksWrapper ${isExpanded ? "open" : ""}`} onClick={(e) => e.stopPropagation()}>
+        <div className="taskExpand open">
+          <div className="subtaskSection subtasksContainer">
+            <div className="subtaskHeader">
+              <div className="subtaskTitle">
+                {t ? t("subtasks") : "Subtasks"}{" "}
+                <span className="subtaskProgress">
+                  {(t ? t("progress") : "Progress")}: {progress.done}/{progress.total}
+                </span>
+              </div>
+              <div className="subtaskAdd">
+                <input
+                  type="text"
+                  placeholder={t ? t("subtaskPlaceholder") : "Subtask name"}
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      addSubtask(e.currentTarget.value);
+                      e.currentTarget.value = "";
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const input = e.currentTarget.previousElementSibling;
+                    if (input && input.value) {
+                      addSubtask(input.value);
+                      input.value = "";
+                    }
+                  }}
+                >
+                  {t ? t("addSubtask") : "Add subtask"}
+                </button>
                 <button
                   type="button"
                   className="markAll"
@@ -303,18 +246,20 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
                     markAllDone();
                   }}
                 >
-                  {t("markAllDone")}
+                  {t ? t("markAllDone") : "Mark all done"}
                 </button>
-              )}
+              </div>
             </div>
-          </div>
-          {subtasks.length === 0 ? (
-            <div className="subtaskEmpty">{t("noTasks")}</div>
-          ) : (
-            <ul className="subtaskList">
-              {subtasks.map((s) => (
-                <li key={s.id} className="subtaskItem">
-                  <label>
+            <div className="subtaskProgressBar">
+              <div className="subtaskProgressFill" style={{ width: `${progressPercent}%` }} />
+            </div>
+
+            {subtasks.length === 0 ? (
+              <div className="subtaskEmpty">{t ? t("noTasks") : "No subtasks yet"}</div>
+            ) : (
+              <div className="subtaskList">
+                {subtasks.map((s) => (
+                  <div key={s.id} className="subtaskRow">
                     <input
                       type="checkbox"
                       checked={!!s.done}
@@ -323,32 +268,32 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
                         toggleSubtask(s.id);
                       }}
                     />
-                    <span className={s.done ? "done" : ""}>{s.title}</span>
-                  </label>
-                  <button
-                    className="subtaskDelete"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeSubtask(s.id);
-                    }}
-                  >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+                    <span className={`subtaskText ${s.done ? "done" : ""}`}>{s.title}</span>
+                    <button
+                      className="subtaskDeleteBtn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteSubtask(s.id);
+                      }}
+                      aria-label="Delete subtask"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
-        <div className="taskExpandButtons">
-          <button className="deleteBtn" onClick={() => onDelete(taskData.id)}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-              <path
-                fill="currentColor"
-                d="M9 17q-.425 0-.712-.288T8 16t.288-.712T9 15h6q.425 0 .713.288T16 16t-.288.713T15 17zm-1-4q-.425 0-.712-.288T7 12t.288-.712T8 11h8q.425 0 .713.288T17 12t-.288.713T16 13zm-1-4q-.425 0-.712-.288T6 8t.288-.712T7 7h10q.425 0 .713.288T18 8t-.288.713T17 9z"
-              />
-            </svg>
-          </button>
+            <button
+              className="deleteTaskBtn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete?.(task.id);
+              }}
+            >
+              {t ? t("deleteTask") : "Delete task"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -356,3 +301,8 @@ const Task = ({ taskData, onDelete, onUpdate }) => {
 };
 
 export default Task;
+
+
+
+
+
