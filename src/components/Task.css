@@ -21,7 +21,6 @@
   align-items: center;
   gap: 12px;
   min-height: 64px;
-
   font-size: 0.9rem;
   background: transparent;
   border: none;
@@ -70,6 +69,9 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   margin-bottom: 10px;
+  position: relative;
+  overflow: visible !important;
+  z-index: 5;
 }
 
 .taskItem {
@@ -80,160 +82,9 @@
   justify-content: center;
   gap: 6px;
   padding: 12px 16px;
-}
-
-/* ------------------------------------------------------
-   SELECTOR BADGE DIRECT (status + priority)
-------------------------------------------------------- */
-.taskSelectBadge {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-
-  padding: 10px 18px;
-  border-radius: 999px;
-  border: 1px solid rgba(158, 128, 255, 0.15);
-
-  background: linear-gradient(180deg, #f8f5ff, #ece4ff);
-  font-size: 0.95rem;
-  font-weight: 700;
-
-  cursor: pointer;
-  outline: none;
-
-  transition: all 0.2s ease;
-  text-align: center;
-  min-width: 105px;
-  min-height: 36px;
   position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 16px rgba(158, 128, 255, 0.15), 0 2px 6px rgba(0, 0, 0, 0.06);
-}
-
-select.taskSelectBadge {
-  padding-right: 32px;
-  background-image: linear-gradient(45deg, transparent 50%, #9a7bff 50%), linear-gradient(135deg, #9a7bff 50%, transparent 50%), linear-gradient(90deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.06));
-  background-position: calc(100% - 18px) calc(50% - 3px), calc(100% - 12px) calc(50% - 3px), calc(100% - 24px) 50%;
-  background-size: 7px 7px, 7px 7px, 1px 18px;
-  background-repeat: no-repeat;
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.taskSelectBadge option {
-  background-color: #f9f9f9;
-  color: #302d2d;
-  padding: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  border: none;
-}
-
-/* Native option coloring (best-effort, may vary by browser) */
-select.taskSelectBadge option[value="upcoming"] {
-  background: rgba(140, 122, 230, 0.18);
-  color: #5341c6;
-}
-select.taskSelectBadge option[value="active"] {
-  background: rgba(194, 58, 208, 0.18);
-  color: #a8249b;
-}
-select.taskSelectBadge option[value="overdue"] {
-  background: rgba(233, 79, 55, 0.2);
-  color: #c43b2f;
-}
-select.taskSelectBadge option[value="canceled"] {
-  background: rgba(127, 120, 152, 0.16);
-  color: #6c6678;
-}
-select.taskSelectBadge option[value="high"] {
-  background: rgba(233, 79, 55, 0.2);
-  color: #c43b2f;
-}
-select.taskSelectBadge option[value="medium"] {
-  background: rgba(255, 190, 118, 0.22);
-  color: #c76f19;
-}
-select.taskSelectBadge option[value="low"] {
-  background: rgba(122, 220, 180, 0.2);
-  color: #2f9f7a;
-}
-
-.taskSelectBadge:hover {
-  box-shadow: 0 10px 20px rgba(158, 128, 255, 0.22), 0 4px 10px rgba(0, 0, 0, 0.08);
-  transform: translateY(-1px);
-}
-
-.taskSelectBadge:focus {
-  outline: none;
-  border-color: rgba(214, 144, 255, 0.5);
-  box-shadow: 0 0 0 3px rgba(214, 144, 255, 0.25);
-}
-
-.taskSelectBadge::-ms-expand {
-  display: none;
-}
-
-.taskSelectBadge option {
-  border-radius: 16px;
-  padding: 10px;
-}
-
-.taskSelectBadge:focus-visible {
-  outline: none;
-}
-
-/* custom dropdown menu via datalist-like styling (WebKit) */
-.taskSelectBadge:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(200, 0, 255, 0.15);
-}
-
-/* STATUS COLORS */
-.taskStatus-active {
-  background: linear-gradient(180deg, rgba(194, 58, 208, 0.22), rgba(194, 58, 208, 0.12));
-  color: var(--accent-hover);
-  border-color: rgba(194, 58, 208, 0.35);
-}
-.taskStatus-upcoming {
-  background: linear-gradient(180deg, rgba(140, 122, 230, 0.22), rgba(140, 122, 230, 0.12));
-  color: #6b5cd9;
-  border-color: rgba(140, 122, 230, 0.35);
-}
-.taskStatus-overdue {
-  background: linear-gradient(180deg, rgba(233, 79, 55, 0.22), rgba(233, 79, 55, 0.12));
-  color: #e94f37;
-  border-color: rgba(233, 79, 55, 0.38);
-}
-.taskStatus-canceled {
-  background: linear-gradient(180deg, rgba(127, 120, 152, 0.18), rgba(127, 120, 152, 0.1));
-  color: #7f7898;
-  border-color: rgba(127, 120, 152, 0.3);
-}
-.taskStatus-completed {
-  background: rgba(122, 220, 180, 0.14);
-  color: #2f9f7a;
-  border-color: rgba(122, 220, 180, 0.35);
-}
-
-/* PRIORITY COLORS */
-.taskPriority-high {
-  background: linear-gradient(180deg, rgba(233, 79, 55, 0.22), rgba(233, 79, 55, 0.12));
-  color: #d6423a;
-  border-color: rgba(233, 79, 55, 0.4);
-}
-.taskPriority-medium {
-  background: linear-gradient(180deg, rgba(255, 190, 118, 0.26), rgba(255, 190, 118, 0.16));
-  color: #d17a1c;
-  border-color: rgba(255, 190, 118, 0.45);
-}
-.taskPriority-low {
-  background: linear-gradient(180deg, rgba(122, 220, 180, 0.22), rgba(122, 220, 180, 0.14));
-  color: #2f9f7a;
-  border-color: rgba(122, 220, 180, 0.38);
+  overflow: visible !important;
+  z-index: 5;
 }
 
 /* ------------------------------------------------------
@@ -845,5 +696,6 @@ select.taskSelectBadge option[value="low"] {
 [data-theme="dark"] .subtasksWrapper.open { max-height: 400px; opacity: 1; }
 [data-theme="dark"] .subtaskSection { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 20px; }
 [data-theme="dark"] .deleteTaskBtn { background: linear-gradient(90deg, #ff8a8a, #ff6b6b); box-shadow: 0 10px 24px rgba(255, 95, 109, 0.3); }
+
 
 

@@ -4,6 +4,7 @@ import { db } from "../firebase/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import "./AddTask.css";
+import Dropdown from "./ui/Dropdown";
 
 const AddTask = () => {
   const [title, setTitle] = useState("");
@@ -71,15 +72,16 @@ const AddTask = () => {
         ></textarea>
 
         <h5>{t("priority")}</h5>
-        <select
-          className="taskInput"
+        <Dropdown
           value={priority}
-          onChange={(e) => setPriority(e.target.value)}
-        >
-          <option value="high">{t("high")}</option>
-          <option value="medium">{t("medium")}</option>
-          <option value="low">{t("low")}</option>
-        </select>
+          color="priority"
+          options={[
+            { value: "high", label: t("high") },
+            { value: "medium", label: t("medium") },
+            { value: "low", label: t("low") },
+          ]}
+          onChange={(v) => setPriority(v)}
+        />
         <h5>{t("deadline")}</h5>
         <input
           type="date"

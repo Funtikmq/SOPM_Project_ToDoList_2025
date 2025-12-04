@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import "./Task.css";
-import Dropdown from "./Dropdown";
+import Dropdown from "./ui/Dropdown";
 
 const STATUS_OPTIONS = [
   { value: "upcoming", label: "Upcoming" },

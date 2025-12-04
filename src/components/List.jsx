@@ -17,7 +17,7 @@ import { useAuth } from "../context/AuthContext";
 
 import ListHead from "./ListHead";
 import Task from "./Task";
-import Dropdown from "./Dropdown";
+import Dropdown from "./ui/Dropdown";
 
 import "./List.css";
 
