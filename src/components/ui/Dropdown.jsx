@@ -6,6 +6,7 @@ const PALETTE = {
   status: {
     upcoming: { text: "#7b5cff", bg: "linear-gradient(180deg, rgba(123,92,255,0.18), rgba(123,92,255,0.08))", border: "rgba(123,92,255,0.4)" },
     active: { text: "#d54df7", bg: "linear-gradient(180deg, rgba(213,77,247,0.2), rgba(213,77,247,0.1))", border: "rgba(213,77,247,0.4)" },
+    completed: { text: "#1f8f5f", bg: "linear-gradient(180deg, rgba(92,205,160,0.22), rgba(92,205,160,0.12))", border: "rgba(92,205,160,0.45)" },
     overdue: { text: "#ff6d6d", bg: "linear-gradient(180deg, rgba(255,109,109,0.2), rgba(255,109,109,0.1))", border: "rgba(255,109,109,0.4)" },
     canceled: { text: "#999", bg: "linear-gradient(180deg, rgba(153,153,153,0.18), rgba(153,153,153,0.08))", border: "rgba(153,153,153,0.35)" },
   },
@@ -16,7 +17,15 @@ const PALETTE = {
   },
 };
 
-const Dropdown = ({ value, options = [], onChange, color = "status", variant, className = "" }) => {
+const Dropdown = ({
+  value,
+  options = [],
+  onChange,
+  color = "status",
+  variant,
+  className = "",
+  disabled = false,
+}) => {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const menuRef = useRef(null);
@@ -32,10 +41,13 @@ const Dropdown = ({ value, options = [], onChange, color = "status", variant, cl
   };
 
   const optionClass = (val) => {
-    if (paletteKey !== "priority") return "";
-    if (val === "high") return "priorityOptionHigh";
-    if (val === "medium") return "priorityOptionMedium";
-    if (val === "low") return "priorityOptionLow";
+    if (paletteKey === "priority") {
+      if (val === "high") return "priorityOptionHigh";
+      if (val === "medium") return "priorityOptionMedium";
+      if (val === "low") return "priorityOptionLow";
+      return "";
+    }
+    if (paletteKey === "status") return `status-option status-${val}`;
     return "";
   };
 
@@ -72,6 +84,7 @@ const Dropdown = ({ value, options = [], onChange, color = "status", variant, cl
 
   const toggle = (e) => {
     e.stopPropagation();
+    if (disabled) return;
     setOpen((p) => {
       const next = !p;
       if (next) {
@@ -82,17 +95,29 @@ const Dropdown = ({ value, options = [], onChange, color = "status", variant, cl
   };
 
   const selectOption = (opt) => {
+    if (disabled) return;
     onChange?.(opt.value);
     setOpen(false);
   };
 
   return (
-    <div className={`uiDropdown ${open ? "open" : ""} ${className}`} ref={wrapRef} onClick={(e) => e.stopPropagation()}>
+    <div
+      className={`uiDropdown ${open ? "open" : ""} ${disabled ? "disabled" : ""} ${className}`}
+      ref={wrapRef}
+      onClick={(e) => e.stopPropagation()}
+    >
       <button
         type="button"
-        className={`uiDropdownTrigger ${open ? "open" : ""}`}
-        style={{ color: palette.text, background: palette.bg, borderColor: open ? "#b366ff" : palette.border }}
+        className={`uiDropdownTrigger ${open ? "open" : ""} ${disabled ? "isDisabled" : ""}`}
+        style={{
+          color: palette.text,
+          background: palette.bg,
+          borderColor: open ? "#b366ff" : palette.border,
+          opacity: disabled ? 0.55 : 1,
+          cursor: disabled ? "not-allowed" : "pointer",
+        }}
         onClick={toggle}
+        disabled={disabled}
       >
         <span className="uiDropdownValue">{current ? current.label : ""}</span>
         <span className={`uiDropdownIcon ${open ? "open" : ""}`}>

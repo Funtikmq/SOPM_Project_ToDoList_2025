@@ -17,6 +17,11 @@ const AddTask = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!user) {
+      alert("Please sign in first.");
+      return;
+    }
+
     if (title.trim() === "" || deadline.trim() === "") {
       alert(t("fillRequired"));
       return;
@@ -27,17 +32,26 @@ const AddTask = () => {
     const customId = `${cleanTitle}_${timestamp}`;
 
     try {
-      await setDoc(doc(db, "tasks", customId), {
-        id: customId,
-        title,
-        status: "active",
-        description: desc,
-        priority,
-        deadline,
-        createdAt: timestamp,
-        userId: user.uid,
-        subtasks: [],
-      });
+      await setDoc(
+        doc(db, "tasks", customId),
+        {
+          id: customId,
+          title,
+          status: "active",
+          description: desc,
+          priority,
+          deadline,
+          createdAt: timestamp,
+          ownerId: user.uid,
+          ownerUsername: user.username || "",
+          ownerName: user.displayName || user.email || "",
+          participants: [user.uid],
+          collaborators: [],
+          shared: false,
+          subtasks: [],
+        },
+        { merge: true }
+      );
 
       alert(t("taskSaved"));
 

@@ -1,10 +1,13 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./Task.css";
 import Dropdown from "./ui/Dropdown";
+import ShareTaskModal from "./ShareTaskModal";
+import { useAuth } from "../context/AuthContext";
 
 const STATUS_OPTIONS = [
   { value: "upcoming", label: "Upcoming" },
   { value: "active", label: "Active" },
+  { value: "completed", label: "Completed" },
   { value: "overdue", label: "Overdue" },
   { value: "canceled", label: "Canceled" },
 ];
@@ -29,6 +32,7 @@ const isNearDeadline = (dateStr) => {
 
 const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, expanded, t }) => {
   const task = taskProp || taskData;
+  const { user } = useAuth();
   const [localExpanded, setLocalExpanded] = useState(false);
   const isExpanded = expanded !== undefined ? expanded : localExpanded;
 
@@ -37,6 +41,17 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
   const [subtasks, setSubtasks] = useState(task?.subtasks || []);
   const [showDateInput, setShowDateInput] = useState(false);
   const [tempDeadline, setTempDeadline] = useState(task?.deadline || "");
+  const [showShare, setShowShare] = useState(false);
+
+  const collaborators = Array.isArray(task?.collaborators) ? task.collaborators : [];
+  const ownerId = task?.ownerId || task?.userId;
+  const isOwner = user?.uid && ownerId === user.uid;
+  const userCollab = collaborators.find((c) => c.uid === user?.uid);
+  const role = isOwner ? "owner" : userCollab?.role || "viewer";
+  const canEdit = role === "owner" || role === "editor";
+  const canDelete = role === "owner";
+  const canManageCollaborators = role === "owner";
+  const isShared = task?.shared || collaborators.length > 0;
 
   useEffect(() => {
     setTempTitle(task?.title || "");
@@ -53,16 +68,44 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
   }, [subtasks]);
   const progressPercent = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
 
-  const handleUpdate = (patch) => onUpdate?.(task.id, patch);
+  const participantBadges = useMemo(() => {
+    const list = [];
+    const seen = new Set();
+    const ownerUsername =
+      task.ownerUsername || (isOwner ? user?.username : "") || (task.ownerId ? `user-${task.ownerId.slice(0, 4)}` : "owner");
+    const ownerName = task.ownerName || (isOwner ? user?.displayName : "") || ownerUsername;
+    if (ownerId && !seen.has(ownerId)) {
+      seen.add(ownerId);
+      list.push({
+        uid: ownerId,
+        username: ownerUsername,
+        displayName: ownerName,
+        role: "owner",
+      });
+    }
+    collaborators.forEach((c) => {
+      if (!c.uid || seen.has(c.uid)) return;
+      seen.add(c.uid);
+      list.push({ ...c, role: c.role || "viewer" });
+    });
+    return list;
+  }, [collaborators, ownerId, isOwner, task.ownerId, task.ownerName, task.ownerUsername, user?.displayName, user?.username]);
+
+  const handleUpdate = (patch) => {
+    if (!canEdit) return;
+    onUpdate?.(task.id, patch);
+  };
 
   const toggleExpand = () => {
     if (expanded !== undefined) onToggleExpand?.(task.id);
     else setLocalExpanded((prev) => !prev);
   };
 
-  const handleRowClick = () => toggleExpand();
-
   const handleTitleSave = () => {
+    if (!canEdit) {
+      setIsEditingTitle(false);
+      return;
+    }
     const clean = tempTitle.trim();
     setIsEditingTitle(false);
     if (clean && clean !== task.title) handleUpdate({ title: clean });
@@ -70,6 +113,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
   };
 
   const addSubtask = (title) => {
+    if (!canEdit) return;
     const clean = title.trim();
     if (!clean) return;
     const next = [...subtasks, { id: randomId(), title: clean, done: false }];
@@ -78,12 +122,14 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
   };
 
   const toggleSubtask = (sid) => {
+    if (!canEdit) return;
     const next = subtasks.map((s) => (s.id === sid ? { ...s, done: !s.done } : s));
     setSubtasks(next);
     handleUpdate({ subtasks: next });
   };
 
   const removeSubtask = (sid) => {
+    if (!canEdit) return;
     const next = subtasks.filter((s) => s.id !== sid);
     setSubtasks(next);
     handleUpdate({ subtasks: next });
@@ -91,22 +137,23 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
   const handleDeleteSubtask = (sid) => removeSubtask(sid);
 
   const markAllDone = () => {
-    if (!subtasks.length) return;
+    if (!canEdit || !subtasks.length) return;
     const next = subtasks.map((s) => ({ ...s, done: true }));
     setSubtasks(next);
     handleUpdate({ subtasks: next });
   };
 
   const saveDeadline = () => {
+    if (!canEdit) return;
     handleUpdate({ deadline: tempDeadline || "" });
     setShowDateInput(false);
   };
 
   return (
     <div className="taskWrapper">
-      <div className="task taskRowCard taskRowClickable" data-expanded={isExpanded} onClick={handleRowClick}>
+      <div className="task taskRowCard taskRowClickable" data-expanded={isExpanded} onClick={toggleExpand}>
         <div
-          className="taskItem"
+          className="taskItem statusCell"
           onClick={(e) => {
             e.stopPropagation();
           }}
@@ -117,41 +164,68 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
             options={STATUS_OPTIONS.map((opt) => ({ ...opt, label: t ? t(opt.value) : opt.label }))}
             placeholder={t ? t("status") : "Status"}
             variant="status"
+            disabled={!canEdit}
           />
         </div>
 
-        <div className="taskItem">
-          {!isEditingTitle ? (
-            <h3
-              className="taskTitle"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsEditingTitle(true);
-              }}
-            >
-              {task.title || (t ? t("noTitle") : "Untitled")}
-            </h3>
-          ) : (
-            <input
-              className="taskTitleInput glassInput"
-              value={tempTitle}
-              autoFocus
-              onClick={(e) => e.stopPropagation()}
-              onChange={(e) => setTempTitle(e.target.value)}
-              onBlur={handleTitleSave}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleTitleSave();
-                if (e.key === "Escape") {
-                  setTempTitle(task.title || "");
-                  setIsEditingTitle(false);
-                }
-              }}
-            />
-          )}
+        <div className="taskItem taskTitleCell" onClick={(e) => e.stopPropagation()}>
+          <div className="taskTitleRow">
+            {!isEditingTitle ? (
+              <h3
+                className={`taskTitle ${!canEdit ? "readOnly" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (canEdit) setIsEditingTitle(true);
+                }}
+              >
+                {task.title || (t ? t("noTitle") : "Untitled")}
+              </h3>
+            ) : (
+              <input
+                className="taskTitleInput glassInput"
+                value={tempTitle}
+                autoFocus
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => setTempTitle(e.target.value)}
+                onBlur={handleTitleSave}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleTitleSave();
+                  if (e.key === "Escape") {
+                    setTempTitle(task.title || "");
+                    setIsEditingTitle(false);
+                  }
+                }}
+              />
+            )}
+            {isShared && <span className="sharedIcon" aria-label="Shared task">👥</span>}
+          </div>
+          <button
+            type="button"
+            className="shareBadgeRow"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowShare(true);
+            }}
+          >
+            <div className="shareLabel">
+              <span className="shareEmoji">👥</span>
+              <span>{collaborators.length} {collaborators.length === 1 ? "collaborator" : "collaborators"}</span>
+            </div>
+            <div className="avatarStack">
+              {participantBadges.slice(0, 4).map((c) => (
+                <span key={c.uid} className="collabAvatar" title={`#${c.username} (${c.role})`}>
+                  {(c.username || c.displayName || "?")[0]?.toUpperCase()}
+                </span>
+              ))}
+              {participantBadges.length > 4 && (
+                <span className="collabAvatar more">+{participantBadges.length - 4}</span>
+              )}
+            </div>
+          </button>
         </div>
 
         <div
-          className="taskItem"
+          className="taskItem priorityCell"
           onClick={(e) => {
             e.stopPropagation();
           }}
@@ -162,20 +236,23 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
             options={PRIORITY_OPTIONS.map((opt) => ({ ...opt, label: t ? t(opt.value) : opt.label }))}
             placeholder={t ? t("priority") : "Priority"}
             variant="priority"
+            disabled={!canEdit}
           />
         </div>
 
-        <div className="taskItem">
+        <div className="taskItem deadlineCell">
           <button
             className={`taskDeadline deadlineChip taskDeadlineBadge ${isNearDeadline(task.deadline) ? "deadlineWarning" : ""}`}
             onClick={(e) => {
               e.stopPropagation();
+              if (!canEdit) return;
               setShowDateInput((prev) => !prev);
             }}
+            disabled={!canEdit}
           >
             {task.deadline ? task.deadline : t ? t("noDeadline") : "No deadline"}
           </button>
-          {showDateInput && (
+          {showDateInput && canEdit && (
             <div className="deadlinePicker" onClick={(e) => e.stopPropagation()}>
               <input
                 type="date"
@@ -224,6 +301,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
                       e.currentTarget.value = "";
                     }
                   }}
+                  disabled={!canEdit}
                 />
                 <button
                   type="button"
@@ -235,6 +313,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
                       input.value = "";
                     }
                   }}
+                  disabled={!canEdit}
                 >
                   {t ? t("addSubtask") : "Add subtask"}
                 </button>
@@ -245,6 +324,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
                     e.stopPropagation();
                     markAllDone();
                   }}
+                  disabled={!canEdit}
                 >
                   {t ? t("markAllDone") : "Mark all done"}
                 </button>
@@ -267,6 +347,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
                         e.stopPropagation();
                         toggleSubtask(s.id);
                       }}
+                      disabled={!canEdit}
                     />
                     <span className={`subtaskText ${s.done ? "done" : ""}`}>{s.title}</span>
                     <button
@@ -276,6 +357,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
                         handleDeleteSubtask(s.id);
                       }}
                       aria-label="Delete subtask"
+                      disabled={!canEdit}
                     >
                       ×
                     </button>
@@ -285,24 +367,29 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
             )}
 
             <button
-              className="deleteTaskBtn"
+              className={`deleteTaskBtn ${!canDelete ? "disabled" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
-                onDelete?.(task.id);
+                if (canDelete) onDelete?.(task.id);
               }}
+              disabled={!canDelete}
             >
               {t ? t("deleteTask") : "Delete task"}
             </button>
           </div>
         </div>
       </div>
+
+      <ShareTaskModal
+        open={showShare}
+        onClose={() => setShowShare(false)}
+        taskId={task.id}
+        initialTask={task}
+        currentUser={user}
+        canManage={canManageCollaborators}
+      />
     </div>
   );
 };
 
 export default Task;
-
-
-
-
-

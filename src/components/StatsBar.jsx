@@ -28,9 +28,16 @@ const StatsBar = () => {
 
   useEffect(() => {
     if (!user) return;
-    const q = query(collection(db, "tasks"), where("userId", "==", user.uid));
+    const q = query(collection(db, "tasks"), where("participants", "array-contains", user.uid));
     const unsub = onSnapshot(q, (snap) => {
-      const tasks = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const tasks = snap.docs.map((d) => {
+        const data = d.data();
+        const participants =
+          Array.isArray(data.participants) && data.participants.length
+            ? data.participants
+            : [data.ownerId || data.userId || user.uid];
+        return { id: d.id, ...data, participants };
+      });
       setStats(calcStats(tasks));
     });
     return () => unsub();

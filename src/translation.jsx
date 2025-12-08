@@ -27,6 +27,7 @@ export const translations = {
     addTask: "Adaugă Sarcină",
     description: "Descriere",
     save: "Salvează",
+    cancel: "Anulează",
     fillRequired: "Completează titlul și deadline-ul!",
     taskSaved: "Task salvat!",
     taskDeleted: "Task șters.",
@@ -45,6 +46,7 @@ export const translations = {
     restore: "Restaurează",
     binEmpty: "Coșul e gol. Nimic de restaurat.",
     noTitle: "Fără titlu",
+    deleteTask: "Șterge task",
   },
   en: {
     // List
@@ -73,6 +75,7 @@ export const translations = {
     addTask: "Add Task",
     description: "Description",
     save: "Save",
+    cancel: "Cancel",
     fillRequired: "Please fill in title and deadline!",
     taskSaved: "Task saved!",
     taskDeleted: "Task deleted.",
@@ -91,6 +94,7 @@ export const translations = {
     restore: "Restore",
     binEmpty: "Bin is empty. Nothing to restore.",
     noTitle: "No title",
+    deleteTask: "Delete task",
   },
 };
 

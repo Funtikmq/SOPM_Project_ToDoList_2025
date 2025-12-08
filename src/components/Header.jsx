@@ -5,17 +5,19 @@ import { signOut, updateProfile } from "firebase/auth";
 import { auth, db } from "../firebase/firebase";
 import { useTranslate } from "../translation";
 import { useTheme } from "../context/ThemeContext";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, doc, onSnapshot, query, setDoc, where } from "firebase/firestore";
 import RecycleBin from "./RecycleBin";
+import ProfileModal from "./ProfileModal";
 
 const Header = () => {
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const { t } = useTranslate();
   const { theme, toggleTheme } = useTheme();
   const [showBin, setShowBin] = useState(false);
   const [binCount, setBinCount] = useState(0);
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -37,7 +39,14 @@ const Header = () => {
     const trimmed = nameInput.trim();
     if (!trimmed) return;
     await updateProfile(auth.currentUser, { displayName: trimmed });
-    setIsEditingName(false);
+    try {
+      await setDoc(doc(db, "users", user.uid), { displayName: trimmed }, { merge: true });
+      await refreshProfile?.();
+    } catch (err) {
+      console.error("Failed to sync display name", err);
+    } finally {
+      setIsEditingName(false);
+    }
   };
 
   return (
@@ -147,6 +156,15 @@ const Header = () => {
             )}
           </button>
 
+          <button className="iconButton" onClick={() => setShowProfile(true)} aria-label="Profile settings">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+              <path
+                fill="currentColor"
+                d="M12 15q1.25 0 2.125-.875T15 12t-.875-2.125T12 9t-2.125.875T9 12t.875 2.125T12 15m0 7q-2.075 0-3.9-.788t-3.175-2.137t-2.137-3.175T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137t2.137 3.175T22 12t-.788 3.9t-2.137 3.175t-3.175 2.137T12 22"
+              />
+            </svg>
+          </button>
+
           <button className="iconButton" onClick={handleLogout} aria-label="Logout">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
               <path
@@ -158,6 +176,12 @@ const Header = () => {
         </div>
       </div>
       <RecycleBin open={showBin} onClose={() => setShowBin(false)} />
+      <ProfileModal
+        open={showProfile}
+        onClose={() => setShowProfile(false)}
+        user={user}
+        onUpdated={refreshProfile}
+      />
     </header>
   );
 };

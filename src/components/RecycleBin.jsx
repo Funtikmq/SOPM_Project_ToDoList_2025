@@ -53,7 +53,17 @@ const RecycleBin = ({ open, onClose }) => {
       await setDoc(doc(db, "tasks", originalId), {
         ...rest,
         id: originalId,
-        userId: user.uid,
+        ownerId: rest.ownerId || user.uid,
+        userId: rest.ownerId || user.uid,
+        participants:
+          Array.isArray(rest.participants) && rest.participants.length
+            ? rest.participants
+            : [rest.ownerId || user.uid],
+        collaborators: Array.isArray(rest.collaborators) ? rest.collaborators : [],
+        shared:
+          typeof rest.shared === "boolean"
+            ? rest.shared
+            : Array.isArray(rest.collaborators) && rest.collaborators.length > 0,
       });
       await deleteDoc(doc(db, "trash", docId));
       // remove any other duplicates of the same task in trash

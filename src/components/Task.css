@@ -86,6 +86,81 @@
   overflow: visible !important;
   z-index: 5;
 }
+.taskItem.statusCell,
+.taskItem.priorityCell {
+  width: 20%;
+}
+.taskItem.deadlineCell {
+  width: 20%;
+}
+.taskItem.taskTitleCell {
+  width: 40%;
+  align-items: flex-start;
+}
+
+.taskTitleRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.taskTitle.readOnly {
+  cursor: default;
+}
+.sharedIcon {
+  font-size: 18px;
+}
+.shareBadgeRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px dashed rgba(150, 110, 255, 0.35);
+  background: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  margin-top: 6px;
+}
+.shareBadgeRow:hover {
+  border-style: solid;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(150, 110, 255, 0.16);
+}
+.shareLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.shareEmoji {
+  font-size: 14px;
+}
+.avatarStack {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.taskWrapper .collabAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+.taskWrapper .collabAvatar.more {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-main);
+}
 
 /* ------------------------------------------------------
    TEXT ELEMENTS
@@ -696,6 +771,5 @@
 [data-theme="dark"] .subtasksWrapper.open { max-height: 400px; opacity: 1; }
 [data-theme="dark"] .subtaskSection { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 20px; }
 [data-theme="dark"] .deleteTaskBtn { background: linear-gradient(90deg, #ff8a8a, #ff6b6b); box-shadow: 0 10px 24px rgba(255, 95, 109, 0.3); }
-
-
-
+[data-theme="dark"] .taskDeadline { color: #f6f2ff; }
+[data-theme="dark"] .collabAvatar.more { background: rgba(255, 255, 255, 0.12); color: #f6f2ff; }

@@ -21,6 +21,19 @@ import Dropdown from "./ui/Dropdown";
 
 import "./List.css";
 
+const normalizeTask = (task, fallbackUid) => {
+  const collaborators = Array.isArray(task.collaborators) ? task.collaborators : [];
+  const ownerId = task.ownerId || task.userId || fallbackUid;
+  const participants =
+    Array.isArray(task.participants) && task.participants.length
+      ? task.participants
+      : ownerId
+        ? [ownerId]
+        : [];
+  const shared = typeof task.shared === "boolean" ? task.shared : collaborators.length > 0;
+  return { ...task, collaborators, ownerId, participants, shared };
+};
+
 const EmptyState = ({ onAdd }) => (
   <div className="emptyStateContent">
     <div className="emptyStateIcon" aria-hidden="true">
@@ -65,14 +78,56 @@ const List = ({ onToggleAddTask }) => {
 
   useEffect(() => {
     if (!user) return;
+    const migrateLegacyTasks = async () => {
+      try {
+        const legacySnap = await getDocs(
+          query(collection(db, "tasks"), where("userId", "==", user.uid))
+        );
+        const updates = [];
+        legacySnap.forEach((d) => {
+          const data = d.data();
+          if (!Array.isArray(data.participants) || data.participants.length === 0) {
+            const ownerId = data.ownerId || data.userId || user.uid;
+            updates.push(
+              setDoc(
+                doc(db, "tasks", d.id),
+                {
+                  ownerId,
+                  ownerUsername:
+                    data.ownerUsername ||
+                    (ownerId === user.uid ? user.username || "" : data.ownerUsername || ""),
+                  ownerName:
+                    data.ownerName ||
+                    data.displayName ||
+                    user.displayName ||
+                    user.email ||
+                    "",
+                  participants: ownerId ? [ownerId] : [],
+                  collaborators: Array.isArray(data.collaborators) ? data.collaborators : [],
+                  shared: Array.isArray(data.collaborators)
+                    ? data.collaborators.length > 0
+                    : false,
+                },
+                { merge: true }
+              )
+            );
+          }
+        });
+        if (updates.length) await Promise.all(updates);
+      } catch (err) {
+        console.error("task migration error", err);
+      }
+    };
+    migrateLegacyTasks();
+  }, [user]);
 
-    const q = query(collection(db, "tasks"), where("userId", "==", user.uid));
+  useEffect(() => {
+    if (!user) return;
+
+    const q = query(collection(db, "tasks"), where("participants", "array-contains", user.uid));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const taskList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const taskList = snapshot.docs.map((doc) => normalizeTask({ id: doc.id, ...doc.data() }, user.uid));
       setTasks(taskList);
     });
 
@@ -93,7 +148,7 @@ const List = ({ onToggleAddTask }) => {
 
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
-        task.id === id ? { ...task, ...updatedFields } : task
+        task.id === id ? normalizeTask({ ...task, ...updatedFields }, user?.uid) : task
       )
     );
   };
@@ -107,23 +162,37 @@ const List = ({ onToggleAddTask }) => {
 
   const handleDelete = async (id) => {
     const taskToDelete = tasks.find((t) => t.id === id);
-    if (!taskToDelete) return;
+    if (!taskToDelete || taskToDelete.ownerId !== user?.uid) return;
 
     try {
       // remove previous trash copies of the same task to avoid duplicates
-      const existing = await getDocs(
+      const ownerId = taskToDelete.ownerId || user?.uid;
+      const existingOwner = ownerId
+        ? await getDocs(
+            query(
+              collection(db, "trash"),
+              where("ownerId", "==", ownerId),
+              where("originalId", "==", id)
+            )
+          )
+        : { docs: [] };
+      const existingUser = await getDocs(
         query(
           collection(db, "trash"),
           where("userId", "==", user?.uid),
           where("originalId", "==", id)
         )
       );
-      await Promise.all(existing.docs.map((d) => deleteDoc(doc(db, "trash", d.id))));
+      const toDelete = [...existingOwner.docs, ...existingUser.docs];
+      await Promise.all(
+        toDelete.map((d) => deleteDoc(doc(db, "trash", d.id)))
+      );
 
       const trashRef = await addDoc(collection(db, "trash"), {
         ...taskToDelete,
         originalId: id,
-        userId: user?.uid,
+        ownerId: ownerId || user?.uid,
+        userId: ownerId || user?.uid,
         deletedAt: Date.now(),
       });
       await deleteDoc(doc(db, "tasks", id));
@@ -146,12 +215,22 @@ const List = ({ onToggleAddTask }) => {
     try {
       await setDoc(doc(db, "tasks", task.id), {
         ...task,
-        userId: user.uid,
+        ownerId: task.ownerId || user.uid,
+        userId: task.ownerId || user.uid,
+        participants:
+          Array.isArray(task.participants) && task.participants.length
+            ? task.participants
+            : [task.ownerId || user.uid],
+        collaborators: Array.isArray(task.collaborators) ? task.collaborators : [],
+        shared:
+          typeof task.shared === "boolean"
+            ? task.shared
+            : Array.isArray(task.collaborators) && task.collaborators.length > 0,
       });
       await deleteDoc(doc(db, "trash", trashId));
       setTasks((prev) => {
         const exists = prev.some((t) => t.id === task.id);
-        return exists ? prev : [...prev, task];
+        return exists ? prev : [...prev, normalizeTask(task, user.uid)];
       });
     } catch (err) {
       console.error("Undo error", err);
@@ -302,7 +381,7 @@ const List = ({ onToggleAddTask }) => {
 
           {sortedTasks.map((task) => (
             <li className="listItem taskRow" key={task.id}>
-              <Task taskData={task} onUpdate={handleUpdate} onDelete={handleDelete} />
+              <Task taskData={task} onUpdate={handleUpdate} onDelete={handleDelete} t={t} />
             </li>
           ))}
 
