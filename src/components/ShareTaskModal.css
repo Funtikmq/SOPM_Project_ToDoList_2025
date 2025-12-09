@@ -8,7 +8,11 @@
   align-items: center;
   justify-content: center;
   padding: 16px;
+<<<<<<< HEAD
   z-index: 9999;
+=======
+  z-index: var(--z-modal, 1100);
+>>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }
 
 .modalCard {

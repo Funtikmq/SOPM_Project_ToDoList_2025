@@ -1,8 +1,13 @@
 import { useState } from "react";
 import { useTranslate } from "../translation";
+<<<<<<< HEAD
 import { db } from "../firebase/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
+=======
+import { useAuth } from "../context/AuthContext";
+import { useTasks } from "../context/TaskContext";
+>>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 import "./AddTask.css";
 import Dropdown from "./ui/Dropdown";
 
@@ -12,6 +17,10 @@ const AddTask = () => {
   const [priority, setPriority] = useState("medium");
   const [deadline, setDeadline] = useState("");
   const { t } = useTranslate();
+<<<<<<< HEAD
+=======
+  const { addTask } = useTasks();
+>>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
   const { user } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -27,6 +36,7 @@ const AddTask = () => {
       return;
     }
 
+<<<<<<< HEAD
     const timestamp = Date.now();
     const cleanTitle = title.replace(/\s+/g, "_");
     const customId = `${cleanTitle}_${timestamp}`;
@@ -53,6 +63,15 @@ const AddTask = () => {
         { merge: true }
       );
 
+=======
+    try {
+      await addTask({
+        title,
+        description: desc,
+        priority,
+        deadline,
+      });
+>>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
       alert(t("taskSaved"));
 
       setTitle("");

@@ -65,7 +65,11 @@
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 0.15s ease, transform 0.15s ease;
+<<<<<<< HEAD
   z-index: 9999;
+=======
+  z-index: var(--z-dropdown, 1200);
+>>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
   overflow: hidden;
   pointer-events: auto;
 }

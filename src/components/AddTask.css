@@ -146,11 +146,19 @@
 }
 
 [data-theme="dark"] .taskFormContainer {
+<<<<<<< HEAD
   background: radial-gradient(circle at 20% 20%, rgba(140, 122, 230, 0.14), transparent 38%),
     radial-gradient(circle at 80% 80%, rgba(200, 0, 255, 0.16), transparent 42%),
     linear-gradient(145deg, rgba(26, 18, 38, 0.95), rgba(20, 14, 30, 0.92));
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 0 22px 48px rgba(0, 0, 0, 0.65), 0 12px 28px rgba(168, 85, 247, 0.24);
+=======
+  background: radial-gradient(circle at 20% 20%, rgba(255, 140, 255, 0.12), transparent 38%),
+    radial-gradient(circle at 80% 80%, rgba(200, 70, 220, 0.14), transparent 42%),
+    linear-gradient(145deg, rgba(30, 16, 40, 0.96), rgba(20, 10, 28, 0.92));
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 22px 48px rgba(8, 4, 16, 0.7), 0 12px 28px rgba(200, 80, 255, 0.22);
+>>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }
 
 [data-theme="dark"] .taskForm h5 {
@@ -159,18 +167,33 @@
 
 [data-theme="dark"] .taskInput,
 [data-theme="dark"] .taskText {
+<<<<<<< HEAD
   background: rgba(45, 35, 70, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: var(--text-main);
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+=======
+  background: rgba(38, 20, 52, 0.88);
+  border: 1px solid rgba(255, 200, 255, 0.18);
+  color: var(--text-main);
+  box-shadow: 0 6px 14px rgba(8, 4, 16, 0.45);
+>>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }
 
 [data-theme="dark"] .taskInput:focus,
 [data-theme="dark"] .taskText:focus {
   border-color: var(--accent);
+<<<<<<< HEAD
   box-shadow: 0 0 0 3px rgba(200, 0, 255, 0.18);
 }
 
 [data-theme="dark"] .taskSubmit {
   box-shadow: 0 12px 30px rgba(200, 0, 255, 0.5);
+=======
+  box-shadow: 0 0 0 3px rgba(255, 140, 255, 0.16);
+}
+
+[data-theme="dark"] .taskSubmit {
+  box-shadow: 0 12px 30px rgba(200, 0, 255, 0.44);
+>>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { db } from "../firebase/firebase";
@@ -42,6 +43,13 @@ const StatsBar = () => {
     });
     return () => unsub();
   }, [user]);
+=======
+import { useTasks } from "../context/TaskContext";
+import "./StatsBar.css";
+
+const StatsBar = () => {
+  const { stats } = useTasks();
+>>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 
   return (
     <div className="statsBar glass-surface">
