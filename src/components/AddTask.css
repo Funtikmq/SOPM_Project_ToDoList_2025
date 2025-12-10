@@ -76,6 +76,196 @@
   transform: translateY(-1px);
 }
 
+.formRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.aiAssistBtn {
+  border: 1px solid rgba(200, 0, 255, 0.3);
+  background: linear-gradient(135deg, #f8e8ff, #f3d8ff);
+  color: #8a00c9;
+  font-weight: 800;
+  border-radius: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(200, 0, 255, 0.16);
+}
+
+.aiAssistBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 20px rgba(200, 0, 255, 0.22);
+}
+
+.aiSubtasksPreview {
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
+
+.aiPreviewTitle {
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.aiPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.aiPill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(200, 0, 255, 0.08);
+  color: var(--accent);
+  font-weight: 700;
+  border: 1px solid rgba(200, 0, 255, 0.25);
+}
+
+.aiModalOverlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 0, 20, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 9999;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.aiModal {
+  width: min(520px, 92vw);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(200, 0, 255, 0.28);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.16), 0 12px 28px rgba(200, 0, 255, 0.18);
+  backdrop-filter: blur(14px);
+}
+
+.aiModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.aiModalHeader h4 {
+  margin: 0;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.aiClose {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+}
+
+.aiModalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.aiHint {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.aiGenerateBtn {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(200, 0, 255, 0.22);
+}
+
+.aiError {
+  color: #d33;
+  font-weight: 700;
+}
+
+.aiResults {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.aiResultBlock {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
+
+.aiResultTitle {
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.aiResultBadge {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(200, 0, 255, 0.1);
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.aiPlanList {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-main);
+  line-height: 1.4;
+}
+
+.aiModalFooter {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.aiApplyBtn {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(200, 0, 255, 0.22);
+}
+
+.aiApplyBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+[data-theme="dark"] .aiModal {
+  background: rgba(30, 18, 42, 0.9);
+  border-color: rgba(200, 0, 255, 0.35);
+  color: #f5e9ff;
+}
 .taskInput {
   height: 3.5vh;
   min-height: 36px;
