@@ -46,6 +46,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
   const [showShare, setShowShare] = useState(false);
 
   const collaborators = Array.isArray(task?.collaborators) ? task.collaborators : [];
+  const subtasks = Array.isArray(task?.subtasks) ? task.subtasks : [];
   const ownerId = task?.ownerId || task?.userId;
   const isOwner = user?.uid && ownerId === user.uid;
   const userCollab = collaborators.find((c) => c.uid === user?.uid);
@@ -63,11 +64,10 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
   if (!task) return null;
 
   const progress = useMemo(() => {
-    const list = Array.isArray(task.subtasks) ? task.subtasks : [];
-    if (!list.length) return { done: 0, total: 0 };
-    const done = list.filter((s) => s.done).length;
-    return { done, total: list.length };
-  }, [task.subtasks]);
+    if (!subtasks.length) return { done: 0, total: 0 };
+    const done = subtasks.filter((s) => s.done).length;
+    return { done, total: subtasks.length };
+  }, [subtasks]);
   const progressPercent = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
 
   const participantBadges = useMemo(() => {
@@ -132,8 +132,8 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
   };
 
   const markAllDone = () => {
-    if (!canEdit || !task?.id || !task?.subtasks?.length) return;
-    markAllSubtasksDone(task.id, task.subtasks);
+    if (!canEdit || !task?.id || !subtasks.length) return;
+    markAllSubtasksDone(task.id, subtasks);
   };
 
   const saveDeadline = () => {
