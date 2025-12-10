@@ -13,6 +13,7 @@ import {
 import { db } from "../firebase/firebase";
 import Dropdown from "./ui/Dropdown";
 import "./ShareTaskModal.css";
+import { logActivity } from "../services/activityService";
 
 const ROLE_OPTIONS = [
   { value: "viewer", label: "Viewer" },
@@ -26,6 +27,7 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
+  const actorName = currentUser?.username || currentUser?.displayName || currentUser?.email || "user";
 
   useEffect(() => {
     if (!open || !taskId) return undefined;
@@ -160,6 +162,12 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
       participants: nextParticipants,
       shared: true,
     });
+    await logActivity(task.id, {
+      type: "collaborator_added",
+      actorUid: currentUser?.uid,
+      actorName,
+      to: profile.username || profile.displayName || profile.email || profile.uid,
+    });
     setResults([]);
     setSearchTerm("");
   };
@@ -169,6 +177,15 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
     const collabs = Array.isArray(task.collaborators) ? task.collaborators : [];
     const next = collabs.map((c) => (c.uid === uid ? { ...c, role } : c));
     await updateDoc(doc(db, "tasks", task.id), { collaborators: next });
+    const changedUser = collabs.find((c) => c.uid === uid);
+    await logActivity(task.id, {
+      type: "collaborator_role_changed",
+      actorUid: currentUser?.uid,
+      actorName,
+      from: changedUser?.role || null,
+      to: role,
+      extra: changedUser?.username || uid,
+    });
   };
 
   const removeCollaborator = async (uid) => {
@@ -179,6 +196,12 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
       collaborators: nextCollabs,
       participants: nextParticipants,
       shared: nextCollabs.length > 0,
+    });
+    await logActivity(task.id, {
+      type: "collaborator_removed",
+      actorUid: currentUser?.uid,
+      actorName,
+      from: uid,
     });
     if (uid === currentUser?.uid) {
       onClose?.();

@@ -3,8 +3,15 @@ import { createPortal } from "react-dom";
 import "./Task.css";
 import Dropdown from "./ui/Dropdown";
 import ShareTaskModal from "./ShareTaskModal";
+import CommentsSection from "./CommentsSection";
+import ActivityDrawer from "./ActivityDrawer";
 import { useAuth } from "../context/AuthContext";
 import { parseDeadline, useTasks } from "../context/TaskContext";
+import TagPill from "./TagPill";
+import TagSelector from "./TagSelector";
+import RecurrenceBadge from "./RecurrenceBadge";
+import RecurringHistoryDrawer from "./recurrence/RecurringHistoryDrawer";
+import "./Tag.css";
 
 const STATUS_OPTIONS = [
   { value: "upcoming", label: "Upcoming" },
@@ -32,7 +39,19 @@ const isNearDeadline = (dateStr) => {
 const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, expanded, t }) => {
   const task = taskProp || taskData;
   const { user } = useAuth();
-  const { addSubtask, toggleSubtask, removeSubtask, markAllSubtasksDone } = useTasks();
+  const {
+    addSubtask,
+    toggleSubtask,
+    removeSubtask,
+    markAllSubtasksDone,
+    addComment,
+    editComment,
+    deleteComment,
+    userTags,
+    addTagToTask,
+    removeTagFromTask,
+    createTag,
+  } = useTasks();
   const [localExpanded, setLocalExpanded] = useState(false);
   const isExpanded = expanded !== undefined ? expanded : localExpanded;
 
@@ -44,15 +63,24 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
   const datePickerRef = useRef(null);
   const [tempDeadline, setTempDeadline] = useState(task?.deadline || "");
   const [showShare, setShowShare] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [openActivityFor, setOpenActivityFor] = useState(null);
+  const [showTagSelector, setShowTagSelector] = useState(false);
+  const [openRecurringFor, setOpenRecurringFor] = useState(null);
 
   const collaborators = Array.isArray(task?.collaborators) ? task.collaborators : [];
   const subtasks = Array.isArray(task?.subtasks) ? task.subtasks : [];
+  const comments = Array.isArray(task?.comments) ? task.comments : [];
+  const tags = Array.isArray(task?.tags) ? task.tags : [];
   const ownerId = task?.ownerId || task?.userId;
   const isOwner = user?.uid && ownerId === user.uid;
   const userCollab = collaborators.find((c) => c.uid === user?.uid);
   const role = isOwner ? "owner" : userCollab?.role || "viewer";
   const canEdit = role === "owner" || role === "editor";
   const canDelete = role === "owner";
+  // allow all participants to comment; moderation (delete/edit others) stays with owner/editor
+  const canComment = ["owner", "editor", "viewer"].includes(role);
   const canManageCollaborators = role === "owner";
   const isShared = task?.shared || collaborators.length > 0;
 
@@ -123,17 +151,65 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
 
   const handleToggleSubtask = async (subtask) => {
     if (!canEdit || !task?.id || !subtask?.id) return;
-    await toggleSubtask(task.id, subtask.id, !subtask.done);
+    await toggleSubtask(task.id, subtask.id, !subtask.done, subtask.title);
   };
 
-  const handleDeleteSubtask = async (sid) => {
-    if (!canEdit || !task?.id) return;
-    await removeSubtask(task.id, sid);
+  const handleDeleteSubtask = async (subtask) => {
+    if (!canEdit || !task?.id || !subtask?.id) return;
+    await removeSubtask(task.id, subtask.id, subtask.title);
   };
 
   const markAllDone = () => {
     if (!canEdit || !task?.id || !subtasks.length) return;
     markAllSubtasksDone(task.id, subtasks);
+  };
+
+  const resetCommentState = () => {
+    setCommentText("");
+    setEditingCommentId(null);
+  };
+
+  const handleSubmitComment = async () => {
+    if (!canComment || !task?.id) return;
+    if (editingCommentId) {
+      await editComment(task.id, editingCommentId, commentText);
+    } else {
+      await addComment(task.id, { text: commentText, attachments: [] });
+    }
+    resetCommentState();
+  };
+
+  const handleStartEditComment = (comment) => {
+    setEditingCommentId(comment.id);
+    setCommentText(comment.text || "");
+    // attachments removed
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!task?.id || !commentId) return;
+    await deleteComment(task.id, commentId);
+    if (editingCommentId === commentId) resetCommentState();
+  };
+
+  const handleSelectTag = async (tag) => {
+    if (!canEdit || !task?.id) return;
+    await addTagToTask(task.id, tag);
+    setShowTagSelector(false);
+  };
+
+  const handleCreateTag = async (label, color) => {
+    if (!canEdit || !task?.id) return null;
+    const created = await createTag({ label, color });
+    if (created) {
+      await addTagToTask(task.id, created);
+      setShowTagSelector(false);
+    }
+    return created;
+  };
+
+  const handleRemoveTag = async (tag) => {
+    if (!canEdit || !task?.id) return;
+    await removeTagFromTask(task.id, tag);
   };
 
   const saveDeadline = () => {
@@ -182,7 +258,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
   }, [positionDatePicker, showDateInput, task.deadline]);
 
   return (
-    <div className="taskWrapper">
+    <div className="taskWrapper" data-task-id={task.id}>
       <div className="task taskRowCard taskRowClickable" data-expanded={isExpanded} onClick={toggleExpand}>
         <div
           className="taskItem statusCell"
@@ -229,31 +305,106 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
                 }}
               />
             )}
-            {isShared && <span className="sharedIcon" aria-label="Shared task">👥</span>}
-          </div>
-          <button
-            type="button"
-            className="shareBadgeRow"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowShare(true);
-            }}
-          >
-            <div className="shareLabel">
-              <span className="shareEmoji">👥</span>
-              <span>{collaborators.length} {collaborators.length === 1 ? "collaborator" : "collaborators"}</span>
-            </div>
-            <div className="avatarStack">
-              {participantBadges.slice(0, 4).map((c) => (
-                <span key={c.uid} className="collabAvatar" title={`#${c.username} (${c.role})`}>
-                  {(c.username || c.displayName || "?")[0]?.toUpperCase()}
+            {isShared && <span className="sharedIcon" aria-label="shared task">🤝</span>}
+            {task.recurring?.isRecurring && (
+              <button
+                type="button"
+                className="recurrenceBtn"
+                title="Recurring history"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenRecurringFor(task.id);
+                }}
+              >
+                🔁
+              </button>
+            )}          </div>
+          <div className="tagsRow">
+            <RecurrenceBadge recurring={task.recurring} />
+            {tags.map((tag) => (
+              <TagPill key={tag.id} tag={tag} onRemove={handleRemoveTag} removable={canEdit} />
+            ))}
+            {canEdit && (
+              <div className="tagSelectorWrapper">
+                <button
+                  type="button"
+                  className="addTagBtn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowTagSelector((p) => !p);
+                  }}
+                >
+                  + {t ? t("addTag") : "Add tag"}
+                </button>
+                {showTagSelector && (
+                  <TagSelector
+                    userTags={userTags}
+                    existingTagIds={tags.map((tg) => tg.id)}
+                    onSelectTag={handleSelectTag}
+                    onCreateTag={handleCreateTag}
+                    onClose={() => setShowTagSelector(false)}
+                    t={t}
+                  />
+                )}
+              </div>
+            )}
+          </div>          <div className="shareActionsRow">
+            <button
+              type="button"
+              className="shareBadgeRow"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowShare(true);
+              }}
+            >
+              <div className="shareLabel">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M16 14c1.657 0 3 1.343 3 3v1H5v-1c0-1.657 1.343-3 3-3h8Z"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle cx="12" cy="9" r="3" stroke="currentColor" strokeWidth="1.6" />
+                </svg>
+                <span>
+                  {collaborators.length} {collaborators.length === 1 ? "collaborator" : "collaborators"}
                 </span>
-              ))}
-              {participantBadges.length > 4 && (
-                <span className="collabAvatar more">+{participantBadges.length - 4}</span>
-              )}
-            </div>
-          </button>
+              </div>
+              <div className="avatarStack">
+                {participantBadges.slice(0, 4).map((c) => (
+                  <span key={c.uid} className="collabAvatar" title={`#${c.username} (${c.role})`}>
+                    {(c.username || c.displayName || "?")[0]?.toUpperCase()}
+                  </span>
+                ))}
+                {participantBadges.length > 4 && (
+                  <span className="collabAvatar more">+{participantBadges.length - 4}</span>
+                )}
+              </div>
+            </button>
+            <button
+              type="button"
+              className="activityBtn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenActivityFor(task.id);
+              }}
+              title={t ? t("activityLog") : "Activity log"}
+            >
+              <svg className="activityIcon" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 6v6l4 2"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+              </svg>
+              <span>{t ? t("activityLog") : "Activity"}</span>
+            </button>
+          </div>
         </div>
 
         <div
@@ -405,7 +556,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
                       className="subtaskDeleteBtn"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteSubtask(s.id);
+                        handleDeleteSubtask(s);
                       }}
                       aria-label="Delete subtask"
                       disabled={!canEdit}
@@ -430,6 +581,34 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
           </div>
         </div>
       </div>
+
+      <CommentsSection
+        comments={comments}
+        canComment={canComment}
+        allowModeration={canDelete || canComment}
+        currentUserId={user?.uid}
+        commentText={commentText}
+        editingCommentId={editingCommentId}
+        onCommentTextChange={setCommentText}
+        onSubmit={handleSubmitComment}
+        onCancelEdit={resetCommentState}
+        onStartEdit={handleStartEditComment}
+        onDelete={handleDeleteComment}
+        t={t}
+      />
+
+      {openRecurringFor === task.id && (
+        <RecurringHistoryDrawer taskId={task.id} onClose={() => setOpenRecurringFor(null)} />
+      )}
+
+      {openActivityFor === task.id && (
+        <ActivityDrawer
+          taskId={task.id}
+          taskTitle={task.title}
+          onClose={() => setOpenActivityFor(null)}
+          t={t}
+        />
+      )}
 
       <ShareTaskModal
         open={showShare}

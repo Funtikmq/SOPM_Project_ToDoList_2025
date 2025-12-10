@@ -9,7 +9,7 @@ const TaskManager = () => {
   return (
     <div className="taskManagerLayout app-shell">
       <Header />
-      <StatsBar />
+      <StatsBar hideMini />
       <main className="workspace">
         <Menu />
       </main>

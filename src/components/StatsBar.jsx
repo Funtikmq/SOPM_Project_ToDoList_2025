@@ -1,15 +1,23 @@
 import { useTasks } from "../context/TaskContext";
+import MiniCalendar from "./calendar/MiniCalendar";
 import "./StatsBar.css";
 
-const StatsBar = () => {
-  const { stats } = useTasks();
+const StatsBar = ({ compact = false, hideMini = false }) => {
+  const { stats, tasksByDate } = useTasks();
 
   return (
-    <div className="statsBar glass-surface">
-      <StatCard label="Total" value={stats.total} icon="list" />
-      <StatCard label="Active" value={stats.active} accent icon="bolt" />
-      <StatCard label="Completed" value={stats.completed} icon="check" />
-      <StatCard label="Overdue" value={stats.overdue} danger icon="alarm" />
+    <div className={`statsBar glass-surface ${compact ? "statsBarCompact" : ""}`}>
+      <div className="statRow">
+        <StatCard label="Total" value={stats.total} icon="list" />
+        <StatCard label="Active" value={stats.active} accent icon="bolt" />
+        <StatCard label="Completed" value={stats.completed} icon="check" />
+        <StatCard label="Overdue" value={stats.overdue} danger icon="alarm" />
+      </div>
+      {!hideMini && (
+        <div className="statCard miniCalCard">
+          <MiniCalendar tasksByDate={tasksByDate} />
+        </div>
+      )}
     </div>
   );
 };

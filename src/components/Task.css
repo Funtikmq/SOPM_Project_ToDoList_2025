@@ -118,6 +118,7 @@
   justify-content: space-between;
   gap: 10px;
   padding: 8px 10px;
+  min-height: 46px;
   border-radius: 12px;
   border: 1px dashed rgba(150, 110, 255, 0.35);
   background: rgba(255, 255, 255, 0.7);
@@ -129,6 +130,229 @@
   border-style: solid;
   transform: translateY(-1px);
   box-shadow: 0 8px 18px rgba(150, 110, 255, 0.16);
+}
+.shareActionsRow {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+.recurrenceChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  font-weight: 700;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .recurrenceChip {
+  background: rgba(36, 20, 48, 0.9);
+  color: #f5f1ff;
+  border-color: var(--glass-border);
+}
+
+.recurrenceBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(212, 91, 255, 0.4);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.82rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  max-width: 100%;
+}
+
+[data-theme="dark"] .recurrenceBadge {
+  background: rgba(40, 24, 60, 0.6);
+  border-color: rgba(212, 91, 255, 0.5);
+  color: #f1d6ff;
+}
+
+.recurrenceBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.65);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.recurrenceBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(200, 0, 255, 0.2);
+  color: var(--accent);
+}
+
+[data-theme="dark"] .recurrenceBtn {
+  background: rgba(40, 24, 60, 0.9);
+  color: #f1d6ff;
+  border-color: var(--glass-border);
+}
+
+.recurrenceOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 0, 20, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 9999;
+}
+
+.recurrenceDrawer {
+  width: 380px;
+  max-width: 90vw;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  border-left: 1px solid rgba(212, 91, 255, 0.4);
+  box-shadow: -16px 0 38px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: slideInRecurrence 0.25s ease;
+}
+
+[data-theme="dark"] .recurrenceDrawer {
+  background: rgba(24, 16, 36, 0.92);
+  border-left: 1px solid rgba(212, 91, 255, 0.35);
+  box-shadow: -16px 0 40px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideInRecurrence {
+  from {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.recurrenceHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.recurrenceTitle {
+  font-weight: 800;
+  color: var(--text-main);
+  font-size: 1.05rem;
+}
+
+.recurrenceSubtitle {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.recurrenceClose {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+}
+
+.recurrenceList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.recurrenceEmpty {
+  color: var(--text-muted);
+  font-weight: 700;
+  padding: 8px 2px;
+}
+
+.recurrenceItem {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .recurrenceItem {
+  background: rgba(36, 24, 48, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.recurrenceIcon {
+  font-size: 1.2rem;
+}
+
+.recurrenceContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.recurrenceMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.recurrenceType {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.recurrenceDate {
+  font-size: 0.8rem;
+}
+
+.recurrenceText {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.recurrenceOpenBtn {
+  align-self: flex-start;
+  border: none;
+  border-radius: 10px;
+  padding: 6px 10px;
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(200, 0, 255, 0.2);
+}
+
+.recurrenceOpenBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(200, 0, 255, 0.28);
 }
 .shareLabel {
   display: inline-flex;
@@ -796,3 +1020,659 @@
 [data-theme="dark"] .deleteTaskBtn { background: linear-gradient(90deg, #ff8a8a, #ff6b6b); box-shadow: 0 10px 24px rgba(255, 95, 109, 0.3); }
 [data-theme="dark"] .taskDeadline { color: #f6f2ff; }
 [data-theme="dark"] .collabAvatar.more { background: rgba(255, 255, 255, 0.12); color: #f6f2ff; }
+
+/* COMMENTS */
+.commentsWrapper {
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  padding: 12px 14px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
+[data-theme="dark"] .commentsWrapper {
+  background: rgba(40, 24, 52, 0.9);
+  border: 1px solid rgba(255, 200, 255, 0.14);
+  box-shadow: 0 8px 22px rgba(8, 4, 16, 0.55);
+}
+.commentsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.commentsTitle {
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.commentsCount {
+  background: rgba(200, 0, 255, 0.14);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 240px;
+  overflow: auto;
+  padding-right: 4px;
+}
+.commentEmpty {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.commentItem {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+[data-theme="dark"] .commentItem {
+  background: rgba(50, 30, 68, 0.9);
+  border: 1px solid rgba(255, 200, 255, 0.12);
+}
+.commentAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+}
+.commentBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.commentMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.commentAuthor {
+  font-weight: 700;
+  color: var(--text-main);
+}
+.commentTime {
+  font-size: 0.8rem;
+}
+.commentEdited {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.commentText {
+  color: var(--text-main);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.commentAttachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.commentAttachment {
+  padding: 4px 8px;
+  background: rgba(200, 0, 255, 0.1);
+  color: var(--accent);
+  border-radius: 10px;
+  font-weight: 600;
+}
+.commentActions {
+  display: flex;
+  gap: 10px;
+}
+.commentActions button {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 700;
+}
+.commentComposer {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.commentComposer textarea {
+  width: 100%;
+  min-height: 70px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  padding: 10px 12px;
+  font-family: inherit;
+  resize: vertical;
+}
+.commentTextarea {
+  background: #fff;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+.commentTextarea:focus {
+  outline: none;
+  border-color: rgba(200, 0, 255, 0.4);
+  box-shadow: 0 0 0 3px rgba(200, 0, 255, 0.12);
+}
+
+[data-theme="dark"] .commentTextarea {
+  background: rgba(30, 18, 40, 0.92);
+  border: 1px solid rgba(255, 200, 255, 0.18);
+  color: var(--text-main);
+  box-shadow: inset 0 1px 4px rgba(8, 4, 16, 0.3);
+}
+
+/* Modern comments UI */
+.commentsShell {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.commentsHeaderModern {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+.commentsHeaderModern:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+}
+[data-theme="dark"] .commentsHeaderModern {
+  background: rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 24px rgba(8, 4, 16, 0.45);
+}
+.commentsHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.commentsTitleText {
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 1.1rem;
+  letter-spacing: 0.01em;
+}
+.commentsBadge {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  box-shadow: 0 6px 14px rgba(200, 0, 255, 0.2);
+}
+.commentsChevron {
+  transition: transform 0.25s ease;
+  color: var(--text-main);
+}
+.commentsChevron.open {
+  transform: rotate(180deg);
+}
+[data-theme="dark"] .commentsChevron {
+  color: #f5e9ff;
+}
+.commentsBody {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.commentsBody.open {
+  max-height: 600px;
+  opacity: 1;
+}
+.commentsListModern {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 4px;
+}
+.commentCard {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+[data-theme="dark"] .commentCard {
+  background: rgba(28, 18, 40, 0.9);
+  border: 1px solid rgba(255, 200, 255, 0.16);
+  box-shadow: 0 8px 22px rgba(8, 4, 16, 0.5);
+}
+.commentAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+.commentBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.commentMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.commentAuthor {
+  font-weight: 800;
+  color: var(--text-main);
+}
+.commentTime {
+  font-size: 0.78rem;
+}
+.commentEdited {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.commentText {
+  color: var(--text-main);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.4;
+}
+.commentAttachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.commentAttachment {
+  padding: 4px 8px;
+  background: rgba(200, 0, 255, 0.1);
+  color: var(--accent);
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 10px rgba(200, 0, 255, 0.12);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.commentAttachment:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(200, 0, 255, 0.2);
+}
+.commentAttachment.withPreview {
+  padding: 4px 10px 4px 6px;
+}
+.commentAttachmentThumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.06);
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+.commentAttachmentThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.commentAttachmentLabel {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.commentActions {
+  display: flex;
+  gap: 10px;
+}
+.commentActions button {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 700;
+}
+.commentEmpty {
+  color: var(--text-muted);
+  font-weight: 700;
+  padding: 8px 2px;
+}
+.commentComposerBox {
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+[data-theme="dark"] .commentComposerBox {
+  background: rgba(20, 14, 28, 0.9);
+  border: 1px solid rgba(255, 200, 255, 0.14);
+  box-shadow: 0 10px 24px rgba(8, 4, 16, 0.5);
+}
+.commentInputRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.attachIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px dashed rgba(200, 0, 255, 0.35);
+  background: rgba(200, 0, 255, 0.1);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(200, 0, 255, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.attachIcon:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(200, 0, 255, 0.24);
+}
+.commentModernTextarea {
+  flex: 1;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 10px 12px;
+  min-height: 70px;
+  font-family: inherit;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+[data-theme="dark"] .commentModernTextarea {
+  background: rgba(28, 18, 40, 0.92);
+  color: var(--text-main);
+  box-shadow: inset 0 1px 4px rgba(8, 4, 16, 0.35);
+}
+.commentSendBtn {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(200, 0, 255, 0.25);
+}
+.commentSendBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.pendingAttachmentsRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.pendingAttachment {
+  background: rgba(200, 0, 255, 0.14);
+  color: var(--accent);
+  padding: 4px 8px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+}
+.pendingAttachment button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-main);
+  font-size: 1rem;
+}
+
+/* Activity Drawer */
+.activityDrawerOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 0, 20, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 9999;
+}
+.activityDrawer {
+  width: min(440px, 90vw);
+  height: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  border-left: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: -14px 0 38px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 18px 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+[data-theme="dark"] .activityDrawer {
+  background: rgba(22, 14, 30, 0.92);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: -14px 0 40px rgba(0, 0, 0, 0.45);
+}
+.activityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.activityTitle {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+.activitySubtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.activityClose {
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-main);
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.activityList {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 6px;
+}
+.activityEmpty {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.activityDay {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.activityDayLabel {
+  font-weight: 700;
+  color: var(--text-main);
+}
+.activityItems {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.activityItem {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.activityDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  box-shadow: 0 0 12px rgba(200, 0, 255, 0.4);
+  margin-top: 6px;
+}
+.activityContent {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+[data-theme="dark"] .activityContent {
+  background: rgba(28, 18, 40, 0.9);
+  border: 1px solid rgba(255, 200, 255, 0.16);
+  box-shadow: 0 12px 26px rgba(8, 4, 16, 0.5);
+}
+.activityMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.activityActor {
+  font-weight: 700;
+  color: var(--text-main);
+}
+.activityText {
+  margin-top: 6px;
+  color: var(--text-main);
+  font-weight: 600;
+}
+.activityTime {
+  font-size: 0.8rem;
+}
+
+.activityBtn {
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  padding: 10px 12px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+}
+.activityBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+[data-theme="dark"] .activityBtn {
+  background: rgba(30, 20, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.activityIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--text-main);
+}
+.commentComposerFooter {
+  display: flex;
+  justify-content: flex-end;
+}
+.commentCancel {
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-main);
+}
+.commentComposerActions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.commentAttachmentsPending {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.pendingAttachment {
+  background: rgba(200, 0, 255, 0.12);
+  color: var(--accent);
+  padding: 4px 8px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pendingAttachment button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-main);
+}
+.commentButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+.attachBtn {
+  border: 1px dashed var(--glass-border);
+  padding: 6px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.commentSubmit,
+.commentCancel {
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.commentSubmit {
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  color: #fff;
+}
+.commentCancel {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-main);
+}

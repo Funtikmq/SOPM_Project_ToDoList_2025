@@ -2,11 +2,65 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  gap: 14px;
+  flex-direction: row;
+  padding: 10px 16px;
+  gap: 12px;
   color: var(--text-main);
   position: relative;
   z-index: var(--z-navbar, 120);
+}
+
+.topbarContainer {
+  width: 100%;
+  gap: 8px;
+}
+.topbarRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+.topbarRowPrimary {
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.topbarRowStats {
+  justify-content: center;
+  padding-top: 2px;
+}
+.topbarLeft {
+  flex: 0 0 auto;
+}
+.topbarCenter {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+.topbarRight {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+.statsWrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 580px;
+  margin: 2px auto 0;
+}
+.calendarBlock {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.miniCalInline {
+  flex: 0 0 auto;
+}
+.miniCalInline .miniCal {
+  max-width: 240px;
+  min-width: 220px;
+  padding: 10px;
 }
 
 .headerLeft {
@@ -20,6 +74,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  position: relative;
 }
 
 .headerUser {
@@ -105,6 +160,16 @@
   align-items: center;
   gap: 10px;
 }
+.calendarButtonWrapper {
+  position: relative;
+}
+.calendarDropdown {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  z-index: 9999;
+}
+
 
 .binButton {
   position: relative;
@@ -147,6 +212,22 @@
   box-shadow: 0 12px 24px rgba(194, 58, 208, 0.2);
   background: rgba(255, 255, 255, 0.75);
   color: var(--accent);
+}
+
+.iconButton.iconActive {
+  background: linear-gradient(90deg, #ff5cff, #b95cff);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(255, 40, 255, 0.35), 0 8px 18px rgba(0, 0, 0, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.topbarRowStats .statsBar {
+  width: 100%;
+  justify-content: center;
+  padding: 0;
+}
+.topbarRowStats .statRow {
+  justify-content: center;
 }
 
 .theme-toggle-btn svg {

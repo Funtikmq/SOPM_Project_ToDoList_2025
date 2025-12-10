@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslate } from "../translation";
 import { useTasks, parseDeadline } from "../context/TaskContext";
 
@@ -104,15 +104,35 @@ const List = ({ onToggleAddTask }) => {
 
   const filterDate = filter.date ? parseDeadline(filter.date) : null;
 
+  const normalize = (str = "") =>
+    str
+      .toString()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .toLowerCase();
+
+  const searchTokens = useMemo(() => normalize(search).split(/[^a-z0-9]+/i).filter(Boolean), [search]);
+
   const filteredTasks = tasks.filter((task) => {
-    const matchSearch = search
-      ? task.title?.toLowerCase().includes(search.toLowerCase())
-      : true;
+    // search across title, tags, priority, status, deadline, collaborators usernames
+    const corpus = [
+      task.title || "",
+      task.priority || "",
+      task.status || "",
+      task.deadline || "",
+      ...(task.tags || []).map((t) => t.label || ""),
+      ...(task.collaborators || []).map((c) => c.username || c.displayName || ""),
+    ]
+      .map(normalize)
+      .join(" ");
+
+    const matchSearch =
+      searchTokens.length === 0 || searchTokens.every((tok) => corpus.includes(tok));
+
     const matchStatus = filter.status ? task.status === filter.status : true;
     const matchPriority = filter.priority ? task.priority === filter.priority : true;
     const deadlineDate = parseDeadline(task.deadline);
-    const matchDate =
-      filterDate && deadlineDate ? deadlineDate >= filterDate : !filterDate;
+    const matchDate = filterDate && deadlineDate ? deadlineDate >= filterDate : !filterDate;
 
     return matchSearch && matchStatus && matchPriority && matchDate;
   });
