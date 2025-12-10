@@ -4,7 +4,7 @@ import "./Task.css";
 import Dropdown from "./ui/Dropdown";
 import ShareTaskModal from "./ShareTaskModal";
 import { useAuth } from "../context/AuthContext";
-import { parseDeadline } from "../context/TaskContext";
+import { parseDeadline, useTasks } from "../context/TaskContext";
 
 const STATUS_OPTIONS = [
   { value: "upcoming", label: "Upcoming" },
@@ -20,8 +20,6 @@ const PRIORITY_OPTIONS = [
   { value: "low", label: "Low" },
 ];
 
-const randomId = () => Math.random().toString(36).slice(2, 9);
-
 const isNearDeadline = (dateStr) => {
   const d = parseDeadline(dateStr);
   if (!d) return false;
@@ -34,12 +32,12 @@ const isNearDeadline = (dateStr) => {
 const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, expanded, t }) => {
   const task = taskProp || taskData;
   const { user } = useAuth();
+  const { addSubtask, toggleSubtask, removeSubtask, markAllSubtasksDone } = useTasks();
   const [localExpanded, setLocalExpanded] = useState(false);
   const isExpanded = expanded !== undefined ? expanded : localExpanded;
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState(task?.title || "");
-  const [subtasks, setSubtasks] = useState(task?.subtasks || []);
   const [showDateInput, setShowDateInput] = useState(false);
   const [pickerPosition, setPickerPosition] = useState({ top: 0, left: 0, width: 240 });
   const deadlineButtonRef = useRef(null);
@@ -59,17 +57,17 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
 
   useEffect(() => {
     setTempTitle(task?.title || "");
-    setSubtasks(task?.subtasks || []);
     setTempDeadline(task?.deadline || "");
   }, [task]);
 
   if (!task) return null;
 
   const progress = useMemo(() => {
-    if (!subtasks.length) return { done: 0, total: 0 };
-    const done = subtasks.filter((s) => s.done).length;
-    return { done, total: subtasks.length };
-  }, [subtasks]);
+    const list = Array.isArray(task.subtasks) ? task.subtasks : [];
+    if (!list.length) return { done: 0, total: 0 };
+    const done = list.filter((s) => s.done).length;
+    return { done, total: list.length };
+  }, [task.subtasks]);
   const progressPercent = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
 
   const participantBadges = useMemo(() => {
@@ -116,35 +114,26 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
     else setTempTitle(task.title || "");
   };
 
-  const addSubtask = (title) => {
-    if (!canEdit) return;
+  const handleAddSubtask = async (title) => {
+    if (!canEdit || !task?.id) return;
     const clean = title.trim();
     if (!clean) return;
-    const next = [...subtasks, { id: randomId(), title: clean, done: false }];
-    setSubtasks(next);
-    handleUpdate({ subtasks: next });
+    await addSubtask(task.id, clean);
   };
 
-  const toggleSubtask = (sid) => {
-    if (!canEdit) return;
-    const next = subtasks.map((s) => (s.id === sid ? { ...s, done: !s.done } : s));
-    setSubtasks(next);
-    handleUpdate({ subtasks: next });
+  const handleToggleSubtask = async (subtask) => {
+    if (!canEdit || !task?.id || !subtask?.id) return;
+    await toggleSubtask(task.id, subtask.id, !subtask.done);
   };
 
-  const removeSubtask = (sid) => {
-    if (!canEdit) return;
-    const next = subtasks.filter((s) => s.id !== sid);
-    setSubtasks(next);
-    handleUpdate({ subtasks: next });
+  const handleDeleteSubtask = async (sid) => {
+    if (!canEdit || !task?.id) return;
+    await removeSubtask(task.id, sid);
   };
-  const handleDeleteSubtask = (sid) => removeSubtask(sid);
 
   const markAllDone = () => {
-    if (!canEdit || !subtasks.length) return;
-    const next = subtasks.map((s) => ({ ...s, done: true }));
-    setSubtasks(next);
-    handleUpdate({ subtasks: next });
+    if (!canEdit || !task?.id || !task?.subtasks?.length) return;
+    markAllSubtasksDone(task.id, task.subtasks);
   };
 
   const saveDeadline = () => {
@@ -357,9 +346,9 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
                   type="text"
                   placeholder={t ? t("subtaskPlaceholder") : "Subtask name"}
                   onClick={(e) => e.stopPropagation()}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      addSubtask(e.currentTarget.value);
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                      handleAddSubtask(e.currentTarget.value);
                       e.currentTarget.value = "";
                     }
                   }}
@@ -371,7 +360,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
                     e.stopPropagation();
                     const input = e.currentTarget.previousElementSibling;
                     if (input && input.value) {
-                      addSubtask(input.value);
+                      handleAddSubtask(input.value);
                       input.value = "";
                     }
                   }}
@@ -405,12 +394,12 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
                     <input
                       type="checkbox"
                       checked={!!s.done}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        toggleSubtask(s.id);
-                      }}
-                      disabled={!canEdit}
-                    />
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleToggleSubtask(s);
+                    }}
+                    disabled={!canEdit}
+                  />
                     <span className={`subtaskText ${s.done ? "done" : ""}`}>{s.title}</span>
                     <button
                       className="subtaskDeleteBtn"

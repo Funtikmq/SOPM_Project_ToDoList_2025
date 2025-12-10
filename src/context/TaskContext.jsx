@@ -7,6 +7,8 @@ import {
   getDocs,
   onSnapshot,
   query,
+  serverTimestamp,
+  writeBatch,
   setDoc,
   updateDoc,
   where,
@@ -21,6 +23,10 @@ const TaskContext = createContext({
   updateTask: async () => {},
   deleteTask: async () => {},
   undoDelete: async () => {},
+  addSubtask: async () => {},
+  toggleSubtask: async () => {},
+  removeSubtask: async () => {},
+  markAllSubtasksDone: async () => {},
 });
 
 export const parseDeadline = (deadline) => {
@@ -60,10 +66,15 @@ const calcStats = (tasks) => {
 export const TaskProvider = ({ children }) => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState([]);
+  const [subtasksMap, setSubtasksMap] = useState({});
+  const subtasksUnsubRef = useRef({});
 
   useEffect(() => {
     if (!user) {
       setTasks([]);
+      setSubtasksMap({});
+      Object.values(subtasksUnsubRef.current).forEach((fn) => fn());
+      subtasksUnsubRef.current = {};
       return undefined;
     }
 
@@ -121,6 +132,58 @@ export const TaskProvider = ({ children }) => {
     return () => unsubscribe();
   }, [user]);
 
+  // Maintain subtasks listeners per task (subcollection `/tasks/{id}/subtasks`)
+  useEffect(() => {
+    if (!user || !tasks.length) return undefined;
+
+    const activeIds = new Set(tasks.map((t) => t.id));
+
+    // Unsubscribe listeners for removed tasks
+    Object.keys(subtasksUnsubRef.current).forEach((taskId) => {
+      if (!activeIds.has(taskId)) {
+        subtasksUnsubRef.current[taskId]?.();
+        delete subtasksUnsubRef.current[taskId];
+        setSubtasksMap((prev) => {
+          const next = { ...prev };
+          delete next[taskId];
+          return next;
+        });
+      }
+    });
+
+    // Attach listeners for new tasks
+    activeIds.forEach((taskId) => {
+      if (subtasksUnsubRef.current[taskId]) return;
+      const q = query(collection(db, "tasks", taskId, "subtasks"));
+      const unsub = onSnapshot(q, (snap) => {
+        const subtasks = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setSubtasksMap((prev) => ({ ...prev, [taskId]: subtasks }));
+      });
+      subtasksUnsubRef.current[taskId] = unsub;
+    });
+
+    // Cleanup only on unmount/user change handled elsewhere
+    return undefined;
+  }, [tasks, user]);
+
+  useEffect(
+    () => () => {
+      Object.values(subtasksUnsubRef.current).forEach((fn) => fn());
+      subtasksUnsubRef.current = {};
+      setSubtasksMap({});
+    },
+    []
+  );
+
+  const tasksWithSubtasks = useMemo(
+    () =>
+      tasks.map((t) => ({
+        ...t,
+        subtasks: subtasksMap[t.id] || [],
+      })),
+    [tasks, subtasksMap]
+  );
+
   const addTask = useCallback(
     async ({ title, description = "", priority = "medium", deadline = "" }) => {
       if (!user) return null;
@@ -142,7 +205,6 @@ export const TaskProvider = ({ children }) => {
           participants: [user.uid],
           collaborators: [],
           shared: false,
-          subtasks: [],
         },
         user.uid
       );
@@ -162,7 +224,11 @@ export const TaskProvider = ({ children }) => {
   const updateTask = useCallback(
     async (id, updatedFields) => {
       if (!user || !id) return;
-      await updateDoc(doc(db, "tasks", id), updatedFields);
+      await updateDoc(doc(db, "tasks", id), {
+        ...updatedFields,
+        updatedAt: serverTimestamp(),
+        lastEditedBy: user.uid,
+      });
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
           task.id === id ? normalizeTask({ ...task, ...updatedFields }, user.uid) : task
@@ -236,9 +302,84 @@ export const TaskProvider = ({ children }) => {
 
   const stats = useMemo(() => calcStats(tasks), [tasks]);
 
+  const addSubtask = useCallback(
+    async (taskId, title) => {
+      if (!user || !taskId) return;
+      const clean = title.trim();
+      if (!clean) return;
+      await addDoc(collection(db, "tasks", taskId, "subtasks"), {
+        taskId,
+        title: clean,
+        done: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        lastEditedBy: user.uid,
+      });
+    },
+    [user]
+  );
+
+  const toggleSubtask = useCallback(
+    async (taskId, subtaskId, nextDone) => {
+      if (!user || !taskId || !subtaskId) return;
+      await updateDoc(doc(db, "tasks", taskId, "subtasks", subtaskId), {
+        done: nextDone,
+        updatedAt: serverTimestamp(),
+        lastEditedBy: user.uid,
+      });
+    },
+    [user]
+  );
+
+  const removeSubtask = useCallback(
+    async (taskId, subtaskId) => {
+      if (!user || !taskId || !subtaskId) return;
+      await deleteDoc(doc(db, "tasks", taskId, "subtasks", subtaskId));
+    },
+    [user]
+  );
+
+  const markAllSubtasksDone = useCallback(
+    async (taskId, subtasks = []) => {
+      if (!user || !taskId || !subtasks.length) return;
+      const batch = writeBatch(db);
+      subtasks.forEach((s) => {
+        batch.update(doc(db, "tasks", taskId, "subtasks", s.id), {
+          done: true,
+          updatedAt: serverTimestamp(),
+          lastEditedBy: user.uid,
+        });
+      });
+      await batch.commit();
+    },
+    [user]
+  );
+
   const value = useMemo(
-    () => ({ tasks, stats, addTask, updateTask, deleteTask, undoDelete }),
-    [tasks, stats, addTask, updateTask, deleteTask, undoDelete]
+    () => ({
+      tasks: tasksWithSubtasks,
+      stats,
+      addTask,
+      updateTask,
+      deleteTask,
+      undoDelete,
+      addSubtask,
+      toggleSubtask,
+      removeSubtask,
+      markAllSubtasksDone,
+    }),
+    [
+      tasksWithSubtasks,
+      stats,
+      addTask,
+      updateTask,
+      deleteTask,
+      undoDelete,
+      addSubtask,
+      toggleSubtask,
+      removeSubtask,
+      markAllSubtasksDone,
+    ]
   );
 
   return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;
