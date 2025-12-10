@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { useTranslate } from "../translation";
-<<<<<<< HEAD
-import { db } from "../firebase/firebase";
-import { doc, setDoc } from "firebase/firestore";
-import { useAuth } from "../context/AuthContext";
-=======
 import { useAuth } from "../context/AuthContext";
 import { useTasks } from "../context/TaskContext";
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 import "./AddTask.css";
 import Dropdown from "./ui/Dropdown";
 
@@ -17,10 +11,7 @@ const AddTask = () => {
   const [priority, setPriority] = useState("medium");
   const [deadline, setDeadline] = useState("");
   const { t } = useTranslate();
-<<<<<<< HEAD
-=======
   const { addTask } = useTasks();
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
   const { user } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -36,34 +27,6 @@ const AddTask = () => {
       return;
     }
 
-<<<<<<< HEAD
-    const timestamp = Date.now();
-    const cleanTitle = title.replace(/\s+/g, "_");
-    const customId = `${cleanTitle}_${timestamp}`;
-
-    try {
-      await setDoc(
-        doc(db, "tasks", customId),
-        {
-          id: customId,
-          title,
-          status: "active",
-          description: desc,
-          priority,
-          deadline,
-          createdAt: timestamp,
-          ownerId: user.uid,
-          ownerUsername: user.username || "",
-          ownerName: user.displayName || user.email || "",
-          participants: [user.uid],
-          collaborators: [],
-          shared: false,
-          subtasks: [],
-        },
-        { merge: true }
-      );
-
-=======
     try {
       await addTask({
         title,
@@ -71,7 +34,6 @@ const AddTask = () => {
         priority,
         deadline,
       });
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
       alert(t("taskSaved"));
 
       setTitle("");

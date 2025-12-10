@@ -1,55 +1,8 @@
-<<<<<<< HEAD
-import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { db } from "../firebase/firebase";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
-import "./StatsBar.css";
-
-const calcStats = (tasks) => {
-  const total = tasks.length;
-  const active = tasks.filter((t) => t.status === "active" || t.status === "upcoming").length;
-  const completed = tasks.filter((t) => t.status === "completed").length;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const overdue = tasks.filter((t) => {
-    if (t.status === "completed" || t.status === "canceled") return false;
-    if (t.status === "overdue") return true;
-    if (!t.deadline) return false;
-    const d = new Date(t.deadline);
-    d.setHours(0, 0, 0, 0);
-    return d < today;
-  }).length;
-
-  return { total, active, completed, overdue };
-};
-
-const StatsBar = () => {
-  const { user } = useAuth();
-  const [stats, setStats] = useState({ total: 0, active: 0, completed: 0, overdue: 0 });
-
-  useEffect(() => {
-    if (!user) return;
-    const q = query(collection(db, "tasks"), where("participants", "array-contains", user.uid));
-    const unsub = onSnapshot(q, (snap) => {
-      const tasks = snap.docs.map((d) => {
-        const data = d.data();
-        const participants =
-          Array.isArray(data.participants) && data.participants.length
-            ? data.participants
-            : [data.ownerId || data.userId || user.uid];
-        return { id: d.id, ...data, participants };
-      });
-      setStats(calcStats(tasks));
-    });
-    return () => unsub();
-  }, [user]);
-=======
 import { useTasks } from "../context/TaskContext";
 import "./StatsBar.css";
 
 const StatsBar = () => {
   const { stats } = useTasks();
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 
   return (
     <div className="statsBar glass-surface">

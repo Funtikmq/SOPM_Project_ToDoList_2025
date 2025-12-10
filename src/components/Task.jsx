@@ -1,17 +1,10 @@
-<<<<<<< HEAD
-import { useEffect, useMemo, useState } from "react";
-=======
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 import "./Task.css";
 import Dropdown from "./ui/Dropdown";
 import ShareTaskModal from "./ShareTaskModal";
 import { useAuth } from "../context/AuthContext";
-<<<<<<< HEAD
-=======
 import { parseDeadline } from "../context/TaskContext";
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 
 const STATUS_OPTIONS = [
   { value: "upcoming", label: "Upcoming" },
@@ -30,18 +23,10 @@ const PRIORITY_OPTIONS = [
 const randomId = () => Math.random().toString(36).slice(2, 9);
 
 const isNearDeadline = (dateStr) => {
-<<<<<<< HEAD
-  if (!dateStr) return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const d = new Date(dateStr);
-  if (Number.isNaN(d.getTime())) return false;
-=======
   const d = parseDeadline(dateStr);
   if (!d) return false;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
   const diff = d.getTime() - today.getTime();
   return diff >= 0 && diff <= 3 * 24 * 60 * 60 * 1000;
 };
@@ -56,12 +41,9 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
   const [tempTitle, setTempTitle] = useState(task?.title || "");
   const [subtasks, setSubtasks] = useState(task?.subtasks || []);
   const [showDateInput, setShowDateInput] = useState(false);
-<<<<<<< HEAD
-=======
   const [pickerPosition, setPickerPosition] = useState({ top: 0, left: 0, width: 240 });
   const deadlineButtonRef = useRef(null);
   const datePickerRef = useRef(null);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
   const [tempDeadline, setTempDeadline] = useState(task?.deadline || "");
   const [showShare, setShowShare] = useState(false);
 
@@ -171,8 +153,6 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
     setShowDateInput(false);
   };
 
-<<<<<<< HEAD
-=======
   const positionDatePicker = useCallback(() => {
     if (!deadlineButtonRef.current) return;
     const rect = deadlineButtonRef.current.getBoundingClientRect();
@@ -212,7 +192,6 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
     };
   }, [positionDatePicker, showDateInput, task.deadline]);
 
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
   return (
     <div className="taskWrapper">
       <div className="task taskRowCard taskRowClickable" data-expanded={isExpanded} onClick={toggleExpand}>
@@ -313,36 +292,6 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
               setShowDateInput((prev) => !prev);
             }}
             disabled={!canEdit}
-<<<<<<< HEAD
-          >
-            {task.deadline ? task.deadline : t ? t("noDeadline") : "No deadline"}
-          </button>
-          {showDateInput && canEdit && (
-            <div className="deadlinePicker" onClick={(e) => e.stopPropagation()}>
-              <input
-                type="date"
-                value={tempDeadline}
-                onChange={(e) => setTempDeadline(e.target.value)}
-                className="taskDateInput glassInput"
-              />
-              <div className="deadlinePickerActions">
-                <button type="button" className="deadlineSave" onClick={saveDeadline}>
-                  {t ? t("save") : "Save"}
-                </button>
-                <button
-                  type="button"
-                  className="deadlineCancel"
-                  onClick={() => {
-                    setTempDeadline(task.deadline || "");
-                    setShowDateInput(false);
-                  }}
-                >
-                  {t ? t("cancel") : "Cancel"}
-                </button>
-              </div>
-            </div>
-          )}
-=======
             ref={deadlineButtonRef}
           >
             {task.deadline ? task.deadline : t ? t("noDeadline") : "No deadline"}
@@ -390,7 +339,6 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
               </div>,
               document.body
             )}
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
         </div>
       </div>
 

@@ -5,11 +5,7 @@
 .listContainer,
 .taskListContainer {
   padding: 24px;
-<<<<<<< HEAD
-  overflow: hidden;
-=======
   overflow: visible;
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
   background-clip: padding-box;
   clip-path: none;
   box-shadow: 0 16px 42px rgba(140, 70, 200, 0.16), 0 12px 30px rgba(0, 0, 0, 0.14);
@@ -19,10 +15,7 @@
   -webkit-backdrop-filter: blur(18px);
   position: relative;
   border-radius: 24px;
-<<<<<<< HEAD
-=======
   z-index: var(--z-card, 10);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }
 .listContainer::after,
 .taskListContainer::after {
@@ -45,12 +38,7 @@
   display: block;
   position: relative;
   overflow: visible !important;
-<<<<<<< HEAD
-  z-index: 5;
-  z-index: 1;
-=======
   z-index: var(--z-card, 10);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
   padding: 0;
   border-bottom: 0;
   transition: background 0.2s ease;
@@ -73,11 +61,7 @@
   border-bottom: 0;
   margin-bottom: 2px;
   border-radius: 24px 24px 0 0;
-<<<<<<< HEAD
-  overflow: hidden;
-=======
   overflow: visible;
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }
 
 .listHeadItem {
@@ -387,12 +371,8 @@ td {
   );
   border-radius: 0 0 24px 24px;
   padding-bottom: 32px;
-<<<<<<< HEAD
-  overflow: hidden;
-=======
   overflow: visible;
   position: relative;
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }
 
 @media (max-width: 1100px) {
@@ -548,33 +528,14 @@ td {
 }
 
 [data-theme="dark"] .listContainer {
-<<<<<<< HEAD
-  background: linear-gradient(180deg, rgba(22, 16, 34, 0.9), rgba(18, 12, 28, 0.92));
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 20px 46px rgba(0, 0, 0, 0.65), 0 12px 28px rgba(168, 85, 247, 0.2);
-=======
   background: linear-gradient(180deg, rgba(28, 16, 36, 0.95), rgba(20, 10, 28, 0.94));
   border: 1px solid var(--glass-border);
   box-shadow: 0 20px 46px rgba(8, 4, 16, 0.75), 0 12px 28px rgba(200, 80, 255, 0.2);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }
 
 [data-theme="dark"] .listHeaderTop,
 [data-theme="dark"] .listHead,
 [data-theme="dark"] .filterDrawer {
-<<<<<<< HEAD
-  background: rgba(30, 22, 46, 0.9);
-  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.04), 0 10px 22px rgba(0, 0, 0, 0.35);
-  color: #f5f0ff;
-}
-
-[data-theme="dark"] .tableHeaderRow {
-  color: #f5f0ff;
-}
-
-[data-theme="dark"] .taskListBody {
-  background: linear-gradient(180deg, rgba(26, 18, 38, 0.85), rgba(18, 12, 28, 0.92));
-=======
   background: rgba(36, 20, 48, 0.92);
   box-shadow: inset 0 -1px 0 rgba(255, 200, 255, 0.06), 0 12px 28px rgba(8, 4, 16, 0.55);
   color: var(--text-main);
@@ -586,16 +547,11 @@ td {
 
 [data-theme="dark"] .taskListBody {
   background: linear-gradient(180deg, rgba(24, 14, 32, 0.9), rgba(18, 10, 26, 0.94));
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }
 
 [data-theme="dark"] .tableHeaderSeparator,
 [data-theme="dark"] .headerSeparator {
-<<<<<<< HEAD
-  background: rgba(255, 255, 255, 0.08);
-=======
   background: rgba(255, 200, 255, 0.12);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }
 
 [data-theme="dark"] .taskRow {
@@ -603,21 +559,6 @@ td {
 }
 
 [data-theme="dark"] .taskRow .task {
-<<<<<<< HEAD
-  background: rgba(255, 255, 255, 0.06);
-  color: #f6f2ff;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 0 14px rgba(170, 80, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .taskRow .task:hover {
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45), 0 0 16px rgba(170, 80, 255, 0.22);
-}
-
-[data-theme="dark"] .taskRow:nth-child(even) .task {
-  background: rgba(255, 255, 255, 0.07);
-=======
   background: rgba(44, 24, 60, 0.9);
   color: var(--text-main);
   box-shadow: 0 10px 32px rgba(8, 4, 16, 0.6), 0 0 16px rgba(200, 80, 255, 0.2);
@@ -631,7 +572,6 @@ td {
 
 [data-theme="dark"] .taskRow:nth-child(even) .task {
   background: rgba(40, 22, 54, 0.88);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }
 
 [data-theme="dark"] .list {
@@ -641,17 +581,10 @@ td {
 [data-theme="dark"] .searchBox,
 [data-theme="dark"] .filterButton,
 [data-theme="dark"] .addActionButton {
-<<<<<<< HEAD
-  background: rgba(40, 30, 60, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.4);
-  color: #f5f0ff;
-=======
   background: rgba(36, 20, 48, 0.9);
   border: 1px solid var(--glass-border);
   box-shadow: 0 10px 22px rgba(8, 4, 16, 0.5);
   color: var(--text-main);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }
 
 [data-theme="dark"] .filterButton:hover svg,
@@ -660,21 +593,6 @@ td {
 }
 
 [data-theme="dark"] .filterDrawer {
-<<<<<<< HEAD
-  background: rgba(30, 22, 46, 0.92);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .addTaskInlineButton {
-  background: linear-gradient(135deg, rgba(37, 28, 52, 0.95), rgba(26, 18, 38, 0.95));
-  color: #e2daf7;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45), 0 10px 24px rgba(168, 85, 247, 0.18);
-}
-
-[data-theme="dark"] .addTaskInlineButton:hover {
-  background: linear-gradient(135deg, rgba(52, 34, 72, 0.98), rgba(36, 22, 52, 0.98));
-=======
   background: rgba(30, 18, 44, 0.94);
   border-top: 1px solid var(--glass-border);
 }
@@ -688,19 +606,9 @@ td {
 
 [data-theme="dark"] .addTaskInlineButton:hover {
   background: linear-gradient(135deg, rgba(50, 26, 68, 0.98), rgba(32, 18, 48, 0.98));
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
   color: #f6f2ff;
 }
 
 [data-theme="dark"] .emptyStateContent {
-<<<<<<< HEAD
-  background: rgba(34, 24, 50, 0.9);
-}
-
-[data-theme="dark"] body {
-  background: linear-gradient(#15131f, #0d0b14);
-  color: #f5f1ff;
-=======
   background: rgba(34, 18, 44, 0.9);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }

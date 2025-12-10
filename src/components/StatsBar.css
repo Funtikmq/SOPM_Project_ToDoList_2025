@@ -55,14 +55,6 @@
 }
 
 [data-theme="dark"] .statCard {
-<<<<<<< HEAD
-  background: rgba(34, 26, 58, 0.7);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
-}
-
-[data-theme="dark"] .statCard:hover {
-  background: rgba(45, 35, 70, 0.78);
-=======
   background: rgba(34, 18, 46, 0.82);
   border-color: var(--glass-border);
   box-shadow: 0 16px 36px rgba(8, 4, 16, 0.55);
@@ -70,5 +62,4 @@
 
 [data-theme="dark"] .statCard:hover {
   background: rgba(42, 22, 56, 0.9);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }

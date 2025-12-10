@@ -5,11 +5,8 @@
   padding: 16px 20px;
   gap: 14px;
   color: var(--text-main);
-<<<<<<< HEAD
-=======
   position: relative;
   z-index: var(--z-navbar, 120);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }
 
 .headerLeft {
@@ -177,15 +174,9 @@
 }
 
 [data-theme="dark"] .headerUser {
-<<<<<<< HEAD
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-=======
   background: var(--surface-glass);
   border: 1px solid var(--glass-border);
   box-shadow: 0 10px 26px rgba(8, 4, 16, 0.55);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }
 
 [data-theme="dark"] .userNameInput {
@@ -197,24 +188,13 @@
 [data-theme="dark"] .smallIconButton,
 [data-theme="dark"] .iconButton {
   color: #d2b5ff;
-<<<<<<< HEAD
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  filter: drop-shadow(0 0 4px rgba(162, 82, 255, 0.4));
-=======
   background: rgba(36, 20, 48, 0.92);
   border: 1px solid var(--glass-border);
   filter: drop-shadow(0 0 6px rgba(200, 80, 255, 0.4));
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }
 
 [data-theme="dark"] .smallIconButton:hover,
 [data-theme="dark"] .iconButton:hover {
-<<<<<<< HEAD
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
-=======
   background: rgba(46, 26, 60, 0.96);
   box-shadow: 0 10px 24px rgba(8, 4, 16, 0.5);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 }

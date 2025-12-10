@@ -1,23 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslate } from "../translation";
-<<<<<<< HEAD
-import { db } from "../firebase/firebase";
-import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-  doc,
-  updateDoc,
-  deleteDoc,
-  addDoc,
-  setDoc,
-  getDocs,
-} from "firebase/firestore";
-import { useAuth } from "../context/AuthContext";
-=======
 import { useTasks, parseDeadline } from "../context/TaskContext";
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 
 import ListHead from "./ListHead";
 import Task from "./Task";
@@ -25,22 +8,6 @@ import Dropdown from "./ui/Dropdown";
 
 import "./List.css";
 
-<<<<<<< HEAD
-const normalizeTask = (task, fallbackUid) => {
-  const collaborators = Array.isArray(task.collaborators) ? task.collaborators : [];
-  const ownerId = task.ownerId || task.userId || fallbackUid;
-  const participants =
-    Array.isArray(task.participants) && task.participants.length
-      ? task.participants
-      : ownerId
-        ? [ownerId]
-        : [];
-  const shared = typeof task.shared === "boolean" ? task.shared : collaborators.length > 0;
-  return { ...task, collaborators, ownerId, participants, shared };
-};
-
-=======
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 const EmptyState = ({ onAdd }) => (
   <div className="emptyStateContent">
     <div className="emptyStateIcon" aria-hidden="true">
@@ -72,86 +39,17 @@ const EmptyState = ({ onAdd }) => (
 );
 
 const List = ({ onToggleAddTask }) => {
-<<<<<<< HEAD
-  const [tasks, setTasks] = useState([]);
-=======
   const { tasks, updateTask, deleteTask, undoDelete } = useTasks();
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [showFilters, setShowFilters] = useState(false);
   const [filter, setFilter] = useState({ status: "", priority: "", date: "" });
   const [search, setSearch] = useState("");
 
-<<<<<<< HEAD
-  const { user } = useAuth();
-=======
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
   const { t } = useTranslate();
   const undoTimer = useRef(null);
   const [undoData, setUndoData] = useState(null);
 
   useEffect(() => {
-<<<<<<< HEAD
-    if (!user) return;
-    const migrateLegacyTasks = async () => {
-      try {
-        const legacySnap = await getDocs(
-          query(collection(db, "tasks"), where("userId", "==", user.uid))
-        );
-        const updates = [];
-        legacySnap.forEach((d) => {
-          const data = d.data();
-          if (!Array.isArray(data.participants) || data.participants.length === 0) {
-            const ownerId = data.ownerId || data.userId || user.uid;
-            updates.push(
-              setDoc(
-                doc(db, "tasks", d.id),
-                {
-                  ownerId,
-                  ownerUsername:
-                    data.ownerUsername ||
-                    (ownerId === user.uid ? user.username || "" : data.ownerUsername || ""),
-                  ownerName:
-                    data.ownerName ||
-                    data.displayName ||
-                    user.displayName ||
-                    user.email ||
-                    "",
-                  participants: ownerId ? [ownerId] : [],
-                  collaborators: Array.isArray(data.collaborators) ? data.collaborators : [],
-                  shared: Array.isArray(data.collaborators)
-                    ? data.collaborators.length > 0
-                    : false,
-                },
-                { merge: true }
-              )
-            );
-          }
-        });
-        if (updates.length) await Promise.all(updates);
-      } catch (err) {
-        console.error("task migration error", err);
-      }
-    };
-    migrateLegacyTasks();
-  }, [user]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const q = query(collection(db, "tasks"), where("participants", "array-contains", user.uid));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const taskList = snapshot.docs.map((doc) => normalizeTask({ id: doc.id, ...doc.data() }, user.uid));
-      setTasks(taskList);
-    });
-
-    return () => unsubscribe();
-  }, [user]);
-
-  useEffect(() => {
-=======
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
     return () => {
       if (undoTimer.current) {
         clearTimeout(undoTimer.current);
@@ -159,20 +57,7 @@ const List = ({ onToggleAddTask }) => {
     };
   }, []);
 
-<<<<<<< HEAD
-  const handleUpdate = async (id, updatedFields) => {
-    const taskRef = doc(db, "tasks", id);
-    await updateDoc(taskRef, updatedFields);
-
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === id ? normalizeTask({ ...task, ...updatedFields }, user?.uid) : task
-      )
-    );
-  };
-=======
   const handleUpdate = async (id, updatedFields) => updateTask(id, updatedFields);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 
   const clearUndoTimer = () => {
     if (undoTimer.current) {
@@ -182,50 +67,10 @@ const List = ({ onToggleAddTask }) => {
   };
 
   const handleDelete = async (id) => {
-<<<<<<< HEAD
-    const taskToDelete = tasks.find((t) => t.id === id);
-    if (!taskToDelete || taskToDelete.ownerId !== user?.uid) return;
-
-    try {
-      // remove previous trash copies of the same task to avoid duplicates
-      const ownerId = taskToDelete.ownerId || user?.uid;
-      const existingOwner = ownerId
-        ? await getDocs(
-            query(
-              collection(db, "trash"),
-              where("ownerId", "==", ownerId),
-              where("originalId", "==", id)
-            )
-          )
-        : { docs: [] };
-      const existingUser = await getDocs(
-        query(
-          collection(db, "trash"),
-          where("userId", "==", user?.uid),
-          where("originalId", "==", id)
-        )
-      );
-      const toDelete = [...existingOwner.docs, ...existingUser.docs];
-      await Promise.all(
-        toDelete.map((d) => deleteDoc(doc(db, "trash", d.id)))
-      );
-
-      const trashRef = await addDoc(collection(db, "trash"), {
-        ...taskToDelete,
-        originalId: id,
-        ownerId: ownerId || user?.uid,
-        userId: ownerId || user?.uid,
-        deletedAt: Date.now(),
-      });
-      await deleteDoc(doc(db, "tasks", id));
-      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
-      setUndoData({ task: taskToDelete, trashId: trashRef.id });
-=======
     try {
       const undoPayload = await deleteTask(id);
       if (!undoPayload) return;
       setUndoData(undoPayload);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
       clearUndoTimer();
       undoTimer.current = setTimeout(() => {
         setUndoData(null);
@@ -236,38 +81,11 @@ const List = ({ onToggleAddTask }) => {
   };
 
   const handleUndo = async () => {
-<<<<<<< HEAD
-    if (!undoData || !user) return;
-    const { task, trashId } = undoData;
-    clearUndoTimer();
-    setUndoData(null);
-    try {
-      await setDoc(doc(db, "tasks", task.id), {
-        ...task,
-        ownerId: task.ownerId || user.uid,
-        userId: task.ownerId || user.uid,
-        participants:
-          Array.isArray(task.participants) && task.participants.length
-            ? task.participants
-            : [task.ownerId || user.uid],
-        collaborators: Array.isArray(task.collaborators) ? task.collaborators : [],
-        shared:
-          typeof task.shared === "boolean"
-            ? task.shared
-            : Array.isArray(task.collaborators) && task.collaborators.length > 0,
-      });
-      await deleteDoc(doc(db, "trash", trashId));
-      setTasks((prev) => {
-        const exists = prev.some((t) => t.id === task.id);
-        return exists ? prev : [...prev, normalizeTask(task, user.uid)];
-      });
-=======
     if (!undoData) return;
     clearUndoTimer();
     setUndoData(null);
     try {
       await undoDelete(undoData);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
     } catch (err) {
       console.error("Undo error", err);
     }
@@ -284,27 +102,17 @@ const List = ({ onToggleAddTask }) => {
   const statusOrder = ["upcoming", "active", "completed", "overdue", "canceled"];
   const priorityOrder = ["high", "medium", "low"];
 
-<<<<<<< HEAD
-=======
   const filterDate = filter.date ? parseDeadline(filter.date) : null;
 
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
   const filteredTasks = tasks.filter((task) => {
     const matchSearch = search
       ? task.title?.toLowerCase().includes(search.toLowerCase())
       : true;
     const matchStatus = filter.status ? task.status === filter.status : true;
     const matchPriority = filter.priority ? task.priority === filter.priority : true;
-<<<<<<< HEAD
-    const matchDate =
-      filter.date && task.deadline
-        ? new Date(task.deadline) >= new Date(filter.date)
-        : true;
-=======
     const deadlineDate = parseDeadline(task.deadline);
     const matchDate =
       filterDate && deadlineDate ? deadlineDate >= filterDate : !filterDate;
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
 
     return matchSearch && matchStatus && matchPriority && matchDate;
   });
@@ -322,13 +130,8 @@ const List = ({ onToggleAddTask }) => {
       aValue = priorityOrder.indexOf(aValue);
       bValue = priorityOrder.indexOf(bValue);
     } else if (sortConfig.key === "deadline") {
-<<<<<<< HEAD
-      aValue = aValue ? new Date(aValue) : new Date(0);
-      bValue = bValue ? new Date(bValue) : new Date(0);
-=======
       aValue = parseDeadline(aValue) || new Date(0);
       bValue = parseDeadline(bValue) || new Date(0);
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
     } else if (sortConfig.key === "title") {
       return sortConfig.direction === "asc"
         ? aValue.localeCompare(bValue)
@@ -425,11 +228,7 @@ const List = ({ onToggleAddTask }) => {
             <div className="tableHeaderSeparator" />
           </li>
 
-<<<<<<< HEAD
-                    {sortedTasks.length === 0 && (
-=======
           {sortedTasks.length === 0 && (
->>>>>>> 17375cc (Fix datepicker layering, warm dark theme, centralize tasks context and overdue stats)
             <li className="listItem emptyState">
               <EmptyState onAdd={onToggleAddTask} />
             </li>
