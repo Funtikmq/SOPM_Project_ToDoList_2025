@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Todo List RN",
+    "slug": "todo-list-rn",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.todolist.rn"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.todolist.rn"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

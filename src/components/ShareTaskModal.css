@@ -1,0 +1,303 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 10, 26, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: var(--z-modal, 1100);
+}
+
+.modalCard {
+  width: min(680px, 96vw);
+  max-height: 86vh;
+  overflow: auto;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(246, 232, 255, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 20px;
+  padding: 18px 18px 22px;
+  box-shadow: 0 20px 36px rgba(0, 0, 0, 0.18), 0 12px 28px rgba(168, 85, 247, 0.24);
+  position: relative;
+  color: var(--text-main);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.modalTitle {
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.modalSubtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.modalCloseBtn {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+.shareSearch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.shareInput {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.92);
+  font-weight: 600;
+  outline: none;
+}
+
+.shareHint {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.shareResults {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(214, 144, 255, 0.35);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 26px rgba(168, 85, 247, 0.14);
+  margin-bottom: 10px;
+}
+
+.shareResultRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.shareResultRow:hover {
+  background: rgba(214, 144, 255, 0.12);
+}
+
+.shareAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+}
+
+.shareResultMeta {
+  flex: 1;
+  text-align: left;
+}
+.shareResultName {
+  font-weight: 700;
+}
+.shareResultInfo {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.shareAddChip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(140, 122, 230, 0.16);
+  color: #6b5cd9;
+  font-weight: 700;
+}
+
+.shareError {
+  color: #d6423a;
+  background: rgba(255, 110, 94, 0.12);
+  border: 1px solid rgba(255, 110, 94, 0.35);
+  padding: 8px 10px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.collabListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+.collabListTitle {
+  font-weight: 800;
+}
+.collabListHint {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.collabList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.collabRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+}
+
+.collabInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.collabRow .collabAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.collabName {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.collabDisplay {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.ownerPill,
+.rolePill {
+  padding: 4px 8px;
+  border-radius: 10px;
+  background: rgba(140, 122, 230, 0.16);
+  color: #6b5cd9;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.collabActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.removeCollabBtn {
+  border: 1px solid rgba(255, 110, 94, 0.4);
+  background: rgba(255, 110, 94, 0.14);
+  color: #d6423a;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.removeCollabBtn.ghost {
+  background: transparent;
+  color: var(--text-main);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.collabEmpty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 14px 8px;
+}
+
+.profileCard {
+  max-width: 520px;
+}
+.profileForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.profileLabel {
+  font-weight: 700;
+}
+.profileRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.profileTagPrefix {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(214, 144, 255, 0.18);
+  border: 1px solid rgba(214, 144, 255, 0.32);
+  font-weight: 800;
+}
+.profileHint {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.profileActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+.saveProfileBtn {
+  border: none;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+[data-theme="dark"] .modalCard {
+  background: rgba(26, 18, 38, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f6f2ff;
+}
+[data-theme="dark"] .shareInput {
+  background: rgba(38, 28, 56, 0.92);
+  color: #f6f2ff;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+[data-theme="dark"] .shareResults {
+  background: rgba(38, 28, 56, 0.95);
+  border-color: rgba(214, 144, 255, 0.35);
+}
+[data-theme="dark"] .collabRow {
+  background: rgba(38, 28, 56, 0.95);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+[data-theme="dark"] .shareError {
+  background: rgba(255, 110, 94, 0.14);
+}

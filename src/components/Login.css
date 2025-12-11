@@ -1,0 +1,124 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+  background: var(--bg);
+}
+
+.login-container {
+  width: 360px;
+  margin: 120px auto;
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  box-shadow: var(--shadow-soft);
+  color: var(--text-main);
+  text-align: center;
+}
+
+.login-container h2 {
+  margin-bottom: 8px;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.login-subtitle {
+  margin-bottom: 20px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.login-form input {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text-main);
+  font-size: 15px;
+  outline: none;
+  transition: 0.2s ease-in-out;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+.login-form input::placeholder {
+  color: var(--text-muted);
+}
+
+.login-form input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(194, 58, 208, 0.15);
+}
+
+.login-btn {
+  padding: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+  box-shadow: 0 8px 18px rgba(194, 58, 208, 0.35);
+}
+
+.login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(194, 58, 208, 0.45);
+}
+
+.google-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text-main);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.google-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+.google-btn svg {
+  display: block;
+}
+
+.separator {
+  margin: 18px 0;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  font-size: 13px;
+}
+
+.auth-switch {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.auth-switch a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
