@@ -1,37 +1,24 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-const TaskItem = ({ task, onDelete, onToggleComplete }) => {
-  return (
-    <View style={[styles.taskContainer, task.completed && styles.taskContainerDone]}>
-      <TouchableOpacity 
-        style={[styles.checkBox, task.completed && styles.checkBoxDone]}
-        onPress={() => onToggleComplete(task.id)}
-      >
-        <Text style={[styles.checkIcon, task.completed && styles.checkIconDone]}>
-          {task.completed ? '✓' : ''}
-        </Text>
-      </TouchableOpacity>
+const STATUS_ORDER = ['Overdue', 'Upcoming', 'Completed', 'Canceled'];
 
-      <View style={styles.taskContent}>
-        <Text style={[styles.taskTitle, task.completed && styles.taskTitleDone]}>
+const TaskItem = ({ task, onDelete, onOpenDetail }) => {
+  const badgeStyle = statusStyles[task.status] || statusStyles.Upcoming;
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={() => onOpenDetail(task.id)}
+      style={[styles.taskContainer, task.completed && styles.taskContainerDone]}
+    >
+      <View style={styles.taskContentMinimal}>
+        <Text style={[styles.taskTitle, task.completed && styles.taskTitleDone]} numberOfLines={1}>
           {task.title}
         </Text>
-        {task.description && (
-          <Text style={[styles.taskDescription, task.completed && styles.taskDescriptionDone]}>
-            {task.description}
-          </Text>
-        )}
-        {task.dueDate && (
-          <Text style={[styles.taskDate, task.completed && styles.taskDescriptionDone]}>
-            Termen: {new Date(task.dueDate).toLocaleDateString('ro-RO')}
-          </Text>
-        )}
-        {task.completed && (
-          <View style={styles.badgeDone}>
-            <Text style={styles.badgeText}>Completat</Text>
-          </View>
-        )}
+        <View style={[styles.statusPill, badgeStyle.container]}>
+          <Text style={[styles.statusText, badgeStyle.text]}>{task.status || 'Upcoming'}</Text>
+        </View>
       </View>
 
       <TouchableOpacity 
@@ -40,7 +27,7 @@ const TaskItem = ({ task, onDelete, onToggleComplete }) => {
       >
         <Text style={styles.deleteButtonText}>✕</Text>
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -62,9 +49,14 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 6,
   },
-  taskContent: {
+  taskContainerDone: {
+    borderColor: 'rgba(122, 255, 208, 0.35)',
+    shadowColor: '#7affe0',
+  },
+  taskContentMinimal: {
     flex: 1,
     marginRight: 12,
+    gap: 6,
   },
   taskTitle: {
     fontSize: 17,
@@ -76,46 +68,18 @@ const styles = StyleSheet.create({
     color: '#9f8bc4',
     textDecorationLine: 'line-through',
   },
-  taskDescription: {
-    fontSize: 14,
-    color: '#d7c8ff',
-    marginBottom: 4,
+  statusPill: {
+    alignSelf: 'flex-start',
+    marginTop: 0,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
   },
-  taskDescriptionDone: {
-    color: '#8d7aac',
-    textDecorationLine: 'line-through',
-  },
-  taskDate: {
+  statusText: {
     fontSize: 12,
-    color: '#ff9ff3',
-    fontStyle: 'italic',
-  },
-  taskContainerDone: {
-    borderColor: 'rgba(122, 255, 208, 0.35)',
-    shadowColor: '#7affe0',
-  },
-  checkBox: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 2,
-    borderColor: '#ff4dd2',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-    backgroundColor: 'rgba(255, 77, 210, 0.08)',
-  },
-  checkBoxDone: {
-    borderColor: '#7affe0',
-    backgroundColor: 'rgba(122, 255, 224, 0.12)',
-  },
-  checkIcon: {
-    color: '#ff4dd2',
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  checkIconDone: {
-    color: '#0b0216',
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   deleteButton: {
     backgroundColor: '#ff4dd2',
@@ -134,21 +98,77 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  badgeDone: {
-    alignSelf: 'flex-start',
-    marginTop: 6,
-    backgroundColor: 'rgba(122, 255, 224, 0.15)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(122, 255, 224, 0.4)',
-  },
-  badgeText: {
-    color: '#7affe0',
-    fontSize: 12,
-    fontWeight: '700',
-  },
 });
+
+const statusStyles = {
+  Overdue: {
+    container: {
+      backgroundColor: 'rgba(255, 104, 140, 0.12)',
+      borderColor: 'rgba(255, 104, 140, 0.55)',
+    },
+    text: { color: '#ff688c' },
+    chip: {
+      borderColor: 'rgba(255, 104, 140, 0.4)',
+      backgroundColor: 'rgba(255, 104, 140, 0.12)',
+    },
+    chipActive: {
+      backgroundColor: '#ff688c',
+      borderColor: '#ff688c',
+    },
+    chipText: { color: '#ffb3c8' },
+    chipTextActive: { color: '#0b0216' },
+  },
+  Upcoming: {
+    container: {
+      backgroundColor: 'rgba(255, 77, 210, 0.12)',
+      borderColor: 'rgba(255, 77, 210, 0.5)',
+    },
+    text: { color: '#ff9ff3' },
+    chip: {
+      borderColor: 'rgba(255, 77, 210, 0.35)',
+      backgroundColor: 'rgba(255, 77, 210, 0.12)',
+    },
+    chipActive: {
+      backgroundColor: '#ff4dd2',
+      borderColor: '#ff4dd2',
+    },
+    chipText: { color: '#ffb8f6' },
+    chipTextActive: { color: '#0b0216' },
+  },
+  Completed: {
+    container: {
+      backgroundColor: 'rgba(122, 255, 224, 0.15)',
+      borderColor: 'rgba(122, 255, 224, 0.5)',
+    },
+    text: { color: '#7affe0' },
+    chip: {
+      borderColor: 'rgba(122, 255, 224, 0.4)',
+      backgroundColor: 'rgba(122, 255, 224, 0.15)',
+    },
+    chipActive: {
+      backgroundColor: '#7affe0',
+      borderColor: '#7affe0',
+    },
+    chipText: { color: '#c3fff0' },
+    chipTextActive: { color: '#0b0216' },
+  },
+  Canceled: {
+    container: {
+      backgroundColor: 'rgba(160, 160, 176, 0.12)',
+      borderColor: 'rgba(160, 160, 176, 0.45)',
+    },
+    text: { color: '#cfd0de' },
+    chip: {
+      borderColor: 'rgba(160, 160, 176, 0.35)',
+      backgroundColor: 'rgba(160, 160, 176, 0.12)',
+    },
+    chipActive: {
+      backgroundColor: '#cfd0de',
+      borderColor: '#cfd0de',
+    },
+    chipText: { color: '#e3e4f0' },
+    chipTextActive: { color: '#0b0216' },
+  },
+};
 
 export default TaskItem;
