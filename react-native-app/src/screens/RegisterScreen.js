@@ -10,17 +10,17 @@ import {
   Alert 
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../services/firebase';
+import { registerWithEmail } from '../services/firebase';
 
 const RegisterScreen = ({ navigation }) => {
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
+    if (!displayName.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
       Alert.alert('Eroare', 'Te rog completează toate câmpurile.');
       return;
     }
@@ -37,17 +37,29 @@ const RegisterScreen = ({ navigation }) => {
 
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email.trim(), password);
-      Alert.alert('Succes', 'Cont creat cu succes!');
-      // Navigarea se va face automat prin listener-ul din AppNavigator
+      const user = await registerWithEmail(email.trim(), password, displayName.trim());
+      global.testUser = { uid: user.uid, email: user.email, displayName: displayName.trim() };
+      
+      Alert.alert('Succes', 'Cont creat cu succes!', [
+        {
+          text: 'OK',
+          onPress: () => {
+            setTimeout(() => {
+              navigation.navigate('Home');
+            }, 300);
+          }
+        }
+      ]);
     } catch (error) {
       let errorMessage = 'Înregistrare eșuată.';
-      if (error.code === 'auth/email-already-in-use') {
+      if (error.message.includes('email-already-in-use')) {
         errorMessage = 'Email-ul este deja folosit.';
-      } else if (error.code === 'auth/invalid-email') {
+      } else if (error.message.includes('invalid-email')) {
         errorMessage = 'Email invalid.';
-      } else if (error.code === 'auth/weak-password') {
+      } else if (error.message.includes('weak-password')) {
         errorMessage = 'Parola este prea slabă.';
+      } else {
+        errorMessage = error.message;
       }
       Alert.alert('Eroare', errorMessage);
     } finally {
@@ -67,6 +79,16 @@ const RegisterScreen = ({ navigation }) => {
             <Text style={styles.logoDoIt}>DO IT</Text>
           </View>
           <Text style={styles.subtitle}>Creare cont nou</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Nume complet"
+            value={displayName}
+            onChangeText={setDisplayName}
+            autoCapitalize="words"
+            autoCorrect={false}
+            placeholderTextColor="#999"
+          />
 
           <TextInput
             style={styles.input}
@@ -105,7 +127,7 @@ const RegisterScreen = ({ navigation }) => {
             disabled={loading}
           >
             <Text style={styles.buttonText}>
-              {loading ? 'Se înregistrează...' : 'Register'}
+              {loading ? 'Se înregistrează...' : 'Creare Cont'}
             </Text>
           </TouchableOpacity>
 
