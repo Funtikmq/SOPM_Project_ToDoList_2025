@@ -26,6 +26,9 @@ const getAddTaskTheme = (isDark) => {
       calendarDay: '#ffffff',
       calendarDayActive: '#ff4dd2',
       borderColor: 'rgba(255, 77, 210, 0.2)',
+      accent: '#ff4dd2',
+      accentLight: '#d7c8ff',
+      accentBorder: 'rgba(255, 77, 210, 0.3)',
     };
   } else {
     return {
@@ -48,6 +51,9 @@ const getAddTaskTheme = (isDark) => {
       calendarDay: '#1a1a1a',
       calendarDayActive: '#ff4dd2',
       borderColor: 'rgba(255, 77, 210, 0.15)',
+      accent: '#ff4dd2',
+      accentLight: '#666666',
+      accentBorder: 'rgba(255, 77, 210, 0.25)',
     };
   }
 };
