@@ -5,12 +5,13 @@ import {
   FlatList, 
   TouchableOpacity, 
   StyleSheet, 
-  SafeAreaView,
   Alert 
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import TaskItem from '../components/TaskItem';
-import TaskInput from '../components/TaskInput';
 import TaskDetailSheet from '../components/TaskDetailSheet';
+import AddTaskModal from '../components/AddTaskModal';
+import { saveTask } from '../services/taskService';
 
 // Mock data pentru testare - stocată în memorie
 const getTodayDate = () => {
@@ -61,6 +62,7 @@ const HomeScreen = ({ navigation }) => {
   const countdownRef = useRef(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [detailVisible, setDetailVisible] = useState(false);
+  const [addVisible, setAddVisible] = useState(false);
   const [filterStatus, setFilterStatus] = useState('Upcoming');
 
   const statusCounts = useMemo(() => {
@@ -73,6 +75,52 @@ const HomeScreen = ({ navigation }) => {
       },
       { Upcoming: 0, Overdue: 0, Completed: 0 }
     );
+  }, [tasks]);
+
+  // Recurring preview helpers
+  const WEEKDAY_INDEX = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
+  const computeNextDate = (recurring = {}, currentDeadline) => {
+    if (!recurring?.isRecurring) return null;
+    const base = currentDeadline ? new Date(`${currentDeadline}T00:00:00`) : new Date();
+    if (Number.isNaN(base.getTime())) return null;
+    const interval = Math.max(1, recurring.interval || 1);
+    let next;
+    if (recurring.type === 'daily') {
+      next = new Date(base);
+      next.setDate(next.getDate() + interval);
+    } else if (recurring.type === 'weekly') {
+      const days = Array.isArray(recurring.byWeekday) && recurring.byWeekday.length ? recurring.byWeekday : ['mon'];
+      const dayIndexes = days.map((d) => WEEKDAY_INDEX[d] ?? 1);
+      const startIndex = base.getDay();
+      let minDiff = Infinity;
+      dayIndexes.forEach((idx) => {
+        let diff = idx - startIndex;
+        if (diff <= 0) diff += 7 * interval;
+        if (diff < minDiff) minDiff = diff;
+      });
+      next = new Date(base);
+      next.setDate(next.getDate() + minDiff);
+    } else if (recurring.type === 'monthly') {
+      const targetDay = Math.min(Math.max(1, recurring.byMonthday || base.getDate()), 31);
+      next = new Date(base);
+      next.setMonth(next.getMonth() + interval);
+      const daysInMonth = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+      next.setDate(Math.min(targetDay, daysInMonth));
+    } else return null;
+    const endDate = recurring.endDate ? new Date(`${recurring.endDate}T00:00:00`) : null;
+    if (endDate && next.getTime() > endDate.getTime()) return null;
+    const y = next.getFullYear();
+    const m = `${next.getMonth() + 1}`.padStart(2, '0');
+    const d = `${next.getDate()}`.padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
+  const recurringPreview = useMemo(() => {
+    return (tasks || [])
+      .filter((t) => t.recurring?.isRecurring)
+      .map((t) => ({ id: t.id, title: t.title, nextDate: computeNextDate(t.recurring, t.dueDate) }))
+      .filter((x) => !!x.nextDate)
+      .slice(0, 5);
   }, [tasks]);
 
   const filteredTasks = useMemo(() => {
@@ -109,11 +157,16 @@ const HomeScreen = ({ navigation }) => {
       status: 'Upcoming',
       progress: 0,
       autoStatus: true,
-      subtasks: [],
+      subtasks: Array.isArray(taskData?.subtasks) ? taskData.subtasks.map((s, idx) => ({
+        id: s.id || Math.random().toString(36).slice(2, 9),
+        title: s.title || `Subtask ${idx+1}`,
+        isCompleted: !!s.done || !!s.isCompleted,
+      })) : [],
     };
-    
+    // Save via service (Firebase if available, else mock)
+    const saved = await saveTask(newTask);
     // Adaugă în mock data
-    mockTasks.unshift(newTask);
+    mockTasks.unshift(saved);
     setTasks([...mockTasks]);
     global.mockTasks = mockTasks;
   };
@@ -296,6 +349,19 @@ const HomeScreen = ({ navigation }) => {
     handleDueDateChange(selectedTask.id, dateString);
   };
 
+  const handleDetailUpdateRecurrence = (recurringPayload) => {
+    if (!selectedTask) return;
+    mockTasks = mockTasks.map((t) => {
+      if (t.id !== selectedTask.id) return t;
+      const next = { ...t, recurring: { ...(t.recurring || {}), ...recurringPayload } };
+      return next;
+    });
+    setTasks([...mockTasks]);
+    global.mockTasks = mockTasks;
+    const updated = mockTasks.find((t) => t.id === selectedTask.id);
+    setSelectedTask(updated || null);
+  };
+
   const handleDeleteTask = async (taskId) => {
     const target = tasks.find((t) => t.id === taskId);
     if (!target) return;
@@ -408,6 +474,21 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.accentBar} />
       </View>
 
+      {/* Recurring preview */}
+      <View style={styles.recurringCard}>
+        <Text style={styles.recurringTitle}>Task-uri recurente (următoarea dată)</Text>
+        {recurringPreview.length === 0 ? (
+          <Text style={styles.recurringEmpty}>Nu există reguli de recurență definite.</Text>
+        ) : (
+          recurringPreview.map((x) => (
+            <View key={x.id} style={styles.recurringItem}>
+              <Text style={styles.recurringItemTitle}>{x.title}</Text>
+              <Text style={styles.recurringItemDate}>{x.nextDate}</Text>
+            </View>
+          ))
+        )}
+      </View>
+
       <View style={styles.filterRow}>
         {['Upcoming', 'Overdue', 'Completed'].map((status) => {
           const isActive = filterStatus === status;
@@ -430,7 +511,7 @@ const HomeScreen = ({ navigation }) => {
         })}
       </View>
 
-      <TaskInput onAddTask={handleAddTask} />
+      {/* Inline quick add removed to avoid duplication with modal */}
 
       {loading ? (
         <View style={styles.centerContainer}>
@@ -461,6 +542,22 @@ const HomeScreen = ({ navigation }) => {
         />
       )}
 
+      {addVisible && (
+        <AddTaskModal
+          visible={addVisible}
+          onClose={() => setAddVisible(false)}
+          onSave={async (taskPayload) => {
+            await handleAddTask(taskPayload);
+            setAddVisible(false);
+          }}
+        />
+      )}
+
+      {/* Floating add button (bottom-center pill) */}
+      <TouchableOpacity style={styles.fabCenter} onPress={() => setAddVisible(true)}>
+        <Text style={styles.fabCenterText}>＋ Adaugă Task</Text>
+      </TouchableOpacity>
+
       {lastDeleted && (
         <View style={styles.undoBar}>
           <Text style={styles.undoText}>
@@ -478,6 +575,7 @@ const HomeScreen = ({ navigation }) => {
         onClose={handleCloseDetail}
         onToggleSubtask={(subId) => handleDetailToggleSubtask(subId)}
         onAddSubtask={(title) => handleDetailAddSubtask(title)}
+              onUpdateRecurrence={handleDetailUpdateRecurrence}
         onRemoveSubtask={(subId) => handleDetailRemoveSubtask(subId)}
         onStatusChange={handleDetailStatusChange}
         onAutoStatusToggle={handleDetailAutoToggle}
@@ -546,6 +644,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 77, 210, 0.3)',
   },
+  fabCenter: {
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    bottom: 24,
+    backgroundColor: '#ff4dd2',
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    shadowColor: '#ff4dd2',
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
+  fabCenterText: {
+    color: '#0b0216',
+    fontSize: 16,
+    fontWeight: '800',
+  },
   calendarBtnText: {
     fontSize: 18,
   },
@@ -610,6 +729,40 @@ const styles = StyleSheet.create({
     color: '#d7c8ff',
     fontSize: 13,
     marginTop: 4,
+  },
+  recurringCard: {
+    backgroundColor: '#140a2e',
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 8,
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 77, 210, 0.25)',
+  },
+  recurringTitle: {
+    color: '#d7c8ff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  recurringEmpty: {
+    color: '#d7c8ff',
+    fontSize: 12,
+  },
+  recurringItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+  },
+  recurringItemTitle: {
+    color: '#ffffff',
+    fontSize: 13,
+  },
+  recurringItemDate: {
+    color: '#ff4dd2',
+    fontSize: 13,
+    fontWeight: '700',
   },
   accentBar: {
     height: 4,

@@ -5,11 +5,11 @@ import {
   TextInput, 
   TouchableOpacity, 
   StyleSheet, 
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   Alert 
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('test@example.com');
@@ -50,8 +50,11 @@ const LoginScreen = ({ navigation }) => {
         style={styles.keyboardView}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>Todo List</Text>
-          <Text style={styles.subtitle}>Autentificare</Text>
+          <View style={styles.logoWrap}>
+            <Text style={styles.logoKick}>JUST</Text>
+            <Text style={styles.logoDoIt}>DO IT</Text>
+          </View>
+          <Text style={styles.subtitle}>Autentificare în cont</Text>
 
           <TextInput
             style={styles.input}
@@ -109,7 +112,7 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#0f172a', // dark slate background for a bold intro
   },
   keyboardView: {
     flex: 1,
@@ -119,68 +122,82 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#007AFF',
-    textAlign: 'center',
-    marginBottom: 8,
+  logoWrap: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  logoKick: {
+    fontSize: 44,
+    letterSpacing: 2,
+    color: '#ffffff',
+    fontWeight: '800',
+  },
+  logoDoIt: {
+    fontSize: 44,
+    letterSpacing: 2,
+    color: '#ff00ff', // magenta accent
+    fontWeight: '800',
   },
   subtitle: {
-    fontSize: 18,
-    color: '#666',
+    fontSize: 16,
+    color: '#cbd5e1',
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 24,
   },
   input: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
+    backgroundColor: '#0b1220',
+    color: '#e2e8f0',
+    borderRadius: 12,
     padding: 16,
     fontSize: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#1f2937',
   },
   button: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
+    backgroundColor: '#ff00ff',
+    borderRadius: 12,
     padding: 16,
     alignItems: 'center',
     marginTop: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
   },
   buttonDisabled: {
     backgroundColor: '#999',
   },
   buttonText: {
-    color: '#fff',
+    color: '#111827',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   linkButton: {
     marginTop: 20,
     alignItems: 'center',
   },
   linkText: {
-    color: '#007AFF',
+    color: '#ff00ff',
     fontSize: 14,
   },
   testInfo: {
-    marginTop: 40,
+    marginTop: 24,
     padding: 16,
-    backgroundColor: '#fff3cd',
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#ffc107',
+    backgroundColor: '#111827',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#1f2937',
   },
   testLabel: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#856404',
+    color: '#9ca3af',
     marginBottom: 8,
   },
   testText: {
     fontSize: 12,
-    color: '#856404',
+    color: '#9ca3af',
     fontFamily: 'monospace',
   },
 });

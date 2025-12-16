@@ -16,8 +16,17 @@ const TaskItem = ({ task, onDelete, onOpenDetail }) => {
         <Text style={[styles.taskTitle, task.completed && styles.taskTitleDone]} numberOfLines={1}>
           {task.title}
         </Text>
-        <View style={[styles.statusPill, badgeStyle.container]}>
-          <Text style={[styles.statusText, badgeStyle.text]}>{task.status || 'Upcoming'}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={[styles.statusPill, badgeStyle.container]}>
+            <Text style={[styles.statusText, badgeStyle.text]}>{task.status || 'Upcoming'}</Text>
+          </View>
+          {Array.isArray(task.subtasks) && task.subtasks.length > 0 && (
+            <View style={styles.subtaskChip}>
+              <Text style={styles.subtaskChipText}>
+                {task.subtasks.filter((s) => s.isCompleted).length}/{task.subtasks.length} subtasks
+              </Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -80,6 +89,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.3,
+  },
+  subtaskChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 77, 210, 0.28)',
+    backgroundColor: 'rgba(255, 77, 210, 0.12)'
+  },
+  subtaskChipText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#ff9ff3',
   },
   deleteButton: {
     backgroundColor: '#ff4dd2',

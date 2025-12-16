@@ -1,7 +1,13 @@
 // Scheduled function placeholder (to be deployed in Cloud Functions environment).
 // Runs daily, scans recurring tasks, and auto-creates upcoming instances within the autoCreateWindow.
 const { onSchedule } = require("firebase-functions/v2/scheduler");
+const admin = require("firebase-admin");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+
+// Ensure firebase-admin is initialized once when the function loads
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 
 exports.onScheduleDaily = onSchedule("every day 05:00", async () => {
   const db = getFirestore();

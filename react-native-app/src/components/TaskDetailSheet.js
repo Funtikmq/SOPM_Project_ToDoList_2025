@@ -24,9 +24,15 @@ const TaskDetailSheet = ({
   onAutoStatusToggle,
   onDueDateChange,
   onDelete,
+  onUpdateRecurrence,
 }) => {
   const translateY = useRef(new Animated.Value(400)).current;
   const [subtaskTitle, setSubtaskTitle] = useState('');
+  const [recType, setRecType] = useState(task?.recurring?.type || (task?.recurring?.isRecurring ? 'daily' : 'none'));
+  const [recInterval, setRecInterval] = useState(String(task?.recurring?.interval ?? 1));
+  const [recWeekdays, setRecWeekdays] = useState(task?.recurring?.byWeekday || []);
+  const [recMonthday, setRecMonthday] = useState(String(task?.recurring?.byMonthday ?? ''));
+  const [recEndDate, setRecEndDate] = useState(task?.recurring?.endDate || '');
 
   useEffect(() => {
     if (visible) {
@@ -56,12 +62,30 @@ const TaskDetailSheet = ({
     setSubtaskTitle('');
   };
 
+  const toggleWeekday = (day) => {
+    setRecWeekdays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]));
+  };
+
+  const handleSaveRecurrence = () => {
+    if (!onUpdateRecurrence) return;
+    const isRecurring = recType !== 'none';
+    const payload = {
+      isRecurring,
+      type: isRecurring ? recType : undefined,
+      interval: isRecurring ? Math.max(1, parseInt(recInterval || '1', 10)) : undefined,
+      byWeekday: recType === 'weekly' ? recWeekdays : undefined,
+      byMonthday: recType === 'monthly' ? Math.max(1, Math.min(31, parseInt(recMonthday || '1', 10))) : undefined,
+      endDate: recEndDate || undefined,
+    };
+    onUpdateRecurrence(payload);
+  };
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
       </View>
-      <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]}>\
+      <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]}> 
         <View style={styles.dragBar} />
         <View style={styles.headerRow}>
           <View>
@@ -116,6 +140,91 @@ const TaskDetailSheet = ({
             );
           })}
         </View>
+
+        <Text style={styles.sectionTitle}>Recurrence</Text>
+        <View style={styles.recTypeRow}>
+          {['none','daily','weekly','monthly'].map((t) => {
+            const active = recType === t;
+            return (
+              <TouchableOpacity key={t} style={[styles.recTypeChip, active && styles.recTypeChipActive]} onPress={() => setRecType(t)}>
+                <Text style={[styles.recTypeText, active && styles.recTypeTextActive]}>{t.toUpperCase()}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {recType !== 'none' && (
+          <View style={styles.recConfigBox}>
+            <View style={styles.recRow}>
+              <Text style={styles.recLabel}>Interval</Text>
+              <TextInput
+                style={styles.recInput}
+                value={recInterval}
+                onChangeText={setRecInterval}
+                keyboardType="number-pad"
+                placeholder="1"
+                placeholderTextColor="#8d7aac"
+              />
+            </View>
+
+            {recType === 'weekly' && (
+              <View style={styles.weekdaysRow}>
+                {['mon','tue','wed','thu','fri','sat','sun'].map((d) => {
+                  const active = recWeekdays.includes(d);
+                  return (
+                    <TouchableOpacity key={d} style={[styles.weekdayChip, active && styles.weekdayChipActive]} onPress={() => toggleWeekday(d)}>
+                      <Text style={[styles.weekdayText, active && styles.weekdayTextActive]}>{d.toUpperCase()}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
+
+            {recType === 'monthly' && (
+              <View style={styles.recRow}>
+                <Text style={styles.recLabel}>Zi din lună</Text>
+                <TextInput
+                  style={styles.recInput}
+                  value={recMonthday}
+                  onChangeText={setRecMonthday}
+                  keyboardType="number-pad"
+                  placeholder="1-31"
+                  placeholderTextColor="#8d7aac"
+                />
+              </View>
+            )}
+
+            <View style={styles.recRow}>
+              <Text style={styles.recLabel}>End date</Text>
+              <Text style={styles.recEndValue}>{recEndDate || 'None'}</Text>
+            </View>
+            <View style={styles.endButtonsRow}>
+              <TouchableOpacity style={styles.dueChip} onPress={() => {
+                const d = new Date();
+                d.setDate(d.getDate() + 30);
+                setRecEndDate(d.toISOString().split('T')[0]);
+              }}>
+                <Text style={styles.dueChipText}>+30 zile</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.dueChip} onPress={() => {
+                const d = new Date();
+                d.setDate(d.getDate() + 365);
+                setRecEndDate(d.toISOString().split('T')[0]);
+              }}>
+                <Text style={styles.dueChipText}>+1 an</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.dueChipGhost} onPress={() => setRecEndDate('')}>
+                <Text style={styles.dueChipGhostText}>Clear</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.recActionsRow}>
+              <TouchableOpacity style={styles.actionButton} onPress={handleSaveRecurrence}>
+                <Text style={styles.actionText}>Save Recurrence</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         <View style={styles.toggleRow}>
           <Text style={styles.toggleLabel}>Auto status</Text>
@@ -369,6 +478,71 @@ const styles = StyleSheet.create({
     color: '#ffb8f6',
     fontWeight: '700',
   },
+  recTypeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  recTypeChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 77, 210, 0.25)',
+    backgroundColor: '#140a2e',
+  },
+  recTypeChipActive: {
+    backgroundColor: '#ff4dd2',
+    borderColor: '#ff4dd2',
+  },
+  recTypeText: { color: '#d7c8ff', fontWeight: '700' },
+  recTypeTextActive: { color: '#0b0216', fontWeight: '800' },
+  recConfigBox: {
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#12062a',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 77, 210, 0.25)'
+  },
+  recRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  recLabel: { color: '#fef0ff', fontWeight: '700' },
+  recInput: {
+    width: 90,
+    backgroundColor: '#140a2e',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 77, 210, 0.25)',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    color: '#fef0ff',
+    textAlign: 'center',
+  },
+  weekdaysRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 10,
+  },
+  weekdayChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 77, 210, 0.25)',
+    backgroundColor: '#140a2e',
+  },
+  weekdayChipActive: { backgroundColor: '#ff4dd2', borderColor: '#ff4dd2' },
+  weekdayText: { color: '#d7c8ff', fontWeight: '700' },
+  weekdayTextActive: { color: '#0b0216', fontWeight: '800' },
+  recEndValue: { color: '#d7c8ff', fontWeight: '600' },
+  endButtonsRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
+  recActionsRow: { marginTop: 10 },
   dueRow: {
     marginTop: 14,
     flexDirection: 'row',

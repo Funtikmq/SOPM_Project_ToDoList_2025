@@ -28,7 +28,7 @@ try {
   // Inițializare Firestore
   db = getFirestore(app);
 } catch (error) {
-  console.warn('Firebase initialization warning:', error.code);
+  console.warn('Firebase initialization warning:', error?.message || error?.code || error);
 }
 
 export { auth, db };
