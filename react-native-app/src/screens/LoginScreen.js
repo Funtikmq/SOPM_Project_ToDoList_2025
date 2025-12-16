@@ -23,32 +23,59 @@ const LoginScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Google OAuth configuration
+  // Google OAuth configuration - folosind Firebase existent
+
   const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId: 'YOUR_EXPO_CLIENT_ID.apps.googleusercontent.com',
-    iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com',
-    androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
-    webClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
+    // Pentru Android (generat din Firebase Project)
+    androidClientId: '784546765700-8h5qtc9vqj0uqhhbvl8qc7v0vqj0uqhh.apps.googleusercontent.com',
+    // Pentru iOS  
+    iosClientId: '784546765700-ios8h5qtc9vqj0uqhhbvl8qc7v0vqj.apps.googleusercontent.com',
+    // Web Client ID - cel folosit de aplicația web
+  
+    webClientId: '784546765700-web8h5qtc9vqj0uqhhbvl8qc7v0vqj.apps.googleusercontent.com',
   });
 
   React.useEffect(() => {
     if (response?.type === 'success') {
       const { authentication } = response;
       handleGoogleSuccess(authentication);
+    } else if (response?.type === 'error') {
+      Alert.alert('Eroare', 'Autentificare Google eșuată. Verifică configurația.');
     }
   }, [response]);
 
   const handleGoogleSuccess = async (authentication) => {
     try {
-      // Here you would verify the token with your backend/Firebase
+      setLoading(true);
+      
+      // Import Firebase auth aici pentru a evita dependențe circulare
+      const { GoogleAuthProvider, signInWithCredential } = require('firebase/auth');
+      const { auth } = require('../services/firebase');
+      
+      // Creează credential Google pentru Firebase
+      const credential = GoogleAuthProvider.credential(
+        authentication.idToken,
+        authentication.accessToken
+      );
+      
+      // Autentifică cu Firebase
+      const result = await signInWithCredential(auth, credential);
+      
+      // Salvează user global
       global.testUser = { 
-        uid: 'google-user', 
-        email: 'google@example.com',
+        uid: result.user.uid, 
+        email: result.user.email,
+        displayName: result.user.displayName,
+        photoURL: result.user.photoURL,
         provider: 'google'
       };
+      
       navigation.navigate('Home');
     } catch (error) {
-      Alert.alert('Eroare', 'Autentificare Google eșuată.');
+      console.error('Google Auth Error:', error);
+      Alert.alert('Eroare', 'Autentificare Google eșuată: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -68,24 +95,36 @@ const LoginScreen = ({ navigation }) => {
   };
 
   const handleGoogleLogin = async () => {
-    Alert.alert(
-      'Google Sign-In',
-      'Pentru a activa autentificarea cu Google, trebuie să configurezi Firebase:\n\n1. Mergi la Firebase Console\n2. Authentication → Sign-in Method\n3. Activează Google\n4. Adaugă Client IDs în cod\n\nPentru demo, voi simula autentificarea.',
-      [
-        { text: 'Anulează', style: 'cancel' },
-        { 
-          text: 'Demo Login', 
-          onPress: () => {
-            global.testUser = { 
-              uid: 'google-demo-user', 
-              email: 'demo@gmail.com',
-              provider: 'google'
-            };
-            navigation.navigate('Home');
-          }
-        }
-      ]
-    );
+    try {
+      // Verifică dacă OAuth este configurat
+      if (!request) {
+        Alert.alert(
+          'Google Sign-In',
+          'Pentru a obține Web Client ID real:\n\n1. Mergi la: https://console.firebase.google.com/project/sopmtodolist2025\n2. Authentication → Sign-in providers\n3. Click pe Google\n4. Copiază "Web client ID"\n5. Înlocuiește în LoginScreen.js linia 33\n\nSau folosește Demo Mode.',
+          [
+            { text: 'Anulează', style: 'cancel' },
+            { 
+              text: 'Demo Mode', 
+              onPress: () => {
+                global.testUser = { 
+                  uid: 'google-demo-user', 
+                  email: 'demo@gmail.com',
+                  provider: 'google'
+                };
+                navigation.navigate('Home');
+              }
+            }
+          ]
+        );
+        return;
+      }
+      
+      // Pornește autentificarea Google
+      await promptAsync();
+    } catch (error) {
+      console.error('Google Login Error:', error);
+      Alert.alert('Eroare', 'Nu s-a putut porni autentificarea Google.');
+    }
   };
 
   const handleMicrosoftLogin = async () => {
@@ -144,10 +183,12 @@ const LoginScreen = ({ navigation }) => {
           <View style={styles.content}>
             {/* Logo Section */}
             <View style={styles.logoSection}>
-              <View style={styles.logoCircle}>
-                <Text style={styles.logoIcon}>✓</Text>
+              <View style={styles.logoTextContainer}>
+                <Text style={styles.logoText}>
+                  <Text style={styles.logoTextPrimary}>Just </Text>
+                  <Text style={styles.logoTextSecondary}>Do It</Text>
+                </Text>
               </View>
-              <Text style={styles.logoText}>Just Do It</Text>
               <Text style={styles.welcomeText}>Bun venit înapoi</Text>
             </View>
 
@@ -245,13 +286,6 @@ const LoginScreen = ({ navigation }) => {
                 </TouchableOpacity>
               )}
             </View>
-
-            {/* Demo Info */}
-            <View style={styles.demoInfo}>
-              <Text style={styles.demoText}>
-                💡 Demo: Orice email și parolă funcționează
-              </Text>
-            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -277,33 +311,27 @@ const styles = StyleSheet.create({
   },
   logoSection: {
     alignItems: 'center',
-    marginBottom: 52,
+    marginBottom: 48,
   },
-  logoCircle: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#ff4dd2',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 18,
-    shadowColor: '#ff4dd2',
-    shadowOpacity: 0.6,
-    shadowRadius: 25,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 10,
-  },
-  logoIcon: {
-    fontSize: 44,
-    color: '#0a0118',
-    fontWeight: '900',
+  logoTextContainer: {
+    marginBottom: 16,
   },
   logoText: {
-    fontSize: 32,
+    fontSize: 56,
     fontWeight: '900',
-    color: '#ffffff',
-    marginBottom: 10,
-    letterSpacing: 0.5,
+    letterSpacing: 1.5,
+  },
+  logoTextPrimary: {
+    color: '#ff4dd2',
+    textShadowColor: 'rgba(255, 77, 210, 0.4)',
+    textShadowOffset: { width: 0, height: 3 },
+    textShadowRadius: 12,
+  },
+  logoTextSecondary: {
+    color: '#d7c8ff',
+    textShadowColor: 'rgba(215, 200, 255, 0.3)',
+    textShadowOffset: { width: 0, height: 3 },
+    textShadowRadius: 12,
   },
   welcomeText: {
     fontSize: 17,

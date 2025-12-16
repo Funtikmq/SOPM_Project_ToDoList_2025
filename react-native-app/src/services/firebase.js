@@ -3,14 +3,14 @@ import { initializeAuth, getReactNativePersistence, signInWithEmailAndPassword, 
 import { getFirestore, collection, doc, setDoc, getDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Configurația Firebase - înlocuiește cu datele tale din Firebase Console
+// Configurația Firebase - folosim aceleași credențiale ca aplicația web
 const firebaseConfig = {
-  apiKey: "AIzaSyDEMO_KEY_REPLACE_THIS",
-  authDomain: "demo-project.firebaseapp.com",
-  projectId: "demo-project",
-  storageBucket: "demo-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef123456"
+  apiKey: "AIzaSyDLOTBGjzp3WtHrlkBvIS7Uz8Lsxm8XezA",
+  authDomain: "sopmtodolist2025.firebaseapp.com",
+  projectId: "sopmtodolist2025",
+  storageBucket: "sopmtodolist2025.appspot.com",
+  messagingSenderId: "784546765700",
+  appId: "1:784546765700:web:8caf105ed5bd5ea311dbd1"
 };
 
 let auth;
