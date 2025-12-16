@@ -523,19 +523,14 @@ const HomeScreen = ({ navigation }) => {
         <View style={[styles.accentBar, { backgroundColor: theme.accent }]} />
       </View>
 
-      {/* Recurring preview */}
+      {/* Motivational Quote */}
       <View style={[styles.recurringCard, { backgroundColor: theme.card, borderColor: theme.accentBorder }]}>
-        <Text style={[styles.recurringTitle, { color: theme.textSecondary }]}>Task-uri recurente (următoarea dată)</Text>
-        {recurringPreview.length === 0 ? (
-          <Text style={[styles.recurringEmpty, { color: theme.textSecondary }]}>Nu există reguli de recurență definite.</Text>
-        ) : (
-          recurringPreview.map((x) => (
-            <View key={x.id} style={styles.recurringItem}>
-              <Text style={[styles.recurringItemTitle, { color: theme.text }]}>{x.title}</Text>
-              <Text style={[styles.recurringItemDate, { color: theme.accent }]}>{x.nextDate}</Text>
-            </View>
-          ))
-        )}
+        <Text style={[styles.motivationalQuote, { color: theme.text }]}>
+          "Fiecare zi este o nouă oportunitate de a fi mai bun decât ieri."
+        </Text>
+        <Text style={[styles.motivationalAuthor, { color: theme.textSecondary }]}>
+          — Începe astăzi! 💪
+        </Text>
       </View>
 
       <View style={styles.filterRow}>
@@ -906,29 +901,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 77, 210, 0.25)',
   },
-  recurringTitle: {
-    color: '#d7c8ff',
-    fontSize: 14,
+  motivationalQuote: {
+    fontSize: 16,
     fontWeight: '600',
+    lineHeight: 24,
+    textAlign: 'center',
     marginBottom: 8,
+    fontStyle: 'italic',
   },
-  recurringEmpty: {
-    color: '#d7c8ff',
-    fontSize: 12,
-  },
-  recurringItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 6,
-  },
-  recurringItemTitle: {
-    color: '#ffffff',
+  motivationalAuthor: {
     fontSize: 13,
-  },
-  recurringItemDate: {
-    color: '#ff4dd2',
-    fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '500',
+    textAlign: 'center',
   },
   accentBar: {
     height: 4,
