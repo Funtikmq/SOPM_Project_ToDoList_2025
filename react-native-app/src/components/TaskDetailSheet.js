@@ -13,6 +13,32 @@ import {
 
 const STATUS_OPTIONS = ['Upcoming', 'Overdue', 'Completed', 'Canceled'];
 
+const getDetailTheme = (isDark) => {
+  if (isDark) {
+    return {
+      bg: '#0b0216',
+      headerBg: '#12062a',
+      card: '#140a2e',
+      border: 'rgba(255, 77, 210, 0.25)',
+      text: '#ffffff',
+      textSecondary: '#d7c8ff',
+      accent: '#ff4dd2',
+      accentLight: '#ff9ff3',
+    };
+  } else {
+    return {
+      bg: '#f8f7fc',
+      headerBg: '#ffffff',
+      card: '#ffffff',
+      border: 'rgba(255, 77, 210, 0.15)',
+      text: '#1a1a1a',
+      textSecondary: '#666666',
+      accent: '#ff4dd2',
+      accentLight: '#ff6b9d',
+    };
+  }
+};
+
 const TaskDetailSheet = ({
   visible,
   task,
@@ -25,7 +51,9 @@ const TaskDetailSheet = ({
   onDueDateChange,
   onDelete,
   onUpdateRecurrence,
+  isDarkMode = true,
 }) => {
+  const theme = getDetailTheme(isDarkMode);
   const translateY = useRef(new Animated.Value(400)).current;
   const [subtaskTitle, setSubtaskTitle] = useState('');
   const [recType, setRecType] = useState(task?.recurring?.type || (task?.recurring?.isRecurring ? 'daily' : 'none'));

@@ -53,6 +53,42 @@ let mockTasks = [
 // Initialize global tasks immediately
 global.mockTasks = [...mockTasks];
 
+const getTheme = (isDark) => {
+  if (isDark) {
+    return {
+      bg: '#0b0216',
+      header: '#12062a',
+      card: '#140a2e',
+      cardBorder: 'rgba(255, 77, 210, 0.3)',
+      text: '#ffffff',
+      textSecondary: '#d7c8ff',
+      textTertiary: '#fef0ff',
+      accent: '#ff4dd2',
+      accentLight: '#ff9ff3',
+      accentDim: 'rgba(255, 77, 210, 0.15)',
+      accentBorder: 'rgba(255, 77, 210, 0.25)',
+      border: 'rgba(255, 73, 214, 0.15)',
+      chip: '#12062a',
+    };
+  } else {
+    return {
+      bg: '#f8f7fc',
+      header: '#ffffff',
+      card: '#ffffff',
+      cardBorder: 'rgba(255, 77, 210, 0.2)',
+      text: '#1a1a1a',
+      textSecondary: '#555555',
+      textTertiary: '#333333',
+      accent: '#ff4dd2',
+      accentLight: '#ff6b9d',
+      accentDim: 'rgba(255, 77, 210, 0.1)',
+      accentBorder: 'rgba(255, 77, 210, 0.2)',
+      border: 'rgba(255, 77, 210, 0.2)',
+      chip: '#f0e8f8',
+    };
+  }
+};
+
 const HomeScreen = ({ navigation }) => {
   const [tasks, setTasks] = useState(mockTasks);
   const [loading, setLoading] = useState(false);
@@ -64,6 +100,10 @@ const HomeScreen = ({ navigation }) => {
   const [detailVisible, setDetailVisible] = useState(false);
   const [addVisible, setAddVisible] = useState(false);
   const [filterStatus, setFilterStatus] = useState('Upcoming');
+  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  const theme = getTheme(isDarkMode);
 
   const statusCounts = useMemo(() => {
     return tasks.reduce(
@@ -432,6 +472,7 @@ const HomeScreen = ({ navigation }) => {
           onPress: async () => {
             // Șterge mock user
             global.testUser = null;
+            setProfileMenuVisible(false);
             // Reîncarcă navigatorul
             navigation.reset({
               index: 0,
@@ -443,47 +484,55 @@ const HomeScreen = ({ navigation }) => {
     );
   };
 
+  const userEmail = global.testUser?.email || 'user@example.com';
+  const userInitials = userEmail.split('@')[0].substring(0, 2).toUpperCase();
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
+      <View style={[styles.header, { backgroundColor: theme.header, borderBottomColor: theme.border }]}>
         <View>
-          <Text style={styles.headerTitle}>My Tasks</Text>
-          <Text style={styles.subtitle}>Just Do It</Text>
+          <Text style={[styles.headerTitle, { color: theme.accent }]}>My Tasks</Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Just Do It</Text>
         </View>
         <View style={styles.headerButtons}>
           <TouchableOpacity 
-            onPress={() => navigation.navigate('Calendar')} 
-            style={styles.calendarBtn}
+            onPress={() => navigation.navigate('Calendar', { isDarkMode })} 
+            style={[styles.calendarBtn, { borderColor: theme.accentBorder, backgroundColor: theme.accentDim }]}
+            activeOpacity={0.7}
           >
             <Text style={styles.calendarBtnText}>📅</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleLogout} style={styles.logoutPill}>
-            <Text style={styles.logoutButton}>Logout</Text>
+          <TouchableOpacity 
+            onPress={() => setProfileMenuVisible(!profileMenuVisible)}
+            style={[styles.profileCircle, { backgroundColor: theme.accent }]}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.profileInitials}>{userInitials}</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      <View style={styles.topCard}>
-        <Text style={styles.topTitle}>Astăzi</Text>
-        <Text style={styles.topValue}>
+      <View style={[styles.topCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+        <Text style={[styles.topTitle, { color: theme.textSecondary }]}>Astăzi</Text>
+        <Text style={[styles.topValue, { color: theme.text }]}>
           {filteredTasks.length} {filterStatus.toLowerCase()} task-uri
         </Text>
-        <Text style={styles.topSub}>
+        <Text style={[styles.topSub, { color: theme.textSecondary }]}>
           Upcoming {statusCounts.Upcoming} · Overdue {statusCounts.Overdue} · Completed {statusCounts.Completed}
         </Text>
-        <View style={styles.accentBar} />
+        <View style={[styles.accentBar, { backgroundColor: theme.accent }]} />
       </View>
 
       {/* Recurring preview */}
-      <View style={styles.recurringCard}>
-        <Text style={styles.recurringTitle}>Task-uri recurente (următoarea dată)</Text>
+      <View style={[styles.recurringCard, { backgroundColor: theme.card, borderColor: theme.accentBorder }]}>
+        <Text style={[styles.recurringTitle, { color: theme.textSecondary }]}>Task-uri recurente (următoarea dată)</Text>
         {recurringPreview.length === 0 ? (
-          <Text style={styles.recurringEmpty}>Nu există reguli de recurență definite.</Text>
+          <Text style={[styles.recurringEmpty, { color: theme.textSecondary }]}>Nu există reguli de recurență definite.</Text>
         ) : (
           recurringPreview.map((x) => (
             <View key={x.id} style={styles.recurringItem}>
-              <Text style={styles.recurringItemTitle}>{x.title}</Text>
-              <Text style={styles.recurringItemDate}>{x.nextDate}</Text>
+              <Text style={[styles.recurringItemTitle, { color: theme.text }]}>{x.title}</Text>
+              <Text style={[styles.recurringItemDate, { color: theme.accent }]}>{x.nextDate}</Text>
             </View>
           ))
         )}
@@ -495,14 +544,21 @@ const HomeScreen = ({ navigation }) => {
           return (
             <TouchableOpacity
               key={status}
-              style={[styles.filterChip, isActive && styles.filterChipActive]}
+              style={[
+                styles.filterChip, 
+                { 
+                  backgroundColor: isActive ? `rgba(255, 77, 210, 0.12)` : theme.chip,
+                  borderColor: isActive ? theme.accent : theme.accentBorder,
+                }
+              ]}
               onPress={() => setFilterStatus(status)}
+              activeOpacity={0.7}
             >
-              <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>
+              <Text style={[styles.filterChipText, { color: isActive ? theme.accent : theme.textSecondary }]}>
                 {status}
               </Text>
-              <View style={[styles.filterCount, isActive && styles.filterCountActive]}>
-                <Text style={[styles.filterCountText, isActive && styles.filterCountTextActive]}>
+              <View style={[styles.filterCount, { backgroundColor: isActive ? theme.accent : '#1f0c3d' }]}>
+                <Text style={[styles.filterCountText, { color: isActive ? '#0b0216' : theme.textSecondary }]}>
                   {statusCounts[status] || 0}
                 </Text>
               </View>
@@ -515,12 +571,12 @@ const HomeScreen = ({ navigation }) => {
 
       {loading ? (
         <View style={styles.centerContainer}>
-          <Text style={styles.loadingText}>Se încarcă...</Text>
+          <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Se încarcă...</Text>
         </View>
       ) : filteredTasks.length === 0 ? (
         <View style={styles.centerContainer}>
           <Text style={styles.emptyText}>📝</Text>
-          <Text style={styles.emptySubtext}>
+          <Text style={[styles.emptySubtext, { color: theme.textSecondary }]}>
             Nicio sarcină în filtrul curent ({filterStatus}).
           </Text>
         </View>
@@ -536,6 +592,7 @@ const HomeScreen = ({ navigation }) => {
               onStatusChange={handleStatusChange}
               onProgressChange={handleProgressChange}
               onOpenDetail={handleOpenDetail}
+              isDarkMode={isDarkMode}
             />
           )}
           contentContainerStyle={styles.listContent}
@@ -550,21 +607,30 @@ const HomeScreen = ({ navigation }) => {
             await handleAddTask(taskPayload);
             setAddVisible(false);
           }}
+          isDarkMode={isDarkMode}
         />
       )}
 
       {/* Floating add button (bottom-center pill) */}
-      <TouchableOpacity style={styles.fabCenter} onPress={() => setAddVisible(true)}>
-        <Text style={styles.fabCenterText}>＋ Adaugă Task</Text>
+      <TouchableOpacity 
+        style={[styles.fabCenter, { backgroundColor: theme.accent }]} 
+        onPress={() => setAddVisible(true)}
+        activeOpacity={0.85}
+      >
+        <Text style={[styles.fabCenterText, { color: isDarkMode ? '#0b0216' : '#ffffff' }]}>＋ Adaugă Task</Text>
       </TouchableOpacity>
 
       {lastDeleted && (
-        <View style={styles.undoBar}>
-          <Text style={styles.undoText}>
+        <View style={[styles.undoBar, { backgroundColor: theme.chip, borderColor: theme.accentBorder }]}>
+          <Text style={[styles.undoText, { color: theme.text }]}>
             Task șters · {undoSeconds}s
           </Text>
-          <TouchableOpacity onPress={handleUndoDelete} style={styles.undoButton}>
-            <Text style={styles.undoButtonText}>Undo</Text>
+          <TouchableOpacity 
+            onPress={handleUndoDelete} 
+            style={[styles.undoButton, { backgroundColor: theme.accent }]}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.undoButtonText, { color: isDarkMode ? '#0b0216' : '#ffffff' }]}>Undo</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -584,7 +650,39 @@ const HomeScreen = ({ navigation }) => {
           if (selectedTask) handleDeleteTask(selectedTask.id);
           handleCloseDetail();
         }}
+        isDarkMode={isDarkMode}
       />
+
+      {profileMenuVisible && (
+        <TouchableOpacity 
+          style={styles.profileMenuOverlay}
+          activeOpacity={1}
+          onPress={() => setProfileMenuVisible(false)}
+        >
+          <View style={[styles.profileMenu, { backgroundColor: theme.card, borderColor: theme.cardBorder }]} pointerEvents="box-none">
+            <View style={[styles.profileMenuHeader, { borderBottomColor: theme.accentBorder, backgroundColor: theme.card }]}>
+              <Text style={[styles.profileMenuEmail, { color: theme.accent }]}>{userEmail}</Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.profileMenuRow}
+              onPress={() => {
+                setIsDarkMode(!isDarkMode);
+                setProfileMenuVisible(false);
+              }}
+              activeOpacity={0.5}
+            >
+              <Text style={[styles.profileMenuText, { color: theme.text }]}>{isDarkMode ? '☀️  Light Mode' : '🌙  Dark Mode'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.profileMenuRow, { borderTopWidth: 1, borderTopColor: theme.accentDim }]}
+              onPress={handleLogout}
+              activeOpacity={0.5}
+            >
+              <Text style={[styles.profileMenuText, { color: theme.accentLight }]}>🚪  Logout</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 };
@@ -626,6 +724,73 @@ const styles = StyleSheet.create({
     color: '#d7c8ff',
     marginTop: 4,
   },
+  profileCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#ff4dd2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#ff4dd2',
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  profileInitials: {
+    color: '#0b0216',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  profileMenuOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 998,
+  },
+  profileMenu: {
+    position: 'absolute',
+    right: 16,
+    top: 64,
+    backgroundColor: '#140a2e',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 77, 210, 0.3)',
+    overflow: 'hidden',
+    minWidth: 260,
+    zIndex: 999,
+    shadowColor: '#ff4dd2',
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+  },
+  profileMenuHeader: {
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 77, 210, 0.2)',
+    backgroundColor: '#0f0620',
+  },
+  profileMenuEmail: {
+    color: '#ff4dd2',
+    fontWeight: '800',
+    fontSize: 14,
+    letterSpacing: 0.3,
+  },
+  profileMenuRow: {
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    minHeight: 56,
+    justifyContent: 'center',
+  },
+  profileMenuText: {
+    color: '#fef0ff',
+    fontWeight: '700',
+    fontSize: 15,
+    letterSpacing: 0.2,
+  },
   logoutButton: {
     color: '#0b0216',
     fontSize: 15,
@@ -653,12 +818,12 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 16,
     shadowColor: '#ff4dd2',
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
   },
   fabCenterText: {
     color: '#0b0216',
@@ -705,14 +870,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 12,
     marginBottom: 8,
-    padding: 16,
+    padding: 18,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 77, 210, 0.3)',
     shadowColor: '#ff4dd2',
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 10 },
+    elevation: 5,
   },
   topTitle: {
     color: '#d7c8ff',
@@ -784,12 +950,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginHorizontal: 4,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(255, 77, 210, 0.25)',
     backgroundColor: '#12062a',
+    minHeight: 48,
   },
   filterChipActive: {
     borderColor: '#ff4dd2',

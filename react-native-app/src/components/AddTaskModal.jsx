@@ -4,7 +4,56 @@ import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView 
 const PRIORITIES = ['Low','Medium','High'];
 const TAG_OPTIONS = ['Work','Personal','Urgent','Later'];
 
-export default function AddTaskModal({ visible, onClose, onSave }) {
+const getAddTaskTheme = (isDark) => {
+  if (isDark) {
+    return {
+      modalBg: '#0b0216',
+      headerBg: '#12062a',
+      inputBg: '#1a0c38',
+      inputBorder: 'rgba(255, 77, 210, 0.25)',
+      inputText: '#ffffff',
+      inputPlaceholder: '#999999',
+      text: '#ffffff',
+      textSecondary: '#d7c8ff',
+      chipBg: '#140a2e',
+      chipBgActive: 'rgba(255, 77, 210, 0.3)',
+      chipText: '#d7c8ff',
+      chipTextActive: '#ff4dd2',
+      buttonBg: '#ff4dd2',
+      buttonText: '#0b0216',
+      closeButton: '#666666',
+      calendarEmpty: '#12062a',
+      calendarDay: '#ffffff',
+      calendarDayActive: '#ff4dd2',
+      borderColor: 'rgba(255, 77, 210, 0.2)',
+    };
+  } else {
+    return {
+      modalBg: '#f8f7fc',
+      headerBg: '#ffffff',
+      inputBg: '#ffffff',
+      inputBorder: 'rgba(255, 77, 210, 0.15)',
+      inputText: '#1a1a1a',
+      inputPlaceholder: '#999999',
+      text: '#1a1a1a',
+      textSecondary: '#666666',
+      chipBg: '#f0e8f8',
+      chipBgActive: 'rgba(255, 77, 210, 0.2)',
+      chipText: '#666666',
+      chipTextActive: '#ff4dd2',
+      buttonBg: '#ff4dd2',
+      buttonText: '#ffffff',
+      closeButton: '#999999',
+      calendarEmpty: '#f9f9f9',
+      calendarDay: '#1a1a1a',
+      calendarDayActive: '#ff4dd2',
+      borderColor: 'rgba(255, 77, 210, 0.15)',
+    };
+  }
+};
+
+export default function AddTaskModal({ visible, onClose, onSave, isDarkMode = true }) {
+  const theme = getAddTaskTheme(isDarkMode);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [subtasks, setSubtasks] = useState([]);
@@ -79,30 +128,30 @@ export default function AddTaskModal({ visible, onClose, onSave }) {
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <View style={styles.sheet}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Adaugă Task</Text>
-            <TouchableOpacity onPress={onClose}><Text style={styles.close}>✕</Text></TouchableOpacity>
+      <View style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.6)' }]}>
+        <View style={[styles.sheet, { backgroundColor: theme.modalBg }]}>
+          <View style={[styles.header, { borderBottomColor: theme.borderColor, backgroundColor: theme.headerBg }]}>
+            <Text style={[styles.title, { color: theme.accent }]}>Adaugă Task</Text>
+            <TouchableOpacity onPress={onClose}><Text style={[styles.close, { color: theme.closeButton }]}>✕</Text></TouchableOpacity>
           </View>
           <ScrollView style={{ paddingHorizontal: 20 }}>
-            <Text style={styles.label}>Titlu task *</Text>
-            <TextInput style={[styles.input, !title.trim() && styles.inputError]} placeholder="Titlu" placeholderTextColor="#8d7aac" value={title} onChangeText={setTitle} />
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Titlu task *</Text>
+            <TextInput style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText }, !title.trim() && styles.inputError]} placeholder="Titlu" placeholderTextColor={theme.inputPlaceholder} value={title} onChangeText={setTitle} />
 
-            <Text style={styles.label}>Descriere</Text>
-            <TextInput style={[styles.input, styles.multiline]} multiline numberOfLines={3} placeholder="Descriere" placeholderTextColor="#8d7aac" value={description} onChangeText={setDescription} />
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Descriere</Text>
+            <TextInput style={[styles.input, styles.multiline, { backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText }]} multiline numberOfLines={3} placeholder="Descriere" placeholderTextColor={theme.inputPlaceholder} value={description} onChangeText={setDescription} />
 
-            <Text style={styles.label}>Subtask-uri</Text>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Subtask-uri</Text>
             <View style={styles.rowBetween}>
               <TextInput
-                style={[styles.input, { flex: 1, marginRight: 8 }]}
+                style={[styles.input, { flex: 1, marginRight: 8, backgroundColor: theme.inputBg, borderColor: theme.inputBorder, color: theme.inputText }]}
                 placeholder="Adaugă subtask"
-                placeholderTextColor="#8d7aac"
+                placeholderTextColor={theme.inputPlaceholder}
                 value={subtaskInput}
                 onChangeText={setSubtaskInput}
               />
               <TouchableOpacity
-                style={[styles.smallBtn, { paddingVertical: 10 }]} 
+                style={[styles.smallBtn, { paddingVertical: 10, backgroundColor: theme.buttonBg }]} 
                 onPress={() => {
                   const t = subtaskInput.trim();
                   if (!t) return;
@@ -110,50 +159,50 @@ export default function AddTaskModal({ visible, onClose, onSave }) {
                   setSubtaskInput('');
                 }}
               >
-                <Text style={styles.smallBtnText}>Adaugă</Text>
+                <Text style={[styles.smallBtnText, { color: theme.buttonText }]}>Adaugă</Text>
               </TouchableOpacity>
             </View>
             {subtasks.length > 0 && (
-              <View style={[styles.box, { marginTop: 8 }]}> 
+              <View style={[styles.box, { marginTop: 8, backgroundColor: theme.chipBg, borderColor: theme.borderColor }]}> 
                 {subtasks.map((st, idx) => (
                   <View key={idx} style={styles.rowBetween}>
-                    <Text style={{ color: '#d7c8ff', fontWeight: '700' }}>{st.title}</Text>
+                    <Text style={{ color: theme.text, fontWeight: '700' }}>{st.title}</Text>
                     <TouchableOpacity
                       style={styles.smallGhost}
                       onPress={() => setSubtasks((prev) => prev.filter((_, i) => i !== idx))}
                     >
-                      <Text style={styles.smallGhostText}>Șterge</Text>
+                      <Text style={[styles.smallGhostText, { color: theme.accentLight }]}>Șterge</Text>
                     </TouchableOpacity>
                   </View>
                 ))}
               </View>
             )}
 
-            <Text style={styles.label}>Data</Text>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Data</Text>
             <View style={styles.dateNavRow}>
               <TouchableOpacity 
-                style={styles.navBtn}
+                style={[styles.navBtn, { borderColor: theme.accentBorder, backgroundColor: theme.chipBgActive }]}
                 onPress={() => {
                   if (pickerMonth === 0) { setPickerMonth(11); setPickerYear(pickerYear - 1); }
                   else { setPickerMonth(pickerMonth - 1); }
                 }}
               >
-                <Text style={styles.navBtnText}>← Prev</Text>
+                <Text style={[styles.navBtnText, { color: theme.accent }]}>← Prev</Text>
               </TouchableOpacity>
-              <Text style={styles.monthYearDisplay}>{monthNames[pickerMonth]} {pickerYear}</Text>
+              <Text style={[styles.monthYearDisplay, { color: theme.accent }]}>{monthNames[pickerMonth]} {pickerYear}</Text>
               <TouchableOpacity 
-                style={styles.navBtn}
+                style={[styles.navBtn, { borderColor: theme.accentBorder, backgroundColor: theme.chipBgActive }]}
                 onPress={() => {
                   if (pickerMonth === 11) { setPickerMonth(0); setPickerYear(pickerYear + 1); }
                   else { setPickerMonth(pickerMonth + 1); }
                 }}
               >
-                <Text style={styles.navBtnText}>Next →</Text>
+                <Text style={[styles.navBtnText, { color: theme.accent }]}>Next →</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.calendarGrid}>
               {['L','M','M','J','V','S','D'].map((d, idx) => (
-                <Text key={idx} style={styles.calendarDayHeader}>{d}</Text>
+                <Text key={idx} style={[styles.calendarDayHeader, { color: theme.accentLight }]}>{d}</Text>
               ))}
               {calendarDays.map((day, idx) => {
                 const dateStr = day ? `${pickerYear}-${String(pickerMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : null;
@@ -161,65 +210,65 @@ export default function AddTaskModal({ visible, onClose, onSave }) {
                 return (
                   <TouchableOpacity
                     key={idx}
-                    style={[styles.calendarDay, isSelected && styles.calendarDaySelected, !day && styles.calendarDayEmpty]}
+                    style={[styles.calendarDay, { backgroundColor: isSelected ? theme.accent : 'rgba(255, 77, 210, 0.1)', borderColor: isSelected ? theme.accent : theme.borderColor }, !day && styles.calendarDayEmpty]}
                     onPress={() => handleDaySelect(day)}
                     disabled={!day}
                   >
-                    <Text style={[styles.calendarDayText, isSelected && styles.calendarDayTextSelected]}>{day}</Text>
+                    <Text style={[styles.calendarDayText, { color: isSelected ? theme.buttonText : theme.calendarDay }, isSelected && styles.calendarDayTextSelected]}>{day}</Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
 
-            <Text style={styles.label}>Prioritate</Text>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Prioritate</Text>
             <View style={styles.rowWrap}>
               {PRIORITIES.map((p) => {
                 const active = priority === p;
                 return (
-                  <TouchableOpacity key={p} style={[styles.chip, active && styles.chipActive]} onPress={() => setPriority(p)}>
-                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{p}</Text>
+                  <TouchableOpacity key={p} style={[styles.chip, { backgroundColor: active ? theme.accent : theme.chipBg, borderColor: active ? theme.accent : theme.borderColor }]} onPress={() => setPriority(p)}>
+                    <Text style={[styles.chipText, { color: active ? theme.buttonText : theme.text }]}>{p}</Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
 
-            <Text style={styles.label}>Tag-uri</Text>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Tag-uri</Text>
             <View style={styles.rowWrap}>
               {TAG_OPTIONS.map((t) => {
                 const active = tags.includes(t);
                 return (
-                  <TouchableOpacity key={t} style={[styles.chip, active && styles.chipActive]} onPress={() => toggleTag(t)}>
-                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{t}</Text>
+                  <TouchableOpacity key={t} style={[styles.chip, { backgroundColor: active ? theme.accent : theme.chipBg, borderColor: active ? theme.accent : theme.borderColor }]} onPress={() => toggleTag(t)}>
+                    <Text style={[styles.chipText, { color: active ? theme.buttonText : theme.text }]}>{t}</Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
 
-            <Text style={styles.label}>Recurență</Text>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Recurență</Text>
             <View style={styles.rowWrap}>
               {['none','daily','weekly','monthly'].map((t) => {
                 const active = recType === t;
                 return (
-                  <TouchableOpacity key={t} style={[styles.chip, active && styles.chipActive]} onPress={() => setRecType(t)}>
-                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{t.toUpperCase()}</Text>
+                  <TouchableOpacity key={t} style={[styles.chip, { backgroundColor: active ? theme.accent : theme.chipBg, borderColor: active ? theme.accent : theme.borderColor }]} onPress={() => setRecType(t)}>
+                    <Text style={[styles.chipText, { color: active ? theme.buttonText : theme.text }]}>{t.toUpperCase()}</Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
 
             {recType !== 'none' && (
-              <View style={styles.box}>
+              <View style={[styles.box, { backgroundColor: theme.chipBg, borderColor: theme.borderColor }]}>
                 <View style={styles.rowBetween}>
-                  <Text style={styles.boxLabel}>Interval</Text>
-                  <TextInput style={styles.boxInput} value={recInterval} onChangeText={setRecInterval} keyboardType="number-pad" placeholder="1" placeholderTextColor="#8d7aac" />
+                  <Text style={[styles.boxLabel, { color: theme.text }]}>Interval</Text>
+                  <TextInput style={[styles.boxInput, { backgroundColor: theme.inputBg, borderColor: theme.borderColor, color: theme.inputText }]} value={recInterval} onChangeText={setRecInterval} keyboardType="number-pad" placeholder="1" placeholderTextColor={theme.inputPlaceholder} />
                 </View>
                 {recType === 'weekly' && (
                   <View style={[styles.rowWrap,{ marginTop: 8 }]}> 
                     {['mon','tue','wed','thu','fri','sat','sun'].map((d) => {
                       const active = recWeekdays.includes(d);
                       return (
-                        <TouchableOpacity key={d} style={[styles.chip, active && styles.chipActive]} onPress={() => toggleWeekday(d)}>
-                          <Text style={[styles.chipText, active && styles.chipTextActive]}>{d.toUpperCase()}</Text>
+                        <TouchableOpacity key={d} style={[styles.chip, { backgroundColor: active ? theme.accent : theme.chipBg, borderColor: active ? theme.accent : theme.borderColor }]} onPress={() => toggleWeekday(d)}>
+                          <Text style={[styles.chipText, { color: active ? theme.buttonText : theme.text }]}>{d.toUpperCase()}</Text>
                         </TouchableOpacity>
                       );
                     })}
@@ -227,31 +276,31 @@ export default function AddTaskModal({ visible, onClose, onSave }) {
                 )}
                 {recType === 'monthly' && (
                   <View style={styles.rowBetween}>
-                    <Text style={styles.boxLabel}>Zi din lună</Text>
-                    <TextInput style={styles.boxInput} value={recMonthday} onChangeText={setRecMonthday} keyboardType="number-pad" placeholder="1-31" placeholderTextColor="#8d7aac" />
+                    <Text style={[styles.boxLabel, { color: theme.text }]}>Zi din lună</Text>
+                    <TextInput style={[styles.boxInput, { backgroundColor: theme.inputBg, borderColor: theme.borderColor, color: theme.inputText }]} value={recMonthday} onChangeText={setRecMonthday} keyboardType="number-pad" placeholder="1-31" placeholderTextColor={theme.inputPlaceholder} />
                   </View>
                 )}
                 <View style={styles.rowBetween}>
-                  <Text style={styles.boxLabel}>End date</Text>
-                  <Text style={styles.endValue}>{recEndDate || 'None'}</Text>
+                  <Text style={[styles.boxLabel, { color: theme.text }]}>End date</Text>
+                  <Text style={[styles.endValue, { color: theme.textSecondary }]}>{recEndDate || 'None'}</Text>
                 </View>
                 <View style={styles.rowWrap}>
-                  <TouchableOpacity style={styles.smallBtn} onPress={() => { const d = new Date(); d.setDate(d.getDate()+30); setRecEndDate(d.toISOString().split('T')[0]); }}>
-                    <Text style={styles.smallBtnText}>+30 zile</Text>
+                  <TouchableOpacity style={[styles.smallBtn, { backgroundColor: theme.accent }]} onPress={() => { const d = new Date(); d.setDate(d.getDate()+30); setRecEndDate(d.toISOString().split('T')[0]); }}>
+                    <Text style={[styles.smallBtnText, { color: theme.buttonText }]}>+30 zile</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.smallBtn} onPress={() => { const d = new Date(); d.setDate(d.getDate()+365); setRecEndDate(d.toISOString().split('T')[0]); }}>
-                    <Text style={styles.smallBtnText}>+1 an</Text>
+                  <TouchableOpacity style={[styles.smallBtn, { backgroundColor: theme.accent }]} onPress={() => { const d = new Date(); d.setDate(d.getDate()+365); setRecEndDate(d.toISOString().split('T')[0]); }}>
+                    <Text style={[styles.smallBtnText, { color: theme.buttonText }]}>+1 an</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.smallGhost} onPress={() => setRecEndDate('')}>
-                    <Text style={styles.smallGhostText}>Clear</Text>
+                  <TouchableOpacity style={[styles.smallGhost, { borderColor: theme.borderColor, backgroundColor: theme.chipBg }]} onPress={() => setRecEndDate('')}>
+                    <Text style={[styles.smallGhostText, { color: theme.accentLight }]}>Clear</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             )}
           </ScrollView>
-          <View style={styles.actions}>
-            <TouchableOpacity style={styles.saveBtn} onPress={handleSave}><Text style={styles.saveText}>Salvează</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}><Text style={styles.cancelText}>Anulează</Text></TouchableOpacity>
+          <View style={[styles.actions, { borderTopColor: theme.borderColor, backgroundColor: theme.headerBg }]}>
+            <TouchableOpacity style={[styles.saveBtn, { backgroundColor: theme.accent }]} onPress={handleSave}><Text style={[styles.saveText, { color: theme.buttonText }]}>Salvează</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.cancelBtn, { borderColor: theme.borderColor, backgroundColor: theme.chipBg }]} onPress={onClose}><Text style={[styles.cancelText, { color: theme.accentLight }]}>Anulează</Text></TouchableOpacity>
           </View>
         </View>
       </View>

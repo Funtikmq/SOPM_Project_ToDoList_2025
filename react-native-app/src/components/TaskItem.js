@@ -3,17 +3,40 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 const STATUS_ORDER = ['Overdue', 'Upcoming', 'Completed', 'Canceled'];
 
-const TaskItem = ({ task, onDelete, onOpenDetail }) => {
+const getTaskTheme = (isDark) => {
+  if (isDark) {
+    return {
+      container: '#1a0c38',
+      border: 'rgba(255, 77, 210, 0.28)',
+      text: '#ffffff',
+      textSecondary: '#d7c8ff',
+      subtaskChip: '#140a2e',
+      subtaskText: '#ff9ff3',
+    };
+  } else {
+    return {
+      container: '#f9f7ff',
+      border: 'rgba(255, 77, 210, 0.15)',
+      text: '#1a1a1a',
+      textSecondary: '#666666',
+      subtaskChip: '#f0e8f8',
+      subtaskText: '#ff4dd2',
+    };
+  }
+};
+
+const TaskItem = ({ task, onDelete, onOpenDetail, isDarkMode = true }) => {
+  const taskTheme = getTaskTheme(isDarkMode);
   const badgeStyle = statusStyles[task.status] || statusStyles.Upcoming;
 
   return (
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={() => onOpenDetail(task.id)}
-      style={[styles.taskContainer, task.completed && styles.taskContainerDone]}
+      style={[styles.taskContainer, { backgroundColor: taskTheme.container, borderColor: taskTheme.border }, task.completed && styles.taskContainerDone]}
     >
       <View style={styles.taskContentMinimal}>
-        <Text style={[styles.taskTitle, task.completed && styles.taskTitleDone]} numberOfLines={1}>
+        <Text style={[styles.taskTitle, { color: taskTheme.text }, task.completed && styles.taskTitleDone]} numberOfLines={1}>
           {task.title}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -21,21 +44,14 @@ const TaskItem = ({ task, onDelete, onOpenDetail }) => {
             <Text style={[styles.statusText, badgeStyle.text]}>{task.status || 'Upcoming'}</Text>
           </View>
           {Array.isArray(task.subtasks) && task.subtasks.length > 0 && (
-            <View style={styles.subtaskChip}>
-              <Text style={styles.subtaskChipText}>
+            <View style={[styles.subtaskChip, { backgroundColor: taskTheme.subtaskChip }]}>
+              <Text style={[styles.subtaskChipText, { color: taskTheme.subtaskText }]}>
                 {task.subtasks.filter((s) => s.isCompleted).length}/{task.subtasks.length} subtasks
               </Text>
             </View>
           )}
         </View>
       </View>
-
-      <TouchableOpacity 
-        style={styles.deleteButton}
-        onPress={() => onDelete(task.id)}
-      >
-        <Text style={styles.deleteButtonText}>✕</Text>
-      </TouchableOpacity>
     </TouchableOpacity>
   );
 };

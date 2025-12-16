@@ -16,7 +16,41 @@ import WeekView from '../components/calendar/WeekView';
 import DayTimeline from '../components/calendar/DayTimeline';
 import TaskDetailSheet from '../components/TaskDetailSheet';
 
-const CalendarScreen = ({ navigation }) => {
+const getCalendarTheme = (isDark) => {
+  if (isDark) {
+    return {
+      bg: '#0b0216',
+      header: '#12062a',
+      text: '#ffffff',
+      textSecondary: '#d7c8ff',
+      accent: '#ff4dd2',
+      accentDim: 'rgba(255, 77, 210, 0.15)',
+      accentBorder: 'rgba(255, 77, 210, 0.3)',
+      border: 'rgba(255, 73, 214, 0.15)',
+      btnBg: 'transparent',
+      btnBgActive: 'rgba(255, 77, 210, 0.15)',
+    };
+  } else {
+    return {
+      bg: '#f8f7fc',
+      header: '#ffffff',
+      text: '#1a1a1a',
+      textSecondary: '#666666',
+      accent: '#ff4dd2',
+      accentDim: 'rgba(255, 77, 210, 0.1)',
+      accentBorder: 'rgba(255, 77, 210, 0.2)',
+      border: 'rgba(255, 77, 210, 0.1)',
+      btnBg: 'transparent',
+      btnBgActive: 'rgba(255, 77, 210, 0.1)',
+    };
+  }
+};
+
+const CalendarScreen = ({ navigation, route, isDarkMode = true }) => {
+  // Check if isDarkMode was passed via route params
+  const routeIsDarkMode = route?.params?.isDarkMode;
+  const actualIsDarkMode = routeIsDarkMode !== undefined ? routeIsDarkMode : isDarkMode;
+  const theme = getCalendarTheme(actualIsDarkMode);
   // Use the global mockTasks from HomeScreen
   const [viewMode, setViewMode] = useState('month'); // 'month' | 'week' | 'day'
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -87,32 +121,38 @@ const CalendarScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
+      <View style={[styles.header, { backgroundColor: theme.header, borderBottomColor: theme.border }]}>
         <TouchableOpacity 
           onPress={() => navigation.goBack()} 
-          style={styles.backBtn}
+          style={[styles.backBtn, { backgroundColor: theme.accentDim, borderColor: theme.accentBorder }]}
         >
-          <Text style={styles.backBtnText}>← Înapoi</Text>
+          <Text style={[styles.backBtnText, { color: theme.accent }]}>← Înapoi</Text>
         </TouchableOpacity>
         <View>
-          <Text style={styles.headerTitle}>Calendar</Text>
-          <Text style={styles.subtitle}>Plan your tasks</Text>
+          <Text style={[styles.headerTitle, { color: theme.accent }]}>Calendar</Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Plan your tasks</Text>
         </View>
       </View>
 
       {/* View Mode Selector */}
-      <View style={styles.viewModeRow}>
+      <View style={[styles.viewModeRow, { backgroundColor: theme.header, borderBottomColor: theme.border }]}>
         {['month', 'week', 'day'].map((mode) => {
           const isActive = viewMode === mode;
           const labels = { month: 'Lună', week: 'Săptămână', day: 'Zi' };
           return (
             <TouchableOpacity
               key={mode}
-              style={[styles.viewModeBtn, isActive && styles.viewModeBtnActive]}
+              style={[
+                styles.viewModeBtn,
+                {
+                  borderColor: isActive ? theme.accent : theme.accentBorder,
+                  backgroundColor: isActive ? theme.btnBgActive : theme.btnBg,
+                }
+              ]}
               onPress={() => setViewMode(mode)}
             >
-              <Text style={[styles.viewModeText, isActive && styles.viewModeTextActive]}>
+              <Text style={[styles.viewModeText, { color: isActive ? theme.accent : theme.textSecondary }]}>
                 {labels[mode]}
               </Text>
             </TouchableOpacity>
@@ -126,6 +166,7 @@ const CalendarScreen = ({ navigation }) => {
           tasksByDate={tasksByDate}
           selectedDate={selectedDate}
           onSelectDate={handleDateSelect}
+          isDarkMode={actualIsDarkMode}
         />
       )}
 
@@ -135,6 +176,7 @@ const CalendarScreen = ({ navigation }) => {
           onSelectDate={handleDateSelect}
           tasksByDate={tasksByDate}
           onTaskPress={handleTaskPress}
+          isDarkMode={actualIsDarkMode}
         />
       )}
 
@@ -144,6 +186,7 @@ const CalendarScreen = ({ navigation }) => {
           tasksByDate={tasksByDate}
           onTaskPress={handleTaskPress}
           onSelectDate={handleDateSelect}
+          isDarkMode={actualIsDarkMode}
         />
       )}
 
@@ -157,6 +200,7 @@ const CalendarScreen = ({ navigation }) => {
           if (selectedTask) onTaskDelete?.(selectedTask.id);
           handleCloseDetail();
         }}
+        isDarkMode={actualIsDarkMode}
       />
     </SafeAreaView>
   );
@@ -165,39 +209,31 @@ const CalendarScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b0216',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#12062a',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 73, 214, 0.15)',
   },
   backBtn: {
     marginRight: 16,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 10,
-    backgroundColor: 'rgba(255, 77, 210, 0.15)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 77, 210, 0.3)',
   },
   backBtnText: {
-    color: '#ff4dd2',
     fontWeight: '700',
     fontSize: 13,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#ff4dd2',
   },
   subtitle: {
     fontSize: 14,
-    color: '#d7c8ff',
     marginTop: 4,
   },
   viewModeRow: {
@@ -205,29 +241,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#12062a',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 77, 210, 0.1)',
   },
   viewModeBtn: {
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 77, 210, 0.25)',
-    backgroundColor: 'transparent',
-  },
-  viewModeBtnActive: {
-    borderColor: '#ff4dd2',
-    backgroundColor: 'rgba(255, 77, 210, 0.15)',
   },
   viewModeText: {
-    color: '#d7c8ff',
     fontWeight: '700',
     fontSize: 14,
-  },
-  viewModeTextActive: {
-    color: '#ff4dd2',
   },
 });
 

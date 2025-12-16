@@ -10,7 +10,38 @@ import {
 
 const { width } = Dimensions.get('window');
 
-const CalendarGrid = ({ tasksByDate, selectedDate, onSelectDate }) => {
+const getCalendarGridTheme = (isDark) => {
+  if (isDark) {
+    return {
+      bg: '#0b0216',
+      monthText: '#ff4dd2',
+      weekdayText: '#d7c8ff',
+      weekdayBorder: 'rgba(255, 77, 210, 0.1)',
+      dayCellBorder: 'rgba(255, 77, 210, 0.1)',
+      dayCellTodayBg: 'rgba(255, 77, 210, 0.08)',
+      dayCellSelectedBg: 'rgba(255, 77, 210, 0.15)',
+      dayNumberText: '#d7c8ff',
+      dayNumberSelected: '#ff4dd2',
+      moreText: '#ff9ff3',
+    };
+  } else {
+    return {
+      bg: '#f8f7fc',
+      monthText: '#ff4dd2',
+      weekdayText: '#666666',
+      weekdayBorder: 'rgba(255, 77, 210, 0.1)',
+      dayCellBorder: 'rgba(255, 77, 210, 0.15)',
+      dayCellTodayBg: 'rgba(255, 77, 210, 0.08)',
+      dayCellSelectedBg: 'rgba(255, 77, 210, 0.15)',
+      dayNumberText: '#1a1a1a',
+      dayNumberSelected: '#ff4dd2',
+      moreText: '#ff6b9d',
+    };
+  }
+};
+
+const CalendarGrid = ({ tasksByDate, selectedDate, onSelectDate, isDarkMode = true }) => {
+  const theme = getCalendarGridTheme(isDarkMode);
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth();
 
@@ -35,15 +66,15 @@ const CalendarGrid = ({ tasksByDate, selectedDate, onSelectDate }) => {
   const monthName = new Date(year, month).toLocaleDateString('ro-RO', { month: 'long', year: 'numeric' });
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.bg }]}>
       <View style={styles.monthHeader}>
-        <Text style={styles.monthTitle}>{monthName}</Text>
+        <Text style={[styles.monthTitle, { color: theme.monthText }]}>{monthName}</Text>
       </View>
 
       {/* Weekday headers */}
-      <View style={styles.weekdayRow}>
+      <View style={[styles.weekdayRow, { borderBottomColor: theme.weekdayBorder }]}>
         {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, idx) => (
-          <Text key={idx} style={styles.weekdayText}>
+          <Text key={idx} style={[styles.weekdayText, { color: theme.weekdayText }]}>
             {day}
           </Text>
         ))}
@@ -66,15 +97,16 @@ const CalendarGrid = ({ tasksByDate, selectedDate, onSelectDate }) => {
               key={dateStr}
               style={[
                 styles.dayCell,
-                isToday && styles.dayCellToday,
-                isSelected && styles.dayCellSelected,
+                { borderColor: theme.dayCellBorder },
+                isToday && { backgroundColor: theme.dayCellTodayBg, borderColor: '#ff4dd2' },
+                isSelected && { backgroundColor: theme.dayCellSelectedBg, borderColor: '#ff4dd2', borderWidth: 2 },
               ]}
               onPress={() => onSelectDate(date)}
             >
               <Text
                 style={[
                   styles.dayNumber,
-                  isSelected && styles.dayNumberSelected,
+                  { color: isSelected ? theme.dayNumberSelected : theme.dayNumberText },
                 ]}
               >
                 {date.getDate()}
@@ -91,7 +123,7 @@ const CalendarGrid = ({ tasksByDate, selectedDate, onSelectDate }) => {
                     />
                   ))}
                   {tasks.length > 2 && (
-                    <Text style={styles.moreText}>+{tasks.length - 2}</Text>
+                    <Text style={[styles.moreText, { color: theme.moreText }]}>+{tasks.length - 2}</Text>
                   )}
                 </View>
               )}
@@ -119,7 +151,6 @@ const getStatusColor = (status) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b0216',
     paddingHorizontal: 12,
   },
   monthHeader: {
@@ -129,7 +160,6 @@ const styles = StyleSheet.create({
   monthTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#ff4dd2',
     textTransform: 'capitalize',
   },
   weekdayRow: {
@@ -138,12 +168,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 77, 210, 0.1)',
   },
   weekdayText: {
     flex: 1,
     textAlign: 'center',
-    color: '#d7c8ff',
     fontWeight: '700',
     fontSize: 13,
   },
@@ -156,26 +184,12 @@ const styles = StyleSheet.create({
     width: '14.28%',
     aspectRatio: 1,
     borderWidth: 1,
-    borderColor: 'rgba(255, 77, 210, 0.1)',
     padding: 8,
     justifyContent: 'flex-start',
-  },
-  dayCellToday: {
-    backgroundColor: 'rgba(255, 77, 210, 0.08)',
-    borderColor: '#ff4dd2',
-  },
-  dayCellSelected: {
-    backgroundColor: 'rgba(255, 77, 210, 0.15)',
-    borderColor: '#ff4dd2',
-    borderWidth: 2,
   },
   dayNumber: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#d7c8ff',
-  },
-  dayNumberSelected: {
-    color: '#ff4dd2',
   },
   taskDots: {
     flexDirection: 'row',
@@ -190,7 +204,6 @@ const styles = StyleSheet.create({
   },
   moreText: {
     fontSize: 10,
-    color: '#ff9ff3',
     fontWeight: '600',
   },
 });
