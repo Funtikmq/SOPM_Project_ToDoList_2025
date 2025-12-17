@@ -1,6 +1,6 @@
 // App.jsx
 import "./App.css";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import TaskManager from "./components/TaskManager";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
@@ -15,7 +15,8 @@ import Footer from "./components/Footer";
 
 const Protected = ({ children }) => {
   const { user } = useAuth();
-  if (!user) return <Navigate to="/login" replace />;
+  const location = useLocation();
+  if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   return children;
 };
 

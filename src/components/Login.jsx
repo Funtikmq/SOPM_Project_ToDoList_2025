@@ -6,12 +6,19 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { auth } from "../firebase/firebase";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import "./Login.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const { t } = useTranslate();
   const [password, setPassword] = useState("");
+  const { user } = useAuth();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
+
+  if (user) return <Navigate to={from} replace />;
 
   const handleLogin = async (e) => {
     e.preventDefault();
