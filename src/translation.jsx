@@ -67,10 +67,36 @@ export const translations = {
     "calendar.month": "Luna",
     "calendar.week": "Saptamana",
     "calendar.today": "Astazi",
-    "calendar.noTasks": "F??r?? task-uri",
-    "calendar.dragToReschedule": "Trage task-urile pe alt?? zi pentru a reprograma",
+    "calendar.noTasks": "Fără task-uri",
+    "calendar.dragToReschedule": "Trage task-urile pe altă zi pentru a reprograma",
     "calendar.deadlineUpdated": "Deadline actualizat",
     "calendar.miniCalendar": "Calendar",
+    // Misc / shared
+    search: "Caută",
+    noTags: "Nu există etichete încă",
+    addTag: "Adaugă etichetă",
+    color: "Culoare",
+    add: "Adaugă",
+    noDeadline: "Fără deadline",
+    // Comments
+    comments: "Comentarii",
+    noComments: "Niciun comentariu încă",
+    addComment: "Adaugă comentariu...",
+    edit: "Editează",
+    delete: "Șterge",
+    edited: "editat",
+    post: "Postează",
+    // Stats bar labels
+    Total: "Total",
+    Active: "Activ",
+    Completed: "Finalizat",
+    Overdue: "Întârziat",
+    // ShareTaskModal
+    searchCollaborators: "Caută colaboratori… (#username)",
+    searching: "Se caută...",
+    // AddTask
+    interval: "Interval",
+    day: "Zi",
   },
   en: {
     // List
@@ -143,6 +169,32 @@ export const translations = {
     "calendar.dragToReschedule": "Drag tasks onto another day to reschedule",
     "calendar.deadlineUpdated": "Deadline updated",
     "calendar.miniCalendar": "Mini Calendar",
+    // Misc / shared
+    search: "Search tags",
+    noTags: "No tags yet",
+    addTag: "New tag",
+    color: "Color",
+    add: "Add",
+    noDeadline: "No deadline",
+    // Comments
+    comments: "Comments",
+    noComments: "No comments yet",
+    addComment: "Add a comment...",
+    edit: "Edit",
+    delete: "Delete",
+    edited: "edited",
+    post: "Post",
+    // Stats bar labels
+    Total: "Total",
+    Active: "Active",
+    Completed: "Completed",
+    Overdue: "Overdue",
+    // ShareTaskModal
+    searchCollaborators: "Search collaborators… (#username)",
+    searching: "Searching…",
+    // AddTask
+    interval: "Interval",
+    day: "Day",
 
   },
 };

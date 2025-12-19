@@ -11,6 +11,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
+import { useTranslate } from "../translation";
 import Dropdown from "./ui/Dropdown";
 import "./ShareTaskModal.css";
 import { logActivity } from "../services/activityService";
@@ -21,6 +22,7 @@ const ROLE_OPTIONS = [
 ];
 
 const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canManage }) => {
+  const { t } = useTranslate();
   const [task, setTask] = useState(initialTask || null);
   const [ownerProfile, setOwnerProfile] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -226,12 +228,12 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
         <div className="shareSearch">
           <input
             className="shareInput"
-            placeholder="Search collaborators… (#username)"
+            placeholder={t ? t("searchCollaborators") : "Search collaborators… (#username)"}
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
             disabled={!canManage}
           />
-          {searching && <span className="shareHint">Searching…</span>}
+          {searching && <span className="shareHint">{t ? t("searching") : "Searching…"}</span>}
         </div>
         {error && <div className="shareError">{error}</div>}
         {canManage && results.length > 0 && (

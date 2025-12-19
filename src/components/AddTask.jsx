@@ -168,7 +168,7 @@ const AddTask = () => {
               className="taskInput recurrenceSmall"
               value={interval}
               onChange={(e) => setInterval(e.target.value)}
-              placeholder="Interval"
+              placeholder={t ? t("interval") : "Interval"}
             />
           )}
           {recurrenceType === "weekly" && (
@@ -194,7 +194,7 @@ const AddTask = () => {
               className="taskInput recurrenceSmall"
               value={monthday}
               onChange={(e) => setMonthday(e.target.value)}
-              placeholder="Day"
+              placeholder={t ? t("day") : "Day"}
             />
           )}
         </div>

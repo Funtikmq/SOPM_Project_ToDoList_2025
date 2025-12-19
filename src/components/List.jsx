@@ -8,7 +8,7 @@ import Dropdown from "./ui/Dropdown";
 
 import "./List.css";
 
-const EmptyState = ({ onAdd }) => (
+const EmptyState = ({ onAdd, t }) => (
   <div className="emptyStateContent">
     <div className="emptyStateIcon" aria-hidden="true">
       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none">
@@ -22,7 +22,7 @@ const EmptyState = ({ onAdd }) => (
         <circle cx="12" cy="12" r="5.2" stroke="#a855f7" strokeWidth="1.6" />
       </svg>
     </div>
-    <p className="emptyStateText">No tasks yet. Add one to get started!</p>
+    <p className="emptyStateText">{t ? t("noTasks") : "No tasks yet. Add one to get started!"}</p>
     <button className="addTaskInlineButton" onClick={onAdd}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -33,7 +33,7 @@ const EmptyState = ({ onAdd }) => (
       >
         <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
       </svg>
-      <span>Add new task</span>
+      <span>{t ? t("addNewTask") : "Add new task"}</span>
     </button>
   </div>
 );
@@ -250,7 +250,7 @@ const List = ({ onToggleAddTask }) => {
 
           {sortedTasks.length === 0 && (
             <li className="listItem emptyState">
-              <EmptyState onAdd={onToggleAddTask} />
+              <EmptyState onAdd={onToggleAddTask} t={t} />
             </li>
           )}
 
