@@ -1,0 +1,25 @@
+.taskListLayout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+  align-items: start;
+}
+
+.taskListLayout.taskListLayout--compact {
+  grid-template-columns: 1fr;
+}
+
+.taskListAddPanel {
+  position: sticky;
+  top: 88px;
+}
+
+@media (max-width: 900px) {
+  .taskListLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .taskListAddPanel {
+    position: static;
+  }
+}

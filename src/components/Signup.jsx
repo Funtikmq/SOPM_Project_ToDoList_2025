@@ -1,52 +1,23 @@
 import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../firebase/firebase";
-import { collection, doc, getDocs, query, setDoc, where } from "firebase/firestore";
+import { auth } from "../firebase/firebase";
 import "./Login.css";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [username, setUsername] = useState("");
 
   const handleSignup = async (e) => {
     e.preventDefault();
 
     if (password !== confirm) {
-      alert("Parolele nu coincid");
-      return;
-    }
-
-    const cleanUsername = username.trim().toLowerCase();
-    const usernameValid = /^[a-zA-Z0-9_]{3,}$/.test(cleanUsername);
-    if (!usernameValid) {
-      alert("Username invalid. Folosește doar litere/cifre/underscore, minim 3 caractere.");
+      alert("Passwords do not match");
       return;
     }
 
     try {
-      // verificare unicitate username
-      const q = query(collection(db, "users"), where("username", "==", cleanUsername));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        alert("Acest username este deja folosit");
-        return;
-      }
-
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-      const user = cred.user;
-      const displayName = user.displayName || email?.split("@")[0] || cleanUsername;
-
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        email: user.email,
-        displayName,
-        username: cleanUsername,
-        tag: `#${cleanUsername}`,
-        avatarUrl: null,
-      });
-
+      await createUserWithEmailAndPassword(auth, email, password);
       window.location.href = "/"; // redirect la Login
     } catch (err) {
       alert(err.message);
@@ -55,16 +26,9 @@ const Signup = () => {
 
   return (
     <div className="login-container">
-      <h2>Crează cont</h2>
-      <p className="login-subtitle">Magenta glass workspace</p>
+      <h2>Create account</h2>
 
       <form className="login-form" onSubmit={handleSignup}>
-        <input
-          type="text"
-          placeholder="Alege un username"
-          onChange={(e) => setUsername(e.target.value)}
-        />
-
         <input
           type="email"
           placeholder="Email"
@@ -73,13 +37,13 @@ const Signup = () => {
 
         <input
           type="password"
-          placeholder="Parolă"
+          placeholder="Password"
           onChange={(e) => setPassword(e.target.value)}
         />
 
         <input
           type="password"
-          placeholder="Confirmă parola"
+          placeholder="Confirm password"
           onChange={(e) => setConfirm(e.target.value)}
         />
 
@@ -89,7 +53,7 @@ const Signup = () => {
       </form>
 
       <div className="auth-switch">
-        Ai deja cont?{" "}
+        Already have an account?{" "}
         <a onClick={() => (window.location.href = "/")}>Login</a>
       </div>
     </div>

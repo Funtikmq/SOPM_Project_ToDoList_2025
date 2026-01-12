@@ -1,54 +1,17 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { db } from "../firebase/firebase";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { useTranslate } from "../translation";
+import { useTasks } from "../context/TaskContext";
 import "./StatsBar.css";
 
-const calcStats = (tasks) => {
-  const total = tasks.length;
-  const active = tasks.filter((t) => t.status === "active" || t.status === "upcoming").length;
-  const completed = tasks.filter((t) => t.status === "completed").length;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const overdue = tasks.filter((t) => {
-    if (t.status === "completed" || t.status === "canceled") return false;
-    if (t.status === "overdue") return true;
-    if (!t.deadline) return false;
-    const d = new Date(t.deadline);
-    d.setHours(0, 0, 0, 0);
-    return d < today;
-  }).length;
-
-  return { total, active, completed, overdue };
-};
-
 const StatsBar = () => {
-  const { user } = useAuth();
-  const [stats, setStats] = useState({ total: 0, active: 0, completed: 0, overdue: 0 });
-
-  useEffect(() => {
-    if (!user) return;
-    const q = query(collection(db, "tasks"), where("participants", "array-contains", user.uid));
-    const unsub = onSnapshot(q, (snap) => {
-      const tasks = snap.docs.map((d) => {
-        const data = d.data();
-        const participants =
-          Array.isArray(data.participants) && data.participants.length
-            ? data.participants
-            : [data.ownerId || data.userId || user.uid];
-        return { id: d.id, ...data, participants };
-      });
-      setStats(calcStats(tasks));
-    });
-    return () => unsub();
-  }, [user]);
+  const { t } = useTranslate();
+  const { stats } = useTasks();
 
   return (
     <div className="statsBar glass-surface">
-      <StatCard label="Total" value={stats.total} icon="list" />
-      <StatCard label="Active" value={stats.active} accent icon="bolt" />
-      <StatCard label="Completed" value={stats.completed} icon="check" />
-      <StatCard label="Overdue" value={stats.overdue} danger icon="alarm" />
+      <StatCard label={t("dashboard.total")} value={stats.total} icon="list" />
+      <StatCard label={t("dashboard.active")} value={stats.active} accent icon="bolt" />
+      <StatCard label={t("dashboard.completed")} value={stats.completed} icon="check" />
+      <StatCard label={t("dashboard.overdue")} value={stats.overdue} danger icon="alarm" />
     </div>
   );
 };
@@ -76,11 +39,15 @@ const iconMap = {
   ),
 };
 
-const StatCard = ({ label, value, accent, danger, icon }) => (
-  <div className={`statCard ${accent ? "accent" : ""} ${danger ? "danger" : ""}`}>
+const StatCard = ({ label, value, accent, danger, icon, children, className = "" }) => (
+  <div className={`statCard ${accent ? "accent" : ""} ${danger ? "danger" : ""} ${className}`.trim()}>
     <div className="statTop">
       <div className="statLabel">{label}</div>
-      <div className="statIcon">{iconMap[icon]}</div>
+      {children ? (
+        children
+      ) : (
+        <div className="statIcon">{iconMap[icon]}</div>
+      )}
     </div>
     <div className="statValue">{value}</div>
   </div>

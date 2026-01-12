@@ -3,7 +3,6 @@ import TaskManager from "./components/TaskManager";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import { ThemeProvider } from "./context/ThemeContext";
 import "./App.css";
 
 const PrivateRoute = ({ children }) => {
@@ -18,13 +17,11 @@ const PrivateRoute = ({ children }) => {
 
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <PrivateRoute>
-          <TaskManager />
-        </PrivateRoute>
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <PrivateRoute>
+        <TaskManager />
+      </PrivateRoute>
+    </AuthProvider>
   );
 }
 

@@ -4,7 +4,6 @@ import { db } from "../firebase/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import "./AddTask.css";
-import Dropdown from "./ui/Dropdown";
 
 const AddTask = () => {
   const [title, setTitle] = useState("");
@@ -17,11 +16,6 @@ const AddTask = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!user) {
-      alert("Please sign in first.");
-      return;
-    }
-
     if (title.trim() === "" || deadline.trim() === "") {
       alert(t("fillRequired"));
       return;
@@ -32,26 +26,16 @@ const AddTask = () => {
     const customId = `${cleanTitle}_${timestamp}`;
 
     try {
-      await setDoc(
-        doc(db, "tasks", customId),
-        {
-          id: customId,
-          title,
-          status: "active",
-          description: desc,
-          priority,
-          deadline,
-          createdAt: timestamp,
-          ownerId: user.uid,
-          ownerUsername: user.username || "",
-          ownerName: user.displayName || user.email || "",
-          participants: [user.uid],
-          collaborators: [],
-          shared: false,
-          subtasks: [],
-        },
-        { merge: true }
-      );
+      await setDoc(doc(db, "tasks", customId), {
+        id: customId,
+        title,
+        status: "active",
+        description: desc,
+        priority,
+        deadline,
+        createdAt: timestamp,
+        userId: user.uid,
+      });
 
       alert(t("taskSaved"));
 
@@ -86,16 +70,15 @@ const AddTask = () => {
         ></textarea>
 
         <h5>{t("priority")}</h5>
-        <Dropdown
+        <select
+          className="taskInput"
           value={priority}
-          color="priority"
-          options={[
-            { value: "high", label: t("high") },
-            { value: "medium", label: t("medium") },
-            { value: "low", label: t("low") },
-          ]}
-          onChange={(v) => setPriority(v)}
-        />
+          onChange={(e) => setPriority(e.target.value)}
+        >
+          <option value="high">{t("high")}</option>
+          <option value="medium">{t("medium")}</option>
+          <option value="low">{t("low")}</option>
+        </select>
         <h5>{t("deadline")}</h5>
         <input
           type="date"

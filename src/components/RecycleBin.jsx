@@ -6,13 +6,13 @@ import {
   doc,
   onSnapshot,
   query,
-  setDoc,
   where,
   orderBy,
   getDocs,
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
+import { useTasks } from "../context/TaskContext";
 import { useTranslate } from "../translation";
 import "./RecycleBin.css";
 
@@ -20,6 +20,7 @@ const RecycleBin = ({ open, onClose }) => {
   const { user } = useAuth();
   const { t } = useTranslate();
   const [items, setItems] = useState([]);
+  const { restoreTask } = useTasks();
 
   useEffect(() => {
     if (!open || !user) return;
@@ -50,22 +51,11 @@ const RecycleBin = ({ open, onClose }) => {
     if (!user) return;
     const { originalId, docId, id: _ignoredId, ...rest } = item;
     try {
-      await setDoc(doc(db, "tasks", originalId), {
+      await restoreTask({
         ...rest,
-        id: originalId,
-        ownerId: rest.ownerId || user.uid,
-        userId: rest.ownerId || user.uid,
-        participants:
-          Array.isArray(rest.participants) && rest.participants.length
-            ? rest.participants
-            : [rest.ownerId || user.uid],
-        collaborators: Array.isArray(rest.collaborators) ? rest.collaborators : [],
-        shared:
-          typeof rest.shared === "boolean"
-            ? rest.shared
-            : Array.isArray(rest.collaborators) && rest.collaborators.length > 0,
+        originalId,
+        docId,
       });
-      await deleteDoc(doc(db, "trash", docId));
       // remove any other duplicates of the same task in trash
       const dupQuery = query(
         collection(db, "trash"),
@@ -98,10 +88,10 @@ const RecycleBin = ({ open, onClose }) => {
         <div className="binHeader">
           <div className="binTitle">
             <span className="binDot" />
-            {t("recycleBin")}
+            {t("recycle.title")}
           </div>
-          <button className="iconButton" onClick={handleClose} aria-label="Close bin">
-            X
+          <button className="iconButton" onClick={handleClose} aria-label={t("common.close")}>
+            ×
           </button>
         </div>
 
@@ -124,23 +114,23 @@ const RecycleBin = ({ open, onClose }) => {
                 />
               </svg>
             </div>
-            <div className="binText">{t("binEmpty")}</div>
+            <div className="binText">{t("recycle.empty")}</div>
           </div>
         ) : (
           <ul className="binList">
             {items.map((item) => (
               <li key={item.docId || item.id} className="binItem">
                 <div className="binInfo">
-                  <div className="binTitleText">{item.title || t("noTitle")}</div>
+                  <div className="binTitleText">{item.title || t("tasks.noTitle")}</div>
                   <div className="binMeta">
                     {item.deadline && <span>{item.deadline}</span>}
                     <span className={`badge status-${item.status || "active"}`}>
-                      {t(item.status || "active")}
+                      {t(`status.${item.status || "active"}`)}
                     </span>
                   </div>
                 </div>
                 <button className="restoreButton" onClick={() => handleRestore(item)}>
-                  {t("restore")}
+                  {t("recycle.restore")}
                 </button>
               </li>
             ))}

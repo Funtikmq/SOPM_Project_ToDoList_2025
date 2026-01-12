@@ -3,9 +3,11 @@ import { createPortal } from "react-dom";
 import { collection, doc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
 import { auth, db } from "../firebase/firebase";
+import { useTranslate } from "../translation";
 import "./ShareTaskModal.css";
 
 const ProfileModal = ({ open, onClose, user, onUpdated }) => {
+  const { t } = useTranslate();
   const [username, setUsername] = useState(user?.username || "");
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [saving, setSaving] = useState(false);
@@ -27,7 +29,7 @@ const ProfileModal = ({ open, onClose, user, onUpdated }) => {
     const cleanDisplay = displayName.trim();
 
     if (!/^[a-zA-Z0-9_]{3,}$/.test(cleanUsername)) {
-      setError("Use letters/numbers/underscore, min 3 chars.");
+      setError(t("settings.usernameInvalid"));
       return;
     }
 
@@ -39,7 +41,7 @@ const ProfileModal = ({ open, onClose, user, onUpdated }) => {
       );
       const taken = snap.docs.some((d) => d.id !== user.uid);
       if (taken) {
-        setError("Username already in use.");
+        setError(t("settings.usernameTaken"));
         setSaving(false);
         return;
       }
@@ -99,7 +101,7 @@ const ProfileModal = ({ open, onClose, user, onUpdated }) => {
       onClose?.();
     } catch (err) {
       console.error("profile save error", err);
-      setError("Could not save profile. Try again.");
+      setError(t("errors.saveProfile"));
     } finally {
       setSaving(false);
     }
@@ -110,44 +112,44 @@ const ProfileModal = ({ open, onClose, user, onUpdated }) => {
       <div className="modalCard profileCard" onClick={(e) => e.stopPropagation()}>
         <div className="modalHeader">
           <div>
-            <div className="modalTitle">Profile & username</div>
-            <div className="modalSubtitle">Pick how collaborators see you</div>
+            <div className="modalTitle">{t("settings.profileTitle")}</div>
+            <div className="modalSubtitle">{t("settings.subtitle")}</div>
           </div>
-          <button className="modalCloseBtn" onClick={onClose} aria-label="Close profile modal">
+          <button className="modalCloseBtn" onClick={onClose} aria-label={t("common.close")}>
             ×
           </button>
         </div>
 
         <div className="profileForm">
-          <label className="profileLabel">Display name</label>
+          <label className="profileLabel">{t("settings.displayName")}</label>
           <input
             className="shareInput"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="John Doe"
+            placeholder={t("settings.displayNamePlaceholder")}
           />
 
-          <label className="profileLabel">Username</label>
+          <label className="profileLabel">{t("settings.username")}</label>
           <div className="profileRow">
             <span className="profileTagPrefix">#</span>
             <input
               className="shareInput"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="username"
+              placeholder={t("settings.usernamePlaceholder")}
             />
           </div>
-          <div className="profileHint">Must be unique. No spaces.</div>
+          <div className="profileHint">{t("settings.usernameHint")}</div>
         </div>
 
         {error && <div className="shareError">{error}</div>}
 
         <div className="profileActions">
           <button className="removeCollabBtn ghost" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </button>
           <button className="saveProfileBtn" onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Save changes"}
+            {saving ? t("common.loading") : t("settings.save")}
           </button>
         </div>
       </div>

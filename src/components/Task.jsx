@@ -1,393 +1,244 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import "./Task.css";
-import Dropdown from "./ui/Dropdown";
-import ShareTaskModal from "./ShareTaskModal";
-import { useAuth } from "../context/AuthContext";
+import { useTranslate } from "../translation";
 
-const STATUS_OPTIONS = [
-  { value: "upcoming", label: "Upcoming" },
-  { value: "active", label: "Active" },
-  { value: "completed", label: "Completed" },
-  { value: "overdue", label: "Overdue" },
-  { value: "canceled", label: "Canceled" },
-];
-
-const PRIORITY_OPTIONS = [
-  { value: "high", label: "High" },
-  { value: "medium", label: "Medium" },
-  { value: "low", label: "Low" },
-];
-
-const randomId = () => Math.random().toString(36).slice(2, 9);
-
-const isNearDeadline = (dateStr) => {
-  if (!dateStr) return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const d = new Date(dateStr);
-  if (Number.isNaN(d.getTime())) return false;
-  const diff = d.getTime() - today.getTime();
-  return diff >= 0 && diff <= 3 * 24 * 60 * 60 * 1000;
-};
-
-const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, expanded, t }) => {
-  const task = taskProp || taskData;
-  const { user } = useAuth();
-  const [localExpanded, setLocalExpanded] = useState(false);
-  const isExpanded = expanded !== undefined ? expanded : localExpanded;
+const Task = ({ taskData, onDelete, onUpdate }) => {
+  const [expandDelete, setExpandDelete] = useState(false);
+  const [showModifyButton, setShowModifyButton] = useState(false);
+  const [showDateInput, setShowDateInput] = useState(false);
+  const [closingModify, setClosingModify] = useState(false);
+  const [closingDateInput, setClosingDateInput] = useState(false);
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [tempTitle, setTempTitle] = useState(task?.title || "");
-  const [subtasks, setSubtasks] = useState(task?.subtasks || []);
-  const [showDateInput, setShowDateInput] = useState(false);
-  const [tempDeadline, setTempDeadline] = useState(task?.deadline || "");
-  const [showShare, setShowShare] = useState(false);
+  const [tempTitle, setTempTitle] = useState(taskData.title);
 
-  const collaborators = Array.isArray(task?.collaborators) ? task.collaborators : [];
-  const ownerId = task?.ownerId || task?.userId;
-  const isOwner = user?.uid && ownerId === user.uid;
-  const userCollab = collaborators.find((c) => c.uid === user?.uid);
-  const role = isOwner ? "owner" : userCollab?.role || "viewer";
-  const canEdit = role === "owner" || role === "editor";
-  const canDelete = role === "owner";
-  const canManageCollaborators = role === "owner";
-  const isShared = task?.shared || collaborators.length > 0;
+  const [status, setStatus] = useState(taskData.status);
+  const [priority, setPriority] = useState(taskData.priority);
+  const [deadline, setDeadline] = useState(taskData.deadline);
+  const [tempDeadline, setTempDeadline] = useState(taskData.deadline);
+  const { t } = useTranslate();
 
+  const wrapperRef = useRef(null);
+  const deadlineRef = useRef(null);
+
+  // Funcție pentru formatarea datei din YYYY-MM-DD în DD/MM/YYYY
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
+  const isUrgent = (dateString) => {
+    if (!dateString) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const date = new Date(dateString);
+    date.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    return date <= tomorrow;
+  };
+
+  // click outside (doar pentru delete + deadline)
   useEffect(() => {
-    setTempTitle(task?.title || "");
-    setSubtasks(task?.subtasks || []);
-    setTempDeadline(task?.deadline || "");
-  }, [task]);
+    const handleClickOutside = (event) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setExpandDelete(false);
+      }
 
-  if (!task) return null;
+      if (deadlineRef.current && !deadlineRef.current.contains(event.target)) {
+        setShowModifyButton(false);
+        setShowDateInput(false);
+      }
+    };
 
-  const progress = useMemo(() => {
-    if (!subtasks.length) return { done: 0, total: 0 };
-    const done = subtasks.filter((s) => s.done).length;
-    return { done, total: subtasks.length };
-  }, [subtasks]);
-  const progressPercent = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  const participantBadges = useMemo(() => {
-    const list = [];
-    const seen = new Set();
-    const ownerUsername =
-      task.ownerUsername || (isOwner ? user?.username : "") || (task.ownerId ? `user-${task.ownerId.slice(0, 4)}` : "owner");
-    const ownerName = task.ownerName || (isOwner ? user?.displayName : "") || ownerUsername;
-    if (ownerId && !seen.has(ownerId)) {
-      seen.add(ownerId);
-      list.push({
-        uid: ownerId,
-        username: ownerUsername,
-        displayName: ownerName,
-        role: "owner",
-      });
+  // toggle expand doar daca clickul nu vine de pe select/input/button
+  const handleTaskClick = (e) => {
+    if (
+      e.target.tagName !== "SELECT" &&
+      e.target.tagName !== "OPTION" &&
+      e.target.tagName !== "INPUT" &&
+      e.target.tagName !== "BUTTON"
+    ) {
+      setExpandDelete((prev) => !prev);
     }
-    collaborators.forEach((c) => {
-      if (!c.uid || seen.has(c.uid)) return;
-      seen.add(c.uid);
-      list.push({ ...c, role: c.role || "viewer" });
-    });
-    return list;
-  }, [collaborators, ownerId, isOwner, task.ownerId, task.ownerName, task.ownerUsername, user?.displayName, user?.username]);
-
-  const handleUpdate = (patch) => {
-    if (!canEdit) return;
-    onUpdate?.(task.id, patch);
-  };
-
-  const toggleExpand = () => {
-    if (expanded !== undefined) onToggleExpand?.(task.id);
-    else setLocalExpanded((prev) => !prev);
-  };
-
-  const handleTitleSave = () => {
-    if (!canEdit) {
-      setIsEditingTitle(false);
-      return;
-    }
-    const clean = tempTitle.trim();
-    setIsEditingTitle(false);
-    if (clean && clean !== task.title) handleUpdate({ title: clean });
-    else setTempTitle(task.title || "");
-  };
-
-  const addSubtask = (title) => {
-    if (!canEdit) return;
-    const clean = title.trim();
-    if (!clean) return;
-    const next = [...subtasks, { id: randomId(), title: clean, done: false }];
-    setSubtasks(next);
-    handleUpdate({ subtasks: next });
-  };
-
-  const toggleSubtask = (sid) => {
-    if (!canEdit) return;
-    const next = subtasks.map((s) => (s.id === sid ? { ...s, done: !s.done } : s));
-    setSubtasks(next);
-    handleUpdate({ subtasks: next });
-  };
-
-  const removeSubtask = (sid) => {
-    if (!canEdit) return;
-    const next = subtasks.filter((s) => s.id !== sid);
-    setSubtasks(next);
-    handleUpdate({ subtasks: next });
-  };
-  const handleDeleteSubtask = (sid) => removeSubtask(sid);
-
-  const markAllDone = () => {
-    if (!canEdit || !subtasks.length) return;
-    const next = subtasks.map((s) => ({ ...s, done: true }));
-    setSubtasks(next);
-    handleUpdate({ subtasks: next });
-  };
-
-  const saveDeadline = () => {
-    if (!canEdit) return;
-    handleUpdate({ deadline: tempDeadline || "" });
-    setShowDateInput(false);
   };
 
   return (
-    <div className="taskWrapper">
-      <div className="task taskRowCard taskRowClickable" data-expanded={isExpanded} onClick={toggleExpand}>
-        <div
-          className="taskItem statusCell"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <Dropdown
-            value={task.status}
-            onChange={(val) => handleUpdate({ status: val })}
-            options={STATUS_OPTIONS.map((opt) => ({ ...opt, label: t ? t(opt.value) : opt.label }))}
-            placeholder={t ? t("status") : "Status"}
-            variant="status"
-            disabled={!canEdit}
-          />
+    <div className="taskWrapper" ref={wrapperRef}>
+      <div className="task" onClick={handleTaskClick}>
+        {/* STATUS */}
+        <div className="taskItem">
+          <select
+            className={`taskSelectBadge taskStatus-${status}`}
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value);
+              onUpdate(taskData.id, { status: e.target.value });
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <option value="upcoming">{t("upcoming")}</option>
+            <option value="active">{t("active")}</option>
+            <option value="completed">{t("completed")}</option>
+            <option value="overdue">{t("overdue")}</option>
+            <option value="canceled">{t("canceled")}</option>
+          </select>
         </div>
 
-        <div className="taskItem taskTitleCell" onClick={(e) => e.stopPropagation()}>
-          <div className="taskTitleRow">
-            {!isEditingTitle ? (
-              <h3
-                className={`taskTitle ${!canEdit ? "readOnly" : ""}`}
+        {/* TITLE */}
+        <div className="taskItem" onClick={(e) => e.stopPropagation()}>
+          {!isEditingTitle ? (
+            <h3
+              className="taskTitle"
+              onClick={() => {
+                setTempTitle(taskData.title);
+                setIsEditingTitle(true);
+              }}
+            >
+              {taskData.title}
+            </h3>
+          ) : (
+            <input
+              className="taskTitleInput"
+              type="text"
+              autoFocus
+              value={tempTitle}
+              onChange={(e) => setTempTitle(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              onBlur={() => {
+                setIsEditingTitle(false);
+                if (tempTitle.trim() !== taskData.title) {
+                  onUpdate(taskData.id, { title: tempTitle.trim() });
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setIsEditingTitle(false);
+                  if (tempTitle.trim() !== taskData.title) {
+                    onUpdate(taskData.id, { title: tempTitle.trim() });
+                  }
+                }
+                if (e.key === "Escape") {
+                  setIsEditingTitle(false);
+                  setTempTitle(taskData.title);
+                }
+              }}
+            />
+          )}
+        </div>
+        {/* PRIORITY */}
+        <div className="taskItem">
+          <select
+            className={`taskSelectBadge taskPriority-${priority}`}
+            value={priority}
+            onChange={(e) => {
+              setPriority(e.target.value);
+              onUpdate(taskData.id, { priority: e.target.value });
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <option value="high">{t("high")}</option>
+            <option value="medium">{t("medium")}</option>
+            <option value="low">{t("low")}</option>
+          </select>
+        </div>
+
+        {/* DEADLINE */}
+        <div className="taskItem" ref={deadlineRef}>
+          <h3
+            className={`taskDeadline ${
+              isUrgent(deadline) ? "deadlineUrgent" : ""
+            }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (showModifyButton) {
+                setClosingModify(true);
+                setTimeout(() => {
+                  setShowModifyButton(false);
+                  setClosingModify(false);
+                }, 500);
+              } else {
+                setShowModifyButton(true);
+                setTempDeadline(deadline);
+              }
+            }}
+          >
+            {formatDate(deadline)}
+          </h3>
+
+          {showModifyButton && (
+            <div className={`modifyWrapper ${closingModify ? "closing" : ""}`}>
+              <button
+                className="taskModifyButton"
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (canEdit) setIsEditingTitle(true);
-                }}
-              >
-                {task.title || (t ? t("noTitle") : "Untitled")}
-              </h3>
-            ) : (
-              <input
-                className="taskTitleInput glassInput"
-                value={tempTitle}
-                autoFocus
-                onClick={(e) => e.stopPropagation()}
-                onChange={(e) => setTempTitle(e.target.value)}
-                onBlur={handleTitleSave}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleTitleSave();
-                  if (e.key === "Escape") {
-                    setTempTitle(task.title || "");
-                    setIsEditingTitle(false);
+                  if (showDateInput) {
+                    setClosingDateInput(true);
+                    setTimeout(() => {
+                      setShowDateInput(false);
+                      setClosingDateInput(false);
+                      setDeadline(tempDeadline);
+                      onUpdate(taskData.id, { deadline: tempDeadline });
+                    }, 500);
+                  } else {
+                    setShowDateInput(true);
                   }
                 }}
-              />
-            )}
-            {isShared && <span className="sharedIcon" aria-label="Shared task">👥</span>}
-          </div>
-          <button
-            type="button"
-            className="shareBadgeRow"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowShare(true);
-            }}
-          >
-            <div className="shareLabel">
-              <span className="shareEmoji">👥</span>
-              <span>{collaborators.length} {collaborators.length === 1 ? "collaborator" : "collaborators"}</span>
+              >
+                                {t("modify")}
+              </button>
             </div>
-            <div className="avatarStack">
-              {participantBadges.slice(0, 4).map((c) => (
-                <span key={c.uid} className="collabAvatar" title={`#${c.username} (${c.role})`}>
-                  {(c.username || c.displayName || "?")[0]?.toUpperCase()}
-                </span>
-              ))}
-              {participantBadges.length > 4 && (
-                <span className="collabAvatar more">+{participantBadges.length - 4}</span>
-              )}
-            </div>
-          </button>
-        </div>
+          )}
 
-        <div
-          className="taskItem priorityCell"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <Dropdown
-            value={task.priority}
-            onChange={(val) => handleUpdate({ priority: val })}
-            options={PRIORITY_OPTIONS.map((opt) => ({ ...opt, label: t ? t(opt.value) : opt.label }))}
-            placeholder={t ? t("priority") : "Priority"}
-            variant="priority"
-            disabled={!canEdit}
-          />
-        </div>
-
-        <div className="taskItem deadlineCell">
-          <button
-            className={`taskDeadline deadlineChip taskDeadlineBadge ${isNearDeadline(task.deadline) ? "deadlineWarning" : ""}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (!canEdit) return;
-              setShowDateInput((prev) => !prev);
-            }}
-            disabled={!canEdit}
-          >
-            {task.deadline ? task.deadline : t ? t("noDeadline") : "No deadline"}
-          </button>
-          {showDateInput && canEdit && (
-            <div className="deadlinePicker" onClick={(e) => e.stopPropagation()}>
+          {showDateInput && (
+            <div
+              className={`modifyWrapper ${closingDateInput ? "closing" : ""}`}
+            >
               <input
                 type="date"
+                className="taskDateInput"
                 value={tempDeadline}
                 onChange={(e) => setTempDeadline(e.target.value)}
-                className="taskDateInput glassInput"
+                onClick={(e) => e.stopPropagation()}
               />
-              <div className="deadlinePickerActions">
-                <button type="button" className="deadlineSave" onClick={saveDeadline}>
-                  {t ? t("save") : "Save"}
-                </button>
-                <button
-                  type="button"
-                  className="deadlineCancel"
-                  onClick={() => {
-                    setTempDeadline(task.deadline || "");
-                    setShowDateInput(false);
-                  }}
-                >
-                  {t ? t("cancel") : "Cancel"}
-                </button>
-              </div>
             </div>
           )}
         </div>
       </div>
 
-      <div className={`subtasksWrapper ${isExpanded ? "open" : ""}`} onClick={(e) => e.stopPropagation()}>
-        <div className="taskExpand open">
-          <div className="subtaskSection subtasksContainer">
-            <div className="subtaskHeader">
-              <div className="subtaskTitle">
-                {t ? t("subtasks") : "Subtasks"}{" "}
-                <span className="subtaskProgress">
-                  {(t ? t("progress") : "Progress")}: {progress.done}/{progress.total}
-                </span>
-              </div>
-              <div className="subtaskAdd">
-                <input
-                  type="text"
-                  placeholder={t ? t("subtaskPlaceholder") : "Subtask name"}
-                  onClick={(e) => e.stopPropagation()}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      addSubtask(e.currentTarget.value);
-                      e.currentTarget.value = "";
-                    }
-                  }}
-                  disabled={!canEdit}
-                />
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const input = e.currentTarget.previousElementSibling;
-                    if (input && input.value) {
-                      addSubtask(input.value);
-                      input.value = "";
-                    }
-                  }}
-                  disabled={!canEdit}
-                >
-                  {t ? t("addSubtask") : "Add subtask"}
-                </button>
-                <button
-                  type="button"
-                  className="markAll"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    markAllDone();
-                  }}
-                  disabled={!canEdit}
-                >
-                  {t ? t("markAllDone") : "Mark all done"}
-                </button>
-              </div>
-            </div>
-            <div className="subtaskProgressBar">
-              <div className="subtaskProgressFill" style={{ width: `${progressPercent}%` }} />
-            </div>
+      {/* EXPAND DELETE – se deschide doar la click pe task */}
+      <div className={`taskExpand ${expandDelete ? "open" : ""}`}>
+        {taskData.description && (
+          <p className="taskDescription">
+            <strong>{t("descriptionLabel")}</strong> {taskData.description}
+          </p>
+        )}
 
-            {subtasks.length === 0 ? (
-              <div className="subtaskEmpty">{t ? t("noTasks") : "No subtasks yet"}</div>
-            ) : (
-              <div className="subtaskList">
-                {subtasks.map((s) => (
-                  <div key={s.id} className="subtaskRow">
-                    <input
-                      type="checkbox"
-                      checked={!!s.done}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        toggleSubtask(s.id);
-                      }}
-                      disabled={!canEdit}
-                    />
-                    <span className={`subtaskText ${s.done ? "done" : ""}`}>{s.title}</span>
-                    <button
-                      className="subtaskDeleteBtn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteSubtask(s.id);
-                      }}
-                      aria-label="Delete subtask"
-                      disabled={!canEdit}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <button
-              className={`deleteTaskBtn ${!canDelete ? "disabled" : ""}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (canDelete) onDelete?.(task.id);
-              }}
-              disabled={!canDelete}
+        <div className="taskExpandButtons">
+          <button className="deleteBtn" onClick={() => onDelete(taskData.id)}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 32 32"
             >
-              {t ? t("deleteTask") : "Delete task"}
-            </button>
-          </div>
+              <path
+                fill="currentColor"
+                d="M15 4c-.523 0-1.059.184-1.438.563C13.184 4.94 13 5.476 13 6v1H7v2h1v16c0 1.645 1.355 3 3 3h12c1.645 0 3-1.355 3-3V9h1V7h-6V6c0-.523-.184-1.059-.563-1.438C20.06 4.184 19.523 4 19 4zm0 2h4v1h-4zm-5 3h14v16c0 .555-.445 1-1 1H11c-.555 0-1-.445-1-1zm2 3v11h2V12zm4 0v11h2V12zm4 0v11h2V12z"
+              />
+            </svg>
+          </button>
         </div>
       </div>
-
-      <ShareTaskModal
-        open={showShare}
-        onClose={() => setShowShare(false)}
-        taskId={task.id}
-        initialTask={task}
-        currentUser={user}
-        canManage={canManageCollaborators}
-      />
     </div>
   );
 };
