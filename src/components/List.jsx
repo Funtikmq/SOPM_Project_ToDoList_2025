@@ -1,61 +1,94 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslate } from "../translation";
-import { db } from "../firebase/firebase";
-import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-  doc,
-  updateDoc,
-  deleteDoc,
-} from "firebase/firestore";
-import { useAuth } from "../context/AuthContext";
+import { useTasks, parseDeadline } from "../context/TaskContext";
 
 import ListHead from "./ListHead";
 import Task from "./Task";
+import Dropdown from "./ui/Dropdown";
 
 import "./List.css";
 
+const EmptyState = ({ onAdd, t }) => (
+  <div className="emptyStateContent">
+    <div className="emptyStateIcon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M12 2v3m0 14v3m7-10h3M2 12H5m11.657-6.343l2.121-2.121M5.222 18.778l-2.121 2.121M18.778 18.778l2.121 2.121M5.222 5.222 3.1 3.1"
+          stroke="#a855f7"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle cx="12" cy="12" r="5.2" stroke="#a855f7" strokeWidth="1.6" />
+      </svg>
+    </div>
+    <p className="emptyStateText">{t ? t("noTasks") : "No tasks yet. Add one to get started!"}</p>
+    <button className="addTaskInlineButton" onClick={onAdd}>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        className="addTaskIcon"
+      >
+        <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+      </svg>
+      <span>{t ? t("addNewTask") : "Add new task"}</span>
+    </button>
+  </div>
+);
+
 const List = ({ onToggleAddTask }) => {
-  const [tasks, setTasks] = useState([]);
+  const { tasks, updateTask, deleteTask, undoDelete } = useTasks();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
-  const [filterVisible, setFilterVisible] = useState(false);
-  const [filter, setFilter] = useState({ status: "", priority: "", month: "" });
+  const [showFilters, setShowFilters] = useState(false);
+  const [filter, setFilter] = useState({ status: "", priority: "", date: "" });
+  const [search, setSearch] = useState("");
 
-  const { user } = useAuth();
-const { t } = useTranslate();
+  const { t } = useTranslate();
+  const undoTimer = useRef(null);
+  const [undoData, setUndoData] = useState(null);
+
   useEffect(() => {
-    if (!user) return;
+    return () => {
+      if (undoTimer.current) {
+        clearTimeout(undoTimer.current);
+      }
+    };
+  }, []);
 
-    const q = query(collection(db, "tasks"), where("userId", "==", user.uid));
+  const handleUpdate = async (id, updatedFields) => updateTask(id, updatedFields);
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const taskList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setTasks(taskList);
-    });
-
-    return () => unsubscribe();
-  }, [user]);
-
-  const handleUpdate = async (id, updatedFields) => {
-    const taskRef = doc(db, "tasks", id);
-    await updateDoc(taskRef, updatedFields);
-
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === id ? { ...task, ...updatedFields } : task
-      )
-    );
+  const clearUndoTimer = () => {
+    if (undoTimer.current) {
+      clearTimeout(undoTimer.current);
+      undoTimer.current = null;
+    }
   };
 
   const handleDelete = async (id) => {
-    const taskRef = doc(db, "tasks", id);
-    await deleteDoc(taskRef);
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+    try {
+      const undoPayload = await deleteTask(id);
+      if (!undoPayload) return;
+      setUndoData(undoPayload);
+      clearUndoTimer();
+      undoTimer.current = setTimeout(() => {
+        setUndoData(null);
+      }, 5000);
+    } catch (err) {
+      console.error("Delete error", err);
+    }
+  };
+
+  const handleUndo = async () => {
+    if (!undoData) return;
+    clearUndoTimer();
+    setUndoData(null);
+    try {
+      await undoDelete(undoData);
+    } catch (err) {
+      console.error("Undo error", err);
+    }
   };
 
   const handleSort = (key) => {
@@ -66,30 +99,44 @@ const { t } = useTranslate();
     setSortConfig({ key, direction });
   };
 
-  const statusOrder = [
-    "upcoming",
-    "active",
-    "completed",
-    "overdue",
-    "canceled",
-  ];
+  const statusOrder = ["upcoming", "active", "completed", "overdue", "canceled"];
   const priorityOrder = ["high", "medium", "low"];
 
-  // Aplicam filtrul
-  const filteredTasks = tasks.filter((task) => {
-    const matchStatus = filter.status ? task.status === filter.status : true;
-    const matchPriority = filter.priority
-      ? task.priority === filter.priority
-      : true;
-    const matchDate =
-      filter.date && task.deadline
-        ? new Date(task.deadline) >= new Date(filter.date)
-        : true;
+  const filterDate = filter.date ? parseDeadline(filter.date) : null;
 
-    return matchStatus && matchPriority && matchDate;
+  const normalize = (str = "") =>
+    str
+      .toString()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .toLowerCase();
+
+  const searchTokens = useMemo(() => normalize(search).split(/[^a-z0-9]+/i).filter(Boolean), [search]);
+
+  const filteredTasks = tasks.filter((task) => {
+    // search across title, tags, priority, status, deadline, collaborators usernames
+    const corpus = [
+      task.title || "",
+      task.priority || "",
+      task.status || "",
+      task.deadline || "",
+      ...(task.tags || []).map((t) => t.label || ""),
+      ...(task.collaborators || []).map((c) => c.username || c.displayName || ""),
+    ]
+      .map(normalize)
+      .join(" ");
+
+    const matchSearch =
+      searchTokens.length === 0 || searchTokens.every((tok) => corpus.includes(tok));
+
+    const matchStatus = filter.status ? task.status === filter.status : true;
+    const matchPriority = filter.priority ? task.priority === filter.priority : true;
+    const deadlineDate = parseDeadline(task.deadline);
+    const matchDate = filterDate && deadlineDate ? deadlineDate >= filterDate : !filterDate;
+
+    return matchSearch && matchStatus && matchPriority && matchDate;
   });
 
-  // Aplicam sortarea
   const sortedTasks = [...filteredTasks].sort((a, b) => {
     if (!sortConfig.key) return 0;
 
@@ -103,8 +150,8 @@ const { t } = useTranslate();
       aValue = priorityOrder.indexOf(aValue);
       bValue = priorityOrder.indexOf(bValue);
     } else if (sortConfig.key === "deadline") {
-      aValue = aValue ? new Date(aValue) : new Date(0);
-      bValue = bValue ? new Date(bValue) : new Date(0);
+      aValue = parseDeadline(aValue) || new Date(0);
+      bValue = parseDeadline(bValue) || new Date(0);
     } else if (sortConfig.key === "title") {
       return sortConfig.direction === "asc"
         ? aValue.localeCompare(bValue)
@@ -119,119 +166,128 @@ const { t } = useTranslate();
   return (
     <div className="listContainer">
       <div className="listHeaderTop">
-        <h3 className="containerTitle">{t("taskList")}</h3>
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button
-            className="filterButton"
-            onClick={() => setFilterVisible((prev) => !prev)}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 432 472"
-            >
+        <h3 className="containerTitle">
+          <span>{t("taskList")}</span>
+          <span className="titleAccent" />
+        </h3>
+        <div className="listActions">
+          <button className="filterButton" onClick={() => setShowFilters((prev) => !prev)}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 432 472">
               <path
                 fill="currentColor"
                 d="m169 399l43 32q10 9 25 9q6 0 20-4q23-12 23-39V246L419 73q17-21 4-45q-15-25-38-25H47Q18 3 9 26q-10 26 4 45l139 175v119q0 22 17 34zM47 45h338L237 229v168l-42-32V229z"
               />
             </svg>
           </button>
-          <button className="filterButton" onClick={onToggleAddTask}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-            >
-              <path
-                fill="currentColor"
-                d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-              />
+          <button className="addActionButton" onClick={onToggleAddTask}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
             </svg>
           </button>
         </div>
       </div>
 
-      {filterVisible && (
-        <div className="filterPanel">
-          <label>
-            {t("status")}:
-            <select
-              value={filter.status}
-              onChange={(e) => setFilter({ ...filter, status: e.target.value })}
-            >
-              <option value="">{t("all")}</option>
-              {statusOrder.map((s) => (
-                <option key={s} value={s}>
-                  {t(s)}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            {t("priority")}:
-            <select
-              value={filter.priority}
-              onChange={(e) =>
-                setFilter({ ...filter, priority: e.target.value })
-              }
-            >
-              <option value="">{t("all")}</option>
-              {priorityOrder.map((p) => (
-                <option key={p} value={p}>
-                  {t(p)}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            {t("untilDate")}:
-            <input
-              type="date"
-              value={filter.date}
-              onChange={(e) => setFilter({ ...filter, date: e.target.value })}
-            />
-          </label>
+      {showFilters && (
+        <div className="filterDrawer">
+          <div className="filterRow">
+            <div className="searchBox filterSearch">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="m20.3 21.7l-6.15-6.15q-.725.6-1.638.925T10.6 16.8q-2.7 0-4.6-1.9T4.1 10.3t1.9-4.6t4.6-1.9t4.6 1.9t1.9 4.6q0 .95-.262 1.862t-.913 1.738l6.15 6.15zm-9.7-6.9q1.875 0 3.188-1.312T15.1 10.3t-1.312-3.188T10.6 5.8T7.412 7.112T6.1 10.3t1.312 3.188T10.6 14.8"
+                />
+              </svg>
+              <input
+                type="text"
+                placeholder={t("title")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="filterField">
+              <label>{t("status")}</label>
+              <Dropdown
+                value={filter.status}
+                onChange={(val) => setFilter({ ...filter, status: val })}
+                options={[
+                  { value: "", label: t("all") },
+                  ...statusOrder.map((s) => ({ value: s, label: t(s) })),
+                ]}
+                placeholder={t("all")}
+              />
+            </div>
+            <div className="filterField">
+              <label>{t("priority")}</label>
+              <Dropdown
+                value={filter.priority}
+                onChange={(val) => setFilter({ ...filter, priority: val })}
+                options={[
+                  { value: "", label: t("all") },
+                  ...priorityOrder.map((p) => ({ value: p, label: t(p) })),
+                ]}
+                placeholder={t("all")}
+              />
+            </div>
+            <div className="filterField">
+              <label>{t("untilDate")}</label>
+              <Dropdown
+                value={filter.date}
+                onChange={(val) => setFilter({ ...filter, date: val })}
+                placeholder={t("untilDate")}
+                isDate
+              />
+            </div>
+          </div>
         </div>
       )}
 
-      <ul className="list">
-        <li className="listItem">
-          <ListHead onSort={handleSort} sortConfig={sortConfig} />
-        </li>
-        {sortedTasks.map((task) => (
-          <li className="listItem" key={task.id}>
-            <Task
-              taskData={task}
-              onUpdate={handleUpdate}
-              onDelete={handleDelete}
-            />
+      <div className="taskListBody">
+        <ul className="list taskListTable">
+          <li className="listItem">
+            <ListHead onSort={handleSort} sortConfig={sortConfig} className="tableHeaderRow" />
+            <div className="tableHeaderSeparator" />
           </li>
-        ))}
 
-        {sortedTasks.length <= 3 && (
-          <li className="listItem addTaskListItem">
-            <button className="addTaskInlineButton" onClick={onToggleAddTask}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                className="addTaskIcon"
-              >
-                <path
-                  fill="currentColor"
-                  d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                />
-              </svg>
-              <span>{t("addNewTask")}</span>
-            </button>
-          </li>
-        )}
-      </ul>
+          {sortedTasks.length === 0 && (
+            <li className="listItem emptyState">
+              <EmptyState onAdd={onToggleAddTask} t={t} />
+            </li>
+          )}
+
+          {sortedTasks.map((task) => (
+            <li className="listItem taskRow" key={task.id}>
+              <Task taskData={task} onUpdate={handleUpdate} onDelete={handleDelete} t={t} />
+            </li>
+          ))}
+
+          {sortedTasks.length > 0 && sortedTasks.length <= 3 && (
+            <li className="listItem addTaskListItem taskListFooter">
+              <button className="addTaskInlineButton" onClick={onToggleAddTask}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  className="addTaskIcon"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                  />
+                </svg>
+                <span>{t("addNewTask")}</span>
+              </button>
+            </li>
+          )}
+        </ul>
+      </div>
+
+      {undoData && (
+        <div className="undoToast">
+          <span>{t("taskDeleted")}</span>
+          <button onClick={handleUndo}>{t("undo")}</button>
+        </div>
+      )}
     </div>
   );
 };

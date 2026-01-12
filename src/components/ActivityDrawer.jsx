@@ -1,74 +1,111 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useActivity } from "../context/ActivityContext";
-import { useTranslate } from "../translation";
-import "./ActivityDrawer.css";
+import { subscribeToActivity } from "../services/activityService";
 
-const formatTime = (ts) => {
-  if (!ts) return "-";
-  if (typeof ts.toDate === "function") {
-    return ts.toDate().toLocaleString();
-  }
-  const d = new Date(ts);
-  return Number.isNaN(d.getTime()) ? "-" : d.toLocaleString();
+const formatMessage = (entry, t) => {
+  const from = entry.from ?? "—";
+  const to = entry.to ?? "—";
+  const extra = entry.extra ?? "";
+  const map = {
+    status_changed: `${t ? t("activity.statusChanged") : "Status changed"}: ${from} → ${to}`,
+    title_changed: `${t ? t("activity.titleChanged") : "Title changed"}: ${from} → ${to}`,
+    description_changed: `${t ? t("activity.descriptionChanged") : "Description changed"}`,
+    priority_changed: `${t ? t("activity.priorityChanged") : "Priority changed"}: ${from} → ${to}`,
+    deadline_changed: `${t ? t("activity.deadlineChanged") : "Deadline changed"}: ${from} → ${to}`,
+    subtask_added: `${t ? t("activity.subtaskAdded") : "Subtask added"}: ${to}`,
+    subtask_removed: `${t ? t("activity.subtaskRemoved") : "Subtask removed"}: ${from}`,
+    subtask_completed: `${t ? t("activity.subtaskCompleted") : "Subtask completed"}: ${extra || from} → ${to ? "done" : "undone"}`,
+    collaborator_added: `${t ? t("activity.collaboratorAdded") : "Collaborator added"}: ${to}`,
+    collaborator_removed: `${t ? t("activity.collaboratorRemoved") : "Collaborator removed"}: ${from}`,
+    collaborator_role_changed: `${t ? t("activity.collaboratorRoleChanged") : "Collaborator role changed"}: ${from} → ${to} ${extra ? `(${extra})` : ""}`,
+    comment_added: `${t ? t("activity.commentAdded") : "Comment added"}`,
+    task_created: `${t ? t("activity.taskCreated") : "Task created"}${to?.title ? `: ${to.title}` : ""}`,
+    task_deleted: `${t ? t("activity.taskDeleted") : "Task deleted"}`,
+  };
+  return map[entry.type] || entry.type;
 };
 
-const typeLabels = (t) => ({
-  task_created: t("activity.created") || "Task created",
-  task_updated: t("activity.updated") || "Task updated",
-  status_changed: t("activity.statusChanged") || "Status changed",
-  deadline_changed: t("activity.deadlineChanged") || "Deadline changed",
-  tag_added: t("activity.tagAdded") || "Tag added",
-  attachment_added: t("activity.attachmentAdded") || "Attachment added",
-  comment_added: t("activity.commentAdded") || "Comment added",
-});
+const groupByDay = (items) => {
+  return items.reduce((acc, item) => {
+    const ts = item.createdAt?.toDate?.() || item.createdAt || new Date();
+    const key = ts.toLocaleDateString();
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(item);
+    return acc;
+  }, {});
+};
 
-const ActivityDrawer = ({ taskId, open, onClose }) => {
-  const { subscribeTaskActivity, getActivity } = useActivity();
-  const { t } = useTranslate();
-  const activity = getActivity(taskId);
-  const labels = useMemo(() => typeLabels(t), [t]);
+const ActivityDrawer = ({ taskId, taskTitle, onClose, t }) => {
+  const [items, setItems] = useState([]);
+  const listRef = useRef(null);
 
   useEffect(() => {
-    if (!open || !taskId) return undefined;
-    const unsub = subscribeTaskActivity(taskId, 100);
-    return () => unsub?.();
-  }, [open, taskId, subscribeTaskActivity]);
+    if (!taskId) return undefined;
+    const unsub = subscribeToActivity(taskId, (data) => setItems(data || []));
+    return () => unsub();
+  }, [taskId]);
 
-  if (!open) return null;
+  const ordered = useMemo(() => {
+    return [...items].sort((a, b) => {
+      const ta = a.createdAt?.toMillis?.() || 0;
+      const tb = b.createdAt?.toMillis?.() || 0;
+      return ta - tb;
+    });
+  }, [items]);
+
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight;
+    }
+  }, [ordered]);
+
+  const grouped = useMemo(() => groupByDay(ordered), [ordered]);
+  const dayKeys = Object.keys(grouped);
 
   return createPortal(
-    <div className="activityOverlay" onClick={onClose}>
-      <div className="activityDrawer" onClick={(e) => e.stopPropagation()}>
+    <div className="activityDrawerOverlay" onClick={onClose}>
+      <div
+        className="activityDrawer"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-label={t ? t("activityLog") : "Activity log"}
+      >
         <div className="activityHeader">
-          <div className="activityTitle">{t("activity.title") || "Activity"}</div>
-          <button className="iconButton" onClick={onClose} aria-label={t("common.close") || "Close"}>
+          <div>
+            <div className="activityTitle">{t ? t("activityLog") : "Activity Log"}</div>
+            {taskTitle && <div className="activitySubtitle">{taskTitle}</div>}
+          </div>
+          <button className="activityClose" onClick={onClose} aria-label="Close activity log">
             ×
           </button>
         </div>
-        <div className="activityBody">
-          {activity.length === 0 ? (
-            <div className="activityEmpty">{t("activity.empty") || "No activity yet."}</div>
-          ) : (
-            <ul className="activityList">
-              {activity.map((entry) => (
-                <li key={entry.id} className="activityItem">
-                  <div className="activityRow">
-                    <div className="activityType">{labels[entry.type] || entry.type}</div>
-                    <div className="activityTime">{formatTime(entry.createdAt)}</div>
-                  </div>
-                  <div className="activityMeta">
-                    {entry.byName || entry.byUid ? (
-                      <span className="activityActor">{entry.byName || entry.byUid}</span>
-                    ) : null}
-                    {entry.payload?.field && (
-                      <span className="activityField">Field: {entry.payload.field}</span>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
+        <div className="activityList" ref={listRef}>
+          {dayKeys.length === 0 && (
+            <div className="activityEmpty">{t ? t("activity.empty") : "No activity yet"}</div>
           )}
+          {dayKeys.map((day) => (
+            <div key={day} className="activityDay">
+              <div className="activityDayLabel">{day}</div>
+              <div className="activityItems">
+                {grouped[day].map((entry) => {
+                  const ts = entry.createdAt?.toDate?.() || entry.createdAt || new Date();
+                  const time = ts.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                  return (
+                    <div key={entry.id} className="activityItem">
+                      <div className="activityDot" />
+                      <div className="activityContent">
+                        <div className="activityMeta">
+                          <span className="activityActor">{entry.actorName || "User"}</span>
+                          <span className="activityTime">{time}</span>
+                        </div>
+                        <div className="activityText">{formatMessage(entry, t)}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>,

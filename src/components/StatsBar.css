@@ -1,13 +1,26 @@
 .statsBar {
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+  justify-content: center;
+  padding: 12px 18px;
+  gap: 0;
+}
+.statsBarCompact {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+.statRow {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
-  padding: 14px;
-  overflow: visible !important;
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: stretch;
 }
 
 .statCard {
-  padding: 14px 16px;
+  padding: 16px 18px;
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.42);
@@ -17,8 +30,6 @@
   gap: 6px;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   box-shadow: 0 12px 26px rgba(200, 0, 255, 0.12), 0 6px 18px rgba(0, 0, 0, 0.08);
-  position: relative;
-  overflow: visible !important;
 }
 
 .statCard:hover {
@@ -57,12 +68,18 @@
   color: var(--text-muted);
 }
 
+.miniCalCard {
+  padding: 0;
+  max-width: 260px;
+  min-width: 200px;
+}
 
 [data-theme="dark"] .statCard {
-  background: rgba(34, 26, 58, 0.7);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+  background: rgba(34, 18, 46, 0.82);
+  border-color: var(--glass-border);
+  box-shadow: 0 16px 36px rgba(8, 4, 16, 0.55);
 }
 
 [data-theme="dark"] .statCard:hover {
-  background: rgba(45, 35, 70, 0.78);
+  background: rgba(42, 22, 56, 0.9);
 }

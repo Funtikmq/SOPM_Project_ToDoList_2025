@@ -1,34 +1,33 @@
-import {
-  addDoc,
-  collection,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-  serverTimestamp,
-} from "firebase/firestore";
+import { addDoc, collection, onSnapshot, orderBy, query, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
-const activityCol = (taskId) => collection(db, "tasks", taskId, "activity");
-
-export const listenActivity = (taskId, callback, limitSize) => {
-  if (!taskId) return () => {};
-  const args = [activityCol(taskId), orderBy("createdAt", "desc")];
-  if (limitSize) args.push(limit(limitSize));
-  const q = query(...args);
-  return onSnapshot(q, (snap) => {
-    const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    callback(list);
-  });
+export const logActivity = async (taskId, entry = {}) => {
+  if (!taskId) return null;
+  const payload = {
+    taskId,
+    createdAt: serverTimestamp(),
+    ...entry,
+  };
+  try {
+    return await addDoc(collection(db, "tasks", taskId, "activityLog"), payload);
+  } catch (err) {
+    console.warn("logActivity error", err);
+    return null;
+  }
 };
 
-export const logActivity = async (taskId, { type, byUid, byName, payload }) => {
-  if (!taskId) return null;
-  return addDoc(activityCol(taskId), {
-    type,
-    byUid,
-    byName,
-    payload: payload || {},
-    createdAt: serverTimestamp(),
-  });
+export const subscribeToActivity = (taskId, callback) => {
+  if (!taskId) return () => {};
+  const q = query(collection(db, "tasks", taskId, "activityLog"), orderBy("createdAt", "desc"));
+  const unsub = onSnapshot(
+    q,
+    (snap) => {
+      const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      callback(items);
+    },
+    (err) => {
+      console.warn("subscribeToActivity error", err);
+    }
+  );
+  return unsub;
 };

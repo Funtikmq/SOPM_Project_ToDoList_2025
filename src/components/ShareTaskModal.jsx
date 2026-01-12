@@ -5,43 +5,43 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   query,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
-import Dropdown from "./ui/Dropdown";
 import { useTranslate } from "../translation";
-import { useTasks } from "../context/TaskContext";
+import Dropdown from "./ui/Dropdown";
 import "./ShareTaskModal.css";
+import { logActivity } from "../services/activityService";
+
+const ROLE_OPTIONS = [
+  { value: "viewer", label: "Viewer" },
+  { value: "editor", label: "Editor" },
+];
 
 const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canManage }) => {
   const { t } = useTranslate();
-  const { getTask, updateTask, getPermissions } = useTasks();
   const [task, setTask] = useState(initialTask || null);
   const [ownerProfile, setOwnerProfile] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
-  const taskFromContext = getTask(taskId);
-  const perms = getPermissions(taskId);
-
-  const roleOptions = useMemo(
-    () => [
-      { value: "viewer", label: t("collaborators.viewer") },
-      { value: "editor", label: t("collaborators.editor") },
-    ],
-    [t]
-  );
+  const actorName = currentUser?.username || currentUser?.displayName || currentUser?.email || "user";
 
   useEffect(() => {
-    if (!open) return;
-    if (taskFromContext) {
-      setTask(taskFromContext);
-    } else if (initialTask) {
-      setTask(initialTask);
-    }
-  }, [open, taskFromContext, initialTask]);
+    if (!open || !taskId) return undefined;
+    const unsub = onSnapshot(doc(db, "tasks", taskId), (snap) => {
+      if (!snap.exists()) {
+        onClose?.();
+        return;
+      }
+      setTask({ id: snap.id, ...snap.data() });
+    });
+    return () => unsub();
+  }, [open, taskId, onClose]);
 
   useEffect(() => {
     if (!task?.ownerId) return;
@@ -71,7 +71,7 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
       task.ownerName ||
       ownerProfile?.username ||
       task.ownerUsername ||
-      t("collaborators.owner");
+      "Owner";
     const ownerUsername =
       ownerProfile?.username ||
       task.ownerUsername ||
@@ -129,13 +129,13 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
   };
 
   const addCollaborator = async (profile) => {
-    if (!task || !(canManage || perms.canManageCollaborators)) return;
+    if (!task || !canManage) return;
     if (profile.uid === currentUser?.uid) {
-      setError(t("collaborators.cannotAddSelf"));
+      setError("You cannot add yourself.");
       return;
     }
     if (profile.uid === task.ownerId) {
-      setError(t("collaborators.alreadyCollaborator"));
+      setError("This user already owns the task.");
       return;
     }
     const participants = Array.isArray(task.participants)
@@ -144,7 +144,7 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
         ? [task.ownerId]
         : [];
     if (participants.includes(profile.uid)) {
-      setError(t("collaborators.alreadyCollaborator"));
+      setError("Already a collaborator.");
       return;
     }
     setError("");
@@ -159,30 +159,51 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
       },
     ];
     const nextParticipants = [...participants, profile.uid];
-    await updateTask(task.id, {
+    await updateDoc(doc(db, "tasks", task.id), {
       collaborators: nextCollabs,
       participants: nextParticipants,
       shared: true,
+    });
+    await logActivity(task.id, {
+      type: "collaborator_added",
+      actorUid: currentUser?.uid,
+      actorName,
+      to: profile.username || profile.displayName || profile.email || profile.uid,
     });
     setResults([]);
     setSearchTerm("");
   };
 
   const changeRole = async (uid, role) => {
-    if (!task || !(canManage || perms.canManageCollaborators)) return;
+    if (!task || !canManage) return;
     const collabs = Array.isArray(task.collaborators) ? task.collaborators : [];
     const next = collabs.map((c) => (c.uid === uid ? { ...c, role } : c));
-    await updateTask(task.id, { collaborators: next });
+    await updateDoc(doc(db, "tasks", task.id), { collaborators: next });
+    const changedUser = collabs.find((c) => c.uid === uid);
+    await logActivity(task.id, {
+      type: "collaborator_role_changed",
+      actorUid: currentUser?.uid,
+      actorName,
+      from: changedUser?.role || null,
+      to: role,
+      extra: changedUser?.username || uid,
+    });
   };
 
   const removeCollaborator = async (uid) => {
-    if (!task || !(canManage || perms.canManageCollaborators)) return;
+    if (!task || !canManage) return;
     const nextCollabs = (task.collaborators || []).filter((c) => c.uid !== uid);
     const nextParticipants = (task.participants || []).filter((p) => p !== uid);
-    await updateTask(task.id, {
+    await updateDoc(doc(db, "tasks", task.id), {
       collaborators: nextCollabs,
       participants: nextParticipants,
       shared: nextCollabs.length > 0,
+    });
+    await logActivity(task.id, {
+      type: "collaborator_removed",
+      actorUid: currentUser?.uid,
+      actorName,
+      from: uid,
     });
     if (uid === currentUser?.uid) {
       onClose?.();
@@ -196,10 +217,10 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
       <div className="modalCard shareCard" onClick={(e) => e.stopPropagation()}>
         <div className="modalHeader">
           <div>
-            <div className="modalTitle">{t("share.title")}</div>
-            <div className="modalSubtitle">{t("share.subtitle")}</div>
+            <div className="modalTitle">Share task</div>
+            <div className="modalSubtitle">Invite teammates by username and set permissions</div>
           </div>
-          <button className="modalCloseBtn" onClick={onClose} aria-label={t("common.close")}>
+          <button className="modalCloseBtn" onClick={onClose} aria-label="Close share modal">
             ×
           </button>
         </div>
@@ -207,12 +228,12 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
         <div className="shareSearch">
           <input
             className="shareInput"
-            placeholder={t("share.searchPlaceholder")}
+            placeholder={t ? t("searchCollaborators") : "Search collaborators… (#username)"}
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
             disabled={!canManage}
           />
-          {searching && <span className="shareHint">{t("share.searching")}</span>}
+          {searching && <span className="shareHint">{t ? t("searching") : "Searching…"}</span>}
         </div>
         {error && <div className="shareError">{error}</div>}
         {canManage && results.length > 0 && (
@@ -228,20 +249,20 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
                   <div className="shareResultName">#{u.username}</div>
                   <div className="shareResultInfo">{u.displayName || u.email}</div>
                 </div>
-                <span className="shareAddChip">{t("share.add")}</span>
+                <span className="shareAddChip">Add</span>
               </button>
             ))}
           </div>
         )}
 
-          <div className="collabListHeader">
-            <div className="collabListTitle">
-            {t("collaborators.title")} ({Math.max(collaboratorList.length - 1, 0)})
-            </div>
-            <div className="collabListHint">
-            {canManage ? t("share.changesSaved") : t("share.viewOnly")}
-            </div>
+        <div className="collabListHeader">
+          <div className="collabListTitle">
+            Collaborators ({Math.max(collaboratorList.length - 1, 0)})
           </div>
+          <div className="collabListHint">
+            {canManage ? "Changes are saved instantly" : "View only"}
+          </div>
+        </div>
 
         <div className="collabList">
           {collaboratorList.map((c) => (
@@ -251,18 +272,18 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
                 <div>
                   <div className="collabName">
                     #{c.username}
-                    {c.isOwner && <span className="ownerPill">{t("collaborators.owner")}</span>}
+                    {c.isOwner && <span className="ownerPill">Owner</span>}
                   </div>
                   <div className="collabDisplay">{c.displayName}</div>
                 </div>
               </div>
               <div className="collabActions">
                 {c.isOwner ? (
-                  <span className="rolePill">{t("collaborators.owner")}</span>
+                  <span className="rolePill">Owner</span>
                 ) : (
                   <Dropdown
                     value={c.role || "viewer"}
-                    options={roleOptions}
+                    options={ROLE_OPTIONS}
                     onChange={(val) => changeRole(c.uid, val)}
                     disabled={!canManage}
                     variant="priority"
@@ -273,14 +294,14 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
                     className="removeCollabBtn"
                     onClick={() => removeCollaborator(c.uid)}
                   >
-                    {t("collaborators.remove")}
+                    Remove
                   </button>
                 )}
               </div>
             </div>
           ))}
           {collaboratorList.length === 0 && (
-            <div className="collabEmpty">{t("collaborators.empty") || "No collaborators yet."}</div>
+            <div className="collabEmpty">No collaborators yet.</div>
           )}
         </div>
       </div>

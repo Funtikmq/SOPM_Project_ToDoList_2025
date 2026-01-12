@@ -1,17 +1,25 @@
-import { useTranslate } from "../translation";
 import { useTasks } from "../context/TaskContext";
+import { useTranslate } from "../translation";
+import MiniCalendar from "./calendar/MiniCalendar";
 import "./StatsBar.css";
 
-const StatsBar = () => {
+const StatsBar = ({ compact = false, hideMini = false }) => {
+  const { stats, tasksByDate } = useTasks();
   const { t } = useTranslate();
-  const { stats } = useTasks();
 
   return (
-    <div className="statsBar glass-surface">
-      <StatCard label={t("dashboard.total")} value={stats.total} icon="list" />
-      <StatCard label={t("dashboard.active")} value={stats.active} accent icon="bolt" />
-      <StatCard label={t("dashboard.completed")} value={stats.completed} icon="check" />
-      <StatCard label={t("dashboard.overdue")} value={stats.overdue} danger icon="alarm" />
+    <div className={`statsBar glass-surface ${compact ? "statsBarCompact" : ""}`}>
+      <div className="statRow">
+        <StatCard label={t("Total")} value={stats.total} icon="list" />
+        <StatCard label={t("Active")} value={stats.active} accent icon="bolt" />
+        <StatCard label={t("Completed")} value={stats.completed} icon="check" />
+        <StatCard label={t("Overdue")} value={stats.overdue} danger icon="alarm" />
+      </div>
+      {!hideMini && (
+        <div className="statCard miniCalCard">
+          <MiniCalendar tasksByDate={tasksByDate} />
+        </div>
+      )}
     </div>
   );
 };
@@ -39,15 +47,11 @@ const iconMap = {
   ),
 };
 
-const StatCard = ({ label, value, accent, danger, icon, children, className = "" }) => (
-  <div className={`statCard ${accent ? "accent" : ""} ${danger ? "danger" : ""} ${className}`.trim()}>
+const StatCard = ({ label, value, accent, danger, icon }) => (
+  <div className={`statCard ${accent ? "accent" : ""} ${danger ? "danger" : ""}`}>
     <div className="statTop">
       <div className="statLabel">{label}</div>
-      {children ? (
-        children
-      ) : (
-        <div className="statIcon">{iconMap[icon]}</div>
-      )}
+      <div className="statIcon">{iconMap[icon]}</div>
     </div>
     <div className="statValue">{value}</div>
   </div>
