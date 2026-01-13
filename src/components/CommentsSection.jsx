@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 const CommentsSection = ({
   comments = [],
@@ -14,12 +14,12 @@ const CommentsSection = ({
   onDelete,
   t,
 }) => {
-  const [open, setOpen] = useState(true);
-  const fileInputRef = useRef(null);
-  const badge = useMemo(() => comments.length || 0, [comments.length]);
+  const [open, setOpen] = useState(false);
+  const count = useMemo(() => comments.length || 0, [comments.length]);
 
   return (
     <div className="commentsShell">
+      {/* Header toggles comments visibility and keeps the count visible. */}
       <button
         type="button"
         className="commentsHeaderModern"
@@ -27,8 +27,9 @@ const CommentsSection = ({
         aria-expanded={open}
       >
         <div className="commentsHeaderLeft">
-          <span className="commentsTitleText">{t ? t("comments") : "Comments"}</span>
-          <span className="commentsBadge">{badge}</span>
+          <span className="commentsTitleText">
+            {t ? t("comments") : "Comments"} ({count})
+          </span>
         </div>
         <div className={`commentsChevron ${open ? "open" : ""}`}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">

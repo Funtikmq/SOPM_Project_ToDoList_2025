@@ -7,11 +7,8 @@ import CommentsSection from "./CommentsSection";
 import ActivityDrawer from "./ActivityDrawer";
 import { useAuth } from "../context/AuthContext";
 import { parseDeadline, useTasks } from "../context/TaskContext";
-import TagPill from "./TagPill";
-import TagSelector from "./TagSelector";
 import RecurrenceBadge from "./RecurrenceBadge";
 import RecurringHistoryDrawer from "./recurrence/RecurringHistoryDrawer";
-import "./Tag.css";
 
 const STATUS_OPTIONS = [
   { value: "upcoming", label: "Upcoming" },
@@ -47,10 +44,6 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
     addComment,
     editComment,
     deleteComment,
-    userTags,
-    addTagToTask,
-    removeTagFromTask,
-    createTag,
   } = useTasks();
   const [localExpanded, setLocalExpanded] = useState(false);
   const isExpanded = expanded !== undefined ? expanded : localExpanded;
@@ -66,13 +59,20 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
   const [commentText, setCommentText] = useState("");
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [openActivityFor, setOpenActivityFor] = useState(null);
-  const [showTagSelector, setShowTagSelector] = useState(false);
   const [openRecurringFor, setOpenRecurringFor] = useState(null);
 
-  const collaborators = Array.isArray(task?.collaborators) ? task.collaborators : [];
-  const subtasks = Array.isArray(task?.subtasks) ? task.subtasks : [];
-  const comments = Array.isArray(task?.comments) ? task.comments : [];
-  const tags = Array.isArray(task?.tags) ? task.tags : [];
+  const collaborators = useMemo(
+    () => (Array.isArray(task?.collaborators) ? task.collaborators : []),
+    [task?.collaborators]
+  );
+  const subtasks = useMemo(
+    () => (Array.isArray(task?.subtasks) ? task.subtasks : []),
+    [task?.subtasks]
+  );
+  const comments = useMemo(
+    () => (Array.isArray(task?.comments) ? task.comments : []),
+    [task?.comments]
+  );
   const ownerId = task?.ownerId || task?.userId;
   const isOwner = user?.uid && ownerId === user.uid;
   const userCollab = collaborators.find((c) => c.uid === user?.uid);
@@ -89,8 +89,6 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
     setTempDeadline(task?.deadline || "");
   }, [task]);
 
-  if (!task) return null;
-
   const progress = useMemo(() => {
     if (!subtasks.length) return { done: 0, total: 0 };
     const done = subtasks.filter((s) => s.done).length;
@@ -102,8 +100,10 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
     const list = [];
     const seen = new Set();
     const ownerUsername =
-      task.ownerUsername || (isOwner ? user?.username : "") || (task.ownerId ? `user-${task.ownerId.slice(0, 4)}` : "owner");
-    const ownerName = task.ownerName || (isOwner ? user?.displayName : "") || ownerUsername;
+      task?.ownerUsername ||
+      (isOwner ? user?.username : "") ||
+      (ownerId ? `user-${ownerId.slice(0, 4)}` : "owner");
+    const ownerName = task?.ownerName || (isOwner ? user?.displayName : "") || ownerUsername;
     if (ownerId && !seen.has(ownerId)) {
       seen.add(ownerId);
       list.push({
@@ -119,11 +119,15 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
       list.push({ ...c, role: c.role || "viewer" });
     });
     return list;
-  }, [collaborators, ownerId, isOwner, task.ownerId, task.ownerName, task.ownerUsername, user?.displayName, user?.username]);
+  }, [collaborators, ownerId, isOwner, task?.ownerName, task?.ownerUsername, user?.displayName, user?.username]);
 
-  const handleUpdate = (patch) => {
+  const handleUpdate = async (patch) => {
     if (!canEdit) return;
-    onUpdate?.(task.id, patch);
+    try {
+      await onUpdate?.(task.id, patch);
+    } catch (err) {
+      console.warn("update task failed", err);
+    }
   };
 
   const toggleExpand = () => {
@@ -191,27 +195,6 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
     if (editingCommentId === commentId) resetCommentState();
   };
 
-  const handleSelectTag = async (tag) => {
-    if (!canEdit || !task?.id) return;
-    await addTagToTask(task.id, tag);
-    setShowTagSelector(false);
-  };
-
-  const handleCreateTag = async (label, color) => {
-    if (!canEdit || !task?.id) return null;
-    const created = await createTag({ label, color });
-    if (created) {
-      await addTagToTask(task.id, created);
-      setShowTagSelector(false);
-    }
-    return created;
-  };
-
-  const handleRemoveTag = async (tag) => {
-    if (!canEdit || !task?.id) return;
-    await removeTagFromTask(task.id, tag);
-  };
-
   const saveDeadline = () => {
     if (!canEdit) return;
     handleUpdate({ deadline: tempDeadline || "" });
@@ -255,17 +238,20 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
       window.removeEventListener("resize", handleReposition);
       window.removeEventListener("scroll", handleReposition, true);
     };
-  }, [positionDatePicker, showDateInput, task.deadline]);
+  }, [positionDatePicker, showDateInput, task?.deadline]);
+
+  if (!task) return null;
 
   return (
     <div className="taskWrapper" data-task-id={task.id}>
-      <div className="task taskRowCard taskRowClickable" data-expanded={isExpanded} onClick={toggleExpand}>
-        <div
-          className="taskItem statusCell"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
+      <div className="task taskRowCard taskRowClickable" data-expanded={isExpanded}>
+        <button
+          type="button"
+          className="taskRowHit"
+          onClick={toggleExpand}
+          aria-label="Open task"
+        />
+        <div className="taskItem statusCell">
           <Dropdown
             value={task.status}
             onChange={(val) => handleUpdate({ status: val })}
@@ -276,7 +262,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
           />
         </div>
 
-        <div className="taskItem taskTitleCell" onClick={(e) => e.stopPropagation()}>
+        <div className="taskItem taskTitleCell">
           <div className="taskTitleRow">
             {!isEditingTitle ? (
               <h3
@@ -319,36 +305,12 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
                 🔁
               </button>
             )}          </div>
-          <div className="tagsRow">
-            <RecurrenceBadge recurring={task.recurring} />
-            {tags.map((tag) => (
-              <TagPill key={tag.id} tag={tag} onRemove={handleRemoveTag} removable={canEdit} />
-            ))}
-            {canEdit && (
-              <div className="tagSelectorWrapper">
-                <button
-                  type="button"
-                  className="addTagBtn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowTagSelector((p) => !p);
-                  }}
-                >
-                  + {t ? t("addTag") : "Add tag"}
-                </button>
-                {showTagSelector && (
-                  <TagSelector
-                    userTags={userTags}
-                    existingTagIds={tags.map((tg) => tg.id)}
-                    onSelectTag={handleSelectTag}
-                    onCreateTag={handleCreateTag}
-                    onClose={() => setShowTagSelector(false)}
-                    t={t}
-                  />
-                )}
-              </div>
-            )}
-          </div>          <div className="shareActionsRow">
+          {task?.recurring?.isRecurring && (
+            <div className="tagsRow">
+              <RecurrenceBadge recurring={task.recurring} />
+            </div>
+          )}
+          <div className="shareActionsRow">
             <button
               type="button"
               className="shareBadgeRow"
@@ -407,12 +369,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
           </div>
         </div>
 
-        <div
-          className="taskItem priorityCell"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
+        <div className="taskItem priorityCell">
           <Dropdown
             value={task.priority}
             onChange={(val) => handleUpdate({ priority: val })}
@@ -582,20 +539,22 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
         </div>
       </div>
 
-      <CommentsSection
-        comments={comments}
-        canComment={canComment}
-        allowModeration={canDelete || canComment}
-        currentUserId={user?.uid}
-        commentText={commentText}
-        editingCommentId={editingCommentId}
-        onCommentTextChange={setCommentText}
-        onSubmit={handleSubmitComment}
-        onCancelEdit={resetCommentState}
-        onStartEdit={handleStartEditComment}
-        onDelete={handleDeleteComment}
-        t={t}
-      />
+      {isShared && (
+        <CommentsSection
+          comments={comments}
+          canComment={canComment}
+          allowModeration={canEdit}
+          currentUserId={user?.uid}
+          commentText={commentText}
+          editingCommentId={editingCommentId}
+          onCommentTextChange={setCommentText}
+          onSubmit={handleSubmitComment}
+          onCancelEdit={resetCommentState}
+          onStartEdit={handleStartEditComment}
+          onDelete={handleDeleteComment}
+          t={t}
+        />
+      )}
 
       {openRecurringFor === task.id && (
         <RecurringHistoryDrawer taskId={task.id} onClose={() => setOpenRecurringFor(null)} />

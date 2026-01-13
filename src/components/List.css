@@ -4,6 +4,7 @@
 
 .listContainer,
 .taskListContainer {
+  width: 100%;
   padding: 24px;
   overflow: visible;
   background-clip: padding-box;

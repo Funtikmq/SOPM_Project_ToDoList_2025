@@ -5,7 +5,7 @@ import "./StatsBar.css";
 
 const StatsBar = ({ compact = false, hideMini = false }) => {
   const { stats, tasksByDate } = useTasks();
-  const { t } = useTranslate();
+  const { t, lang } = useTranslate();
 
   return (
     <div className={`statsBar glass-surface ${compact ? "statsBarCompact" : ""}`}>
@@ -17,7 +17,7 @@ const StatsBar = ({ compact = false, hideMini = false }) => {
       </div>
       {!hideMini && (
         <div className="statCard miniCalCard">
-          <MiniCalendar tasksByDate={tasksByDate} />
+          <MiniCalendar tasksByDate={tasksByDate} t={t} lang={lang} />
         </div>
       )}
     </div>

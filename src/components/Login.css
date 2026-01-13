@@ -1,9 +1,8 @@
 /* Background full page */
-body {
-  margin: 0;
-  padding: 0;
-  font-family: "Inter", sans-serif;
+.loginPage {
+  min-height: 100vh;
   background: #f5f5f5; /* light gray */
+  padding: 0;
 }
 
 /* Center the container */
@@ -36,7 +35,7 @@ body {
 }
 
 /* Inputs */
-input {
+.login-container input {
   padding: 12px;
   border-radius: 8px;
   border: 1px solid #ccc;
@@ -47,11 +46,11 @@ input {
   transition: 0.2s ease-in-out;
 }
 
-input::placeholder {
+.login-container input::placeholder {
   color: #aaa;
 }
 
-input:focus {
+.login-container input:focus {
   border-color: #d80fc4;
   box-shadow: 0 0 4px rgba(26, 115, 232, 0.4);
 }
@@ -118,4 +117,44 @@ input:focus {
   font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
+}
+
+[data-theme="dark"] .loginPage {
+  background: var(--bg);
+  background-image: var(--bg), var(--bg-noise);
+}
+
+[data-theme="dark"] .login-container {
+  background: rgba(28, 16, 36, 0.92);
+  border: 1px solid rgba(255, 200, 255, 0.16);
+  color: #f1e6ff;
+  box-shadow: 0 16px 36px rgba(8, 4, 16, 0.6);
+}
+
+[data-theme="dark"] .login-container h2 {
+  color: #f6f2ff;
+}
+
+[data-theme="dark"] .login-container input {
+  background: rgba(38, 22, 52, 0.94);
+  border-color: rgba(255, 200, 255, 0.18);
+  color: #f1e6ff;
+}
+
+[data-theme="dark"] .login-container input::placeholder {
+  color: #b8a8d6;
+}
+
+[data-theme="dark"] .auth-switch {
+  color: #c7b5dc;
+}
+
+[data-theme="dark"] .google-btn {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f1e6ff;
+  border: 1px solid rgba(255, 200, 255, 0.18);
+}
+
+[data-theme="dark"] .google-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
 }

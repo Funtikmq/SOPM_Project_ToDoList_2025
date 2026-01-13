@@ -6,13 +6,14 @@ import "./CalendarPage.css";
 
 const Calendar = () => {
   const { tasks, tasksByDate, updateTask } = useTasks();
-  const { t } = useTranslate();
+  const { t, lang } = useTranslate();
   const [view, setView] = useState("month"); // month | week
   const [currentDate, setCurrentDate] = useState(new Date());
+  const locale = lang === "ro" ? "ro-RO" : "en-US";
 
   const monthLabel = useMemo(
-    () => currentDate.toLocaleString(undefined, { month: "long", year: "numeric" }),
-    [currentDate]
+    () => currentDate.toLocaleString(locale, { month: "long", year: "numeric" }),
+    [currentDate, locale]
   );
 
   const goMonth = (delta) => {
@@ -40,15 +41,15 @@ const Calendar = () => {
 
   return (
     <div className="calendarPage">
-      <main className="calendarMain">
+      <div className="calendarMain">
         <div className="calendarTopBar glass-surface">
           <div className="calNav">
             <button type="button" className="ghostBtn" onClick={() => goMonth(-1)}>
-              ‹
+              {"<"}
             </button>
             <div className="calMonthLabel">{monthLabel}</div>
             <button type="button" className="ghostBtn" onClick={() => goMonth(1)}>
-              ›
+              {">"}
             </button>
             <button type="button" className="pillBtn" onClick={goToday}>
               {t ? t("calendar.today") : "Today"}
@@ -83,7 +84,7 @@ const Calendar = () => {
           />
           <div className="calendarHint">{t ? t("calendar.dragToReschedule") : "Drag to reschedule"}</div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };

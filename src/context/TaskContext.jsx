@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   addDoc,
@@ -17,23 +18,17 @@ import {
 import { db } from "../firebase/firebase";
 import { useAuth } from "./AuthContext";
 import { logActivity } from "../services/activityService";
-import {
-  addTagToTask as addTagToTaskService,
-  removeTagFromTask as removeTagFromTaskService,
-  subscribeToUserTags,
-  createUserTag,
-} from "../services/tagService";
-import { calculateNextDate, formatDateYMD } from "../services/recurrenceUtils";
+import { calculateNextDate } from "../services/recurrenceUtils";
 import { buildSearchTokens } from "../services/searchTokens";
 
 const TaskContext = createContext({
   tasks: [],
   stats: { total: 0, active: 0, completed: 0, overdue: 0 },
-  userTags: [],
   addTask: async () => {},
   updateTask: async () => {},
   deleteTask: async () => {},
   undoDelete: async () => {},
+  restoreTask: async () => {},
   addSubtask: async () => {},
   toggleSubtask: async () => {},
   removeSubtask: async () => {},
@@ -41,9 +36,6 @@ const TaskContext = createContext({
   addComment: async () => {},
   editComment: async () => {},
   deleteComment: async () => {},
-  addTagToTask: async () => {},
-  removeTagFromTask: async () => {},
-  createTag: async () => {},
   completeRecurringTask: async () => {},
   calculateNextDate: () => null,
 });
@@ -67,17 +59,22 @@ const normalizeTask = (task, fallbackUid) => {
   return { ...task, collaborators, ownerId, participants, shared };
 };
 
+// Derived stats should always reflect current tasks state (no cached counters).
+const isOverdue = (task, now = new Date()) => {
+  if (!task) return false;
+  if (task.status === "completed" || task.status === "canceled") return false;
+  if (task.status === "overdue") return true;
+  const dl = parseDeadline(task.deadline || task.dueDate);
+  if (!dl) return false;
+  return dl.getTime() < now.getTime();
+};
+
 const calcStats = (tasks) => {
-  const now = new Date();
   const total = tasks.length;
-  const active = tasks.filter((t) => t.status === "active" || t.status === "upcoming").length;
+  const active = tasks.filter((t) => t.status === "active").length;
   const completed = tasks.filter((t) => t.status === "completed").length;
-  const overdue = tasks.filter((t) => {
-    const dl = parseDeadline(t.deadline);
-    if (!dl) return false;
-    if (t.status === "completed" || t.status === "canceled") return false;
-    return dl.getTime() < now.getTime();
-  }).length;
+  const now = new Date();
+  const overdue = tasks.filter((t) => isOverdue(t, now)).length;
 
   return { total, active, completed, overdue };
 };
@@ -85,7 +82,6 @@ const calcStats = (tasks) => {
 export const TaskProvider = ({ children }) => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState([]);
-  const [userTags, setUserTags] = useState([]);
   const [subtasksMap, setSubtasksMap] = useState({});
   const [commentsMap, setCommentsMap] = useState({});
   const subtasksUnsubRef = useRef({});
@@ -94,7 +90,6 @@ export const TaskProvider = ({ children }) => {
   useEffect(() => {
     if (!user) {
       setTasks([]);
-      setUserTags([]);
       setSubtasksMap({});
       setCommentsMap({});
       Object.values(subtasksUnsubRef.current).forEach((fn) => fn());
@@ -157,13 +152,6 @@ export const TaskProvider = ({ children }) => {
 
     return () => unsubscribe();
   }, [user]);
-
-  // User tags listener
-  useEffect(() => {
-    if (!user?.uid) return undefined;
-    const unsub = subscribeToUserTags(user.uid, setUserTags);
-    return () => unsub();
-  }, [user?.uid]);
 
   // Maintain subtasks listeners per task (subcollection `/tasks/{id}/subtasks`)
   useEffect(() => {
@@ -351,58 +339,6 @@ export const TaskProvider = ({ children }) => {
     [recordActivity, user]
   );
 
-  const updateTask = useCallback(
-    async (id, updatedFields) => {
-      if (!user || !id) return;
-      const prevTask = tasks.find((t) => t.id === id);
-      const merged = { ...prevTask, ...updatedFields };
-      await updateDoc(doc(db, "tasks", id), {
-        ...updatedFields,
-        searchTokens: buildSearchTokens(merged),
-        updatedAt: serverTimestamp(),
-        lastEditedBy: user.uid,
-      });
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task.id === id ? normalizeTask({ ...task, ...updatedFields }, user.uid) : task
-        )
-      );
-
-      // activity logging for key fields
-      if (prevTask) {
-        const changes = [
-          { key: "status", type: "status_changed" },
-          { key: "title", type: "title_changed" },
-          { key: "priority", type: "priority_changed" },
-          { key: "deadline", type: "deadline_changed" },
-          { key: "description", type: "description_changed" },
-        ];
-        await Promise.all(
-          changes
-            .filter(({ key }) => Object.prototype.hasOwnProperty.call(updatedFields, key))
-            .filter(({ key }) => prevTask[key] !== updatedFields[key])
-            .map(({ key, type }) =>
-              recordActivity(id, {
-                type,
-                from: prevTask[key] || null,
-                to: updatedFields[key] || null,
-              })
-            )
-        );
-
-        // handle recurring completion -> generate next instance
-        if (
-          prevTask.recurring?.isRecurring &&
-          updatedFields.status === "completed" &&
-          prevTask.status !== "completed"
-        ) {
-          await completeRecurringTask(id, prevTask);
-        }
-      }
-    },
-    [recordActivity, tasks, user]
-  );
-
   const deleteTask = useCallback(
     async (id) => {
       if (!user || !id) return null;
@@ -466,6 +402,35 @@ export const TaskProvider = ({ children }) => {
           ? prev.map((t) => (t.id === task.id ? normalized : t))
           : [...prev, normalized];
       });
+    },
+    [user]
+  );
+
+  const restoreTask = useCallback(
+    async ({ originalId, docId, ...rest }) => {
+      if (!user || !originalId) return;
+      try {
+        const clean = { ...rest };
+        delete clean.deletedAt;
+        const restored = normalizeTask({ ...clean, id: originalId }, user.uid);
+        await setDoc(
+          doc(db, "tasks", originalId),
+          {
+            ...restored,
+            searchTokens: buildSearchTokens(restored),
+          },
+          { merge: true }
+        );
+        if (docId) {
+          await deleteDoc(doc(db, "trash", docId));
+        }
+        setTasks((prev) => {
+          const exists = prev.some((t) => t.id === originalId);
+          return exists ? prev.map((t) => (t.id === originalId ? restored : t)) : [...prev, restored];
+        });
+      } catch (err) {
+        console.warn("restoreTask error", err);
+      }
     },
     [user]
   );
@@ -604,51 +569,6 @@ export const TaskProvider = ({ children }) => {
     [user]
   );
 
-  const addTagToTask = useCallback(
-    async (taskId, tag) => {
-      if (!user || !taskId || !tag?.id) return;
-      try {
-        await addTagToTaskService(taskId, tag);
-        await recordActivity(taskId, {
-          type: "tag_added",
-          to: tag.label,
-        });
-      } catch (err) {
-        console.warn("addTagToTask error", err);
-      }
-    },
-    [recordActivity, user]
-  );
-
-  const removeTagFromTask = useCallback(
-    async (taskId, tag) => {
-      if (!user || !taskId || !tag?.id) return;
-      try {
-        await removeTagFromTaskService(taskId, tag);
-        await recordActivity(taskId, {
-          type: "tag_removed",
-          from: tag.label,
-        });
-      } catch (err) {
-        console.warn("removeTagFromTask error", err);
-      }
-    },
-    [recordActivity, user]
-  );
-
-  const createTag = useCallback(
-    async ({ label, color }) => {
-      if (!user?.uid) return null;
-      try {
-        return await createUserTag(user.uid, { label, color });
-      } catch (err) {
-        console.warn("createTag error", err);
-        return null;
-      }
-    },
-    [user?.uid]
-  );
-
   const generateNextTaskInstance = useCallback(
     async (anchorTask) => {
       if (!anchorTask?.recurring?.isRecurring) return null;
@@ -709,6 +629,58 @@ export const TaskProvider = ({ children }) => {
     [generateNextTaskInstance, tasks]
   );
 
+  const updateTask = useCallback(
+    async (id, updatedFields) => {
+      if (!user || !id) return;
+      const prevTask = tasks.find((t) => t.id === id);
+      const merged = { ...prevTask, ...updatedFields };
+      await updateDoc(doc(db, "tasks", id), {
+        ...updatedFields,
+        searchTokens: buildSearchTokens(merged),
+        updatedAt: serverTimestamp(),
+        lastEditedBy: user.uid,
+      });
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === id ? normalizeTask({ ...task, ...updatedFields }, user.uid) : task
+        )
+      );
+
+      // activity logging for key fields
+      if (prevTask) {
+        const changes = [
+          { key: "status", type: "status_changed" },
+          { key: "title", type: "title_changed" },
+          { key: "priority", type: "priority_changed" },
+          { key: "deadline", type: "deadline_changed" },
+          { key: "description", type: "description_changed" },
+        ];
+        await Promise.all(
+          changes
+            .filter(({ key }) => Object.prototype.hasOwnProperty.call(updatedFields, key))
+            .filter(({ key }) => prevTask[key] !== updatedFields[key])
+            .map(({ key, type }) =>
+              recordActivity(id, {
+                type,
+                from: prevTask[key] || null,
+                to: updatedFields[key] || null,
+              })
+            )
+        );
+
+        // handle recurring completion -> generate next instance
+        if (
+          prevTask.recurring?.isRecurring &&
+          updatedFields.status === "completed" &&
+          prevTask.status !== "completed"
+        ) {
+          await completeRecurringTask(id, prevTask);
+        }
+      }
+    },
+    [completeRecurringTask, recordActivity, tasks, user]
+  );
+
   const createRecurringTask = useCallback(
     async (payload) => {
       return addTask(payload);
@@ -733,13 +705,12 @@ export const TaskProvider = ({ children }) => {
       tasks: tasksWithSubtasks,
       tasksByDate,
       stats,
-      userTags,
-      calculateNextDate,
       createRecurringTask,
       addTask,
       updateTask,
       deleteTask,
       undoDelete,
+      restoreTask,
       addSubtask,
       toggleSubtask,
       removeSubtask,
@@ -747,22 +718,18 @@ export const TaskProvider = ({ children }) => {
       addComment,
       editComment,
       deleteComment,
-      addTagToTask,
-      removeTagFromTask,
-      createTag,
       completeRecurringTask,
     }),
     [
       tasksWithSubtasks,
       tasksByDate,
       stats,
-      userTags,
-      calculateNextDate,
       createRecurringTask,
       addTask,
       updateTask,
       deleteTask,
       undoDelete,
+      restoreTask,
       addSubtask,
       toggleSubtask,
       removeSubtask,
@@ -770,9 +737,6 @@ export const TaskProvider = ({ children }) => {
       addComment,
       editComment,
       deleteComment,
-      addTagToTask,
-      removeTagFromTask,
-      createTag,
       completeRecurringTask,
     ]
   );

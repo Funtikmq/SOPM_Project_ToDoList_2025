@@ -114,13 +114,12 @@ const List = ({ onToggleAddTask }) => {
   const searchTokens = useMemo(() => normalize(search).split(/[^a-z0-9]+/i).filter(Boolean), [search]);
 
   const filteredTasks = tasks.filter((task) => {
-    // search across title, tags, priority, status, deadline, collaborators usernames
+    // search across title, priority, status, deadline, collaborators usernames
     const corpus = [
       task.title || "",
       task.priority || "",
       task.status || "",
       task.deadline || "",
-      ...(task.tags || []).map((t) => t.label || ""),
       ...(task.collaborators || []).map((c) => c.username || c.displayName || ""),
     ]
       .map(normalize)

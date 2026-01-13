@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import "./Header.css";
 import { useAuth } from "../context/AuthContext";
 import { signOut, updateProfile } from "firebase/auth";
@@ -11,14 +10,11 @@ import RecycleBin from "./RecycleBin";
 import ProfileModal from "./ProfileModal";
 import MiniCalendar from "./calendar/MiniCalendar";
 import { useTasks } from "../context/TaskContext";
-import StatsBar from "./StatsBar";
 
-const Header = () => {
+const Header = ({ view = "list", onToggleView }) => {
   const { user, refreshProfile } = useAuth();
-  const { t } = useTranslate();
-  const { theme, toggleTheme } = useTheme();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { t, lang } = useTranslate();
+  const { theme, setTheme } = useTheme();
   const { tasksByDate } = useTasks();
 
   const [showBin, setShowBin] = useState(false);
@@ -42,10 +38,11 @@ const Header = () => {
     setNameInput(user?.displayName || user?.email || "");
   }, [user]);
 
-  const isCalendar = location.pathname.startsWith("/calendar");
-  const handleToggleView = () => {
-    if (isCalendar) navigate("/");
-    else navigate("/calendar");
+  const isCalendar = view === "calendar";
+  const handleToggleView = () => onToggleView?.();
+  const handleToggleTheme = () => {
+    const next = theme === "dark" ? "magenta" : "dark";
+    setTheme?.(next);
   };
 
   const handleLogout = async () => {
@@ -174,7 +171,7 @@ const Header = () => {
               </button>
               {showCalDropdown && (
                 <div className="calendarDropdown" ref={calDropRef}>
-                  <MiniCalendar tasksByDate={tasksByDate} />
+                  <MiniCalendar tasksByDate={tasksByDate} t={t} lang={lang} />
                 </div>
               )}
             </div>
@@ -206,7 +203,7 @@ const Header = () => {
               </svg>
             </button>
 
-            <button onClick={toggleTheme} className="iconButton theme-toggle-btn" aria-label="Toggle theme">
+            <button onClick={handleToggleTheme} className="iconButton theme-toggle-btn" aria-label="Toggle theme">
               {theme === "dark" ? (
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
                   <path

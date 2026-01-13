@@ -170,6 +170,9 @@
   color: #f5f1ff;
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35), 0 6px 14px rgba(170, 80, 255, 0.16);
 }
+[data-theme="dark"] .uiDropdownIcon {
+  color: #d8c7ff;
+}
 [data-theme="dark"] .uiDropdownMenu {
   background: rgba(30, 22, 46, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -185,4 +188,63 @@
 [data-theme="dark"] .uiDropdownOption.active {
   background: rgba(180, 120, 255, 0.22);
   box-shadow: inset 0 0 0 1px rgba(180, 120, 255, 0.32);
+}
+
+[data-theme="dark"] .status-option {
+  border: 1px solid transparent;
+}
+[data-theme="dark"] .status-upcoming {
+  background: linear-gradient(180deg, rgba(120, 90, 255, 0.38), rgba(120, 90, 255, 0.2));
+  color: #d8c8ff;
+  border-color: rgba(160, 130, 255, 0.6);
+}
+[data-theme="dark"] .status-active {
+  background: linear-gradient(180deg, rgba(235, 110, 255, 0.38), rgba(235, 110, 255, 0.2));
+  color: #ffb3ff;
+  border-color: rgba(235, 110, 255, 0.6);
+}
+[data-theme="dark"] .status-completed {
+  background: linear-gradient(180deg, rgba(92, 205, 160, 0.38), rgba(92, 205, 160, 0.18));
+  color: #bff7df;
+  border-color: rgba(92, 205, 160, 0.6);
+}
+[data-theme="dark"] .status-overdue {
+  background: linear-gradient(180deg, rgba(255, 120, 120, 0.38), rgba(255, 120, 120, 0.18));
+  color: #ffb3b3;
+  border-color: rgba(255, 120, 120, 0.6);
+}
+[data-theme="dark"] .status-canceled {
+  background: linear-gradient(180deg, rgba(170, 170, 180, 0.32), rgba(170, 170, 180, 0.16));
+  color: #d4d4de;
+  border-color: rgba(170, 170, 180, 0.5);
+}
+[data-theme="dark"] .status-upcoming:hover {
+  background: linear-gradient(180deg, rgba(120, 90, 255, 0.5), rgba(120, 90, 255, 0.26));
+}
+[data-theme="dark"] .status-active:hover {
+  background: linear-gradient(180deg, rgba(235, 110, 255, 0.5), rgba(235, 110, 255, 0.26));
+}
+[data-theme="dark"] .status-completed:hover {
+  background: linear-gradient(180deg, rgba(92, 205, 160, 0.5), rgba(92, 205, 160, 0.24));
+}
+[data-theme="dark"] .status-overdue:hover {
+  background: linear-gradient(180deg, rgba(255, 120, 120, 0.5), rgba(255, 120, 120, 0.24));
+}
+[data-theme="dark"] .status-canceled:hover {
+  background: linear-gradient(180deg, rgba(170, 170, 180, 0.44), rgba(170, 170, 180, 0.22));
+}
+[data-theme="dark"] .priorityOptionHigh {
+  background: linear-gradient(180deg, rgba(255, 120, 120, 0.38), rgba(255, 120, 120, 0.18));
+  color: #ffd1d1;
+  border: 1px solid rgba(255, 120, 120, 0.6);
+}
+[data-theme="dark"] .priorityOptionMedium {
+  background: linear-gradient(180deg, rgba(255, 170, 95, 0.36), rgba(255, 170, 95, 0.18));
+  color: #ffd7b0;
+  border: 1px solid rgba(255, 170, 95, 0.6);
+}
+[data-theme="dark"] .priorityOptionLow {
+  background: linear-gradient(180deg, rgba(110, 210, 160, 0.34), rgba(110, 210, 160, 0.16));
+  color: #c6f7da;
+  border: 1px solid rgba(110, 210, 160, 0.55);
 }

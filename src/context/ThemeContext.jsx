@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useAuth } from "./AuthContext";
@@ -35,6 +35,48 @@ export const ThemeProvider = ({ children }) => {
   const { user } = useAuth();
   const [theme, setThemeState] = useState("magenta");
 
+  const saveThemeToFirestore = useCallback(async (uid, nextTheme) => {
+    if (!uid) return;
+    const safe = normalizeTheme(nextTheme);
+    await setDoc(doc(db, "users", uid), { theme: safe }, { merge: true });
+  }, []);
+
+  const loadThemeFromFirestore = useCallback(
+    async (uid) => {
+      const targetUid = uid || user?.uid;
+      if (!targetUid) return null;
+      try {
+        const snap = await getDoc(doc(db, "users", targetUid));
+        const fromDb = snap.exists() ? snap.data()?.theme : null;
+        const resolved = normalizeTheme(fromDb || localStorage.getItem(THEME_KEY) || "magenta");
+        setThemeState(resolved);
+        applyTheme(resolved);
+        localStorage.setItem(THEME_KEY, resolved);
+        if (!fromDb) {
+          await saveThemeToFirestore(targetUid, resolved);
+        }
+        return resolved;
+      } catch (err) {
+        console.error("Failed to load theme", err);
+        return null;
+      }
+    },
+    [saveThemeToFirestore, user?.uid]
+  );
+
+  const setTheme = useCallback(
+    (next) => {
+      const safe = normalizeTheme(next);
+      setThemeState(safe);
+      applyTheme(safe);
+      localStorage.setItem(THEME_KEY, safe);
+      if (user?.uid) {
+        saveThemeToFirestore(user.uid, safe);
+      }
+    },
+    [saveThemeToFirestore, user?.uid]
+  );
+
   useEffect(() => {
     const stored = localStorage.getItem(THEME_KEY) || localStorage.getItem("theme");
     const initial = normalizeTheme(stored || "magenta");
@@ -50,43 +92,7 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     if (!user?.uid) return;
     loadThemeFromFirestore(user.uid);
-  }, [user?.uid]);
-
-  const saveThemeToFirestore = async (uid, nextTheme) => {
-    if (!uid) return;
-    const safe = normalizeTheme(nextTheme);
-    await setDoc(doc(db, "users", uid), { theme: safe }, { merge: true });
-  };
-
-  const loadThemeFromFirestore = async (uid) => {
-    const targetUid = uid || user?.uid;
-    if (!targetUid) return null;
-    try {
-      const snap = await getDoc(doc(db, "users", targetUid));
-      const fromDb = snap.exists() ? snap.data()?.theme : null;
-      const resolved = normalizeTheme(fromDb || localStorage.getItem(THEME_KEY) || "magenta");
-      setThemeState(resolved);
-      applyTheme(resolved);
-      localStorage.setItem(THEME_KEY, resolved);
-      if (!fromDb) {
-        await saveThemeToFirestore(targetUid, resolved);
-      }
-      return resolved;
-    } catch (err) {
-      console.error("Failed to load theme", err);
-      return null;
-    }
-  };
-
-  const setTheme = (next) => {
-    const safe = normalizeTheme(next);
-    setThemeState(safe);
-    applyTheme(safe);
-    localStorage.setItem(THEME_KEY, safe);
-    if (user?.uid) {
-      saveThemeToFirestore(user.uid, safe);
-    }
-  };
+  }, [loadThemeFromFirestore, user?.uid]);
 
   const value = useMemo(
     () => ({
@@ -97,7 +103,7 @@ export const ThemeProvider = ({ children }) => {
       loadThemeFromFirestore,
       saveThemeToFirestore,
     }),
-    [theme]
+    [loadThemeFromFirestore, saveThemeToFirestore, setTheme, theme]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

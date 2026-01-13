@@ -34,6 +34,12 @@
   align-items: center;
 }
 
+.binActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .binTitle {
   display: flex;
   align-items: center;
@@ -110,6 +116,30 @@
 .restoreButton:hover {
   transform: translateY(-1px);
   box-shadow: 0 14px 30px rgba(200, 0, 255, 0.28);
+}
+
+.binClearButton {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff8a8a, #ff6b6b);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(255, 110, 110, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.binClearButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(255, 110, 110, 0.32);
+}
+
+.binClearButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .binEmpty {

@@ -1,7 +1,6 @@
-// App.jsx
+import { useState } from "react";
 import "./App.css";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
-import TaskManager from "./components/TaskManager";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -14,30 +13,40 @@ import Menu from "./components/Menu";
 import Footer from "./components/Footer";
 
 const Protected = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
+  if (loading) return <div className="appLoading">Loading...</div>;
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   return children;
 };
 
-const AppShell = ({ children }) => <TaskProvider>{children}</TaskProvider>;
-
-const Layout = ({ children }) => (
+const Layout = ({ children, view, onToggleView }) => (
   <div className="app-shell">
-    <Header />
+    <Header view={view} onToggleView={onToggleView} />
     <StatsBar hideMini />
     {children}
   </div>
 );
 
-const TasksView = () => (
-  <>
-    <main className="workspace">
-      <Menu />
-    </main>
-    <Footer />
-  </>
-);
+const AppShell = () => {
+  const [view, setView] = useState("list");
+
+  const toggleView = () => {
+    // Keep layout mounted and only swap content for predictable UI state.
+    setView((prev) => (prev === "list" ? "calendar" : "list"));
+  };
+
+  return (
+    <TaskProvider>
+      <Layout view={view} onToggleView={toggleView}>
+        <main className="workspace">
+          {view === "calendar" ? <Calendar /> : <Menu />}
+          <Footer />
+        </main>
+      </Layout>
+    </TaskProvider>
+  );
+};
 
 function App() {
   return (
@@ -48,26 +57,10 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route
-              path="/calendar"
-              element={
-                <Protected>
-                  <AppShell>
-                    <Layout>
-                      <Calendar />
-                    </Layout>
-                  </AppShell>
-                </Protected>
-              }
-            />
-            <Route
               path="/"
               element={
                 <Protected>
-                  <AppShell>
-                    <Layout>
-                      <TasksView />
-                    </Layout>
-                  </AppShell>
+                  <AppShell />
                 </Protected>
               }
             />

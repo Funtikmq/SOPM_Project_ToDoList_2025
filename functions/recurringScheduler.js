@@ -1,9 +1,9 @@
 // Scheduled function placeholder (to be deployed in Cloud Functions environment).
 // Runs daily, scans recurring tasks, and auto-creates upcoming instances within the autoCreateWindow.
-const { onSchedule } = require("firebase-functions/v2/scheduler");
-const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
-exports.onScheduleDaily = onSchedule("every day 05:00", async () => {
+export const onScheduleDaily = onSchedule("every day 05:00", async () => {
   const db = getFirestore();
   const snap = await db.collection("tasks").where("recurring.isRecurring", "==", true).get();
   const now = new Date();

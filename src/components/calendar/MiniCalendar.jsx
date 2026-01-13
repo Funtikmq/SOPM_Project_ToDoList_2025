@@ -2,10 +2,11 @@ import { useMemo, useState } from "react";
 import "./calendar.css";
 import { formatDateKey } from "./useCalendarDrag";
 
-const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const weekdays = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
-const MiniCalendar = ({ initialDate = new Date(), tasksByDate = {}, onSelectDay, t }) => {
+const MiniCalendar = ({ initialDate = new Date(), tasksByDate = {}, onSelectDay, t, lang }) => {
   const [referenceDate, setReferenceDate] = useState(initialDate);
+  const locale = lang === "ro" ? "ro-RO" : "en-US";
   const year = referenceDate.getFullYear();
   const month = referenceDate.getMonth();
   const first = new Date(year, month, 1);
@@ -39,9 +40,9 @@ const MiniCalendar = ({ initialDate = new Date(), tasksByDate = {}, onSelectDay,
             }}
             aria-label="Previous month"
           >
-            ‹
+            {"<"}
           </button>
-          <span>{referenceDate.toLocaleString(undefined, { month: "long", year: "numeric" })}</span>
+          <span>{referenceDate.toLocaleString(locale, { month: "long", year: "numeric" })}</span>
           <button
             type="button"
             className="miniNavBtn"
@@ -52,14 +53,16 @@ const MiniCalendar = ({ initialDate = new Date(), tasksByDate = {}, onSelectDay,
             }}
             aria-label="Next month"
           >
-            ›
+            {">"}
           </button>
         </div>
       </div>
       <div className="miniCalWeekdays">
-        {weekdays.map((d) => (
-          <span key={d}>{d[0]}</span>
-        ))}
+        {weekdays.map((d) => {
+          const label = t ? t(d) : d;
+          const shortLabel = label ? label[0] : d[0];
+          return <span key={d}>{shortLabel}</span>;
+        })}
       </div>
       <div className="miniCalGrid">
         {cells.map(({ key, dateObj, inMonth }) => {

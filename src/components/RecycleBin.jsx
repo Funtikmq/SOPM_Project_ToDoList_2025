@@ -9,6 +9,7 @@ import {
   where,
   orderBy,
   getDocs,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
@@ -20,6 +21,7 @@ const RecycleBin = ({ open, onClose }) => {
   const { user } = useAuth();
   const { t } = useTranslate();
   const [items, setItems] = useState([]);
+  const [isClearing, setIsClearing] = useState(false);
   const { restoreTask } = useTasks();
 
   useEffect(() => {
@@ -80,6 +82,42 @@ const RecycleBin = ({ open, onClose }) => {
     onClose?.();
   };
 
+  const handleEmpty = async () => {
+    if (!user || isClearing || items.length === 0) return;
+    setIsClearing(true);
+    try {
+      const q = query(collection(db, "trash"), where("userId", "==", user.uid));
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        setItems([]);
+        return;
+      }
+
+      const commits = [];
+      let batch = writeBatch(db);
+      let count = 0;
+      snap.docs.forEach((d) => {
+        batch.delete(doc(db, "trash", d.id));
+        count += 1;
+        if (count >= 450) {
+          commits.push(batch.commit());
+          batch = writeBatch(db);
+          count = 0;
+        }
+      });
+      if (count > 0) commits.push(batch.commit());
+      await Promise.all(commits);
+      setItems([]);
+    } catch (err) {
+      console.error("Clear bin error", err);
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
+  const clearLabel = t("recycle.clear");
+  const clearText = clearLabel === "recycle.clear" ? "Empty bin" : clearLabel;
+
   if (!open) return null;
 
   return createPortal(
@@ -90,9 +128,22 @@ const RecycleBin = ({ open, onClose }) => {
             <span className="binDot" />
             {t("recycle.title")}
           </div>
-          <button className="iconButton" onClick={handleClose} aria-label={t("common.close")}>
-            ×
-          </button>
+          <div className="binActions">
+            <button
+              className="binClearButton"
+              onClick={handleEmpty}
+              disabled={isClearing || items.length === 0}
+            >
+              {isClearing
+                ? t("common.loading") === "common.loading"
+                  ? "Clearing..."
+                  : t("common.loading")
+                : clearText}
+            </button>
+            <button className="iconButton" onClick={handleClose} aria-label={t("common.close")}>
+              x
+            </button>
+          </div>
         </div>
 
         {items.length === 0 ? (
@@ -125,7 +176,7 @@ const RecycleBin = ({ open, onClose }) => {
                   <div className="binMeta">
                     {item.deadline && <span>{item.deadline}</span>}
                     <span className={`badge status-${item.status || "active"}`}>
-                      {t(`status.${item.status || "active"}`)}
+                      {t(item.status || "active")}
                     </span>
                   </div>
                 </div>
@@ -144,4 +195,3 @@ const RecycleBin = ({ open, onClose }) => {
 };
 
 export default RecycleBin;
-

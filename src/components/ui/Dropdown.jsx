@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTheme } from "../../context/ThemeContext";
 import "./Dropdown.css";
 
 const PALETTE = {
@@ -17,6 +18,21 @@ const PALETTE = {
   },
 };
 
+const PALETTE_DARK = {
+  status: {
+    upcoming: { text: "#d8c8ff", bg: "linear-gradient(180deg, rgba(120,90,255,0.38), rgba(120,90,255,0.2))", border: "rgba(160,130,255,0.65)" },
+    active: { text: "#ffb3ff", bg: "linear-gradient(180deg, rgba(235,110,255,0.38), rgba(235,110,255,0.2))", border: "rgba(235,110,255,0.65)" },
+    completed: { text: "#bff7df", bg: "linear-gradient(180deg, rgba(92,205,160,0.38), rgba(92,205,160,0.18))", border: "rgba(92,205,160,0.6)" },
+    overdue: { text: "#ffb3b3", bg: "linear-gradient(180deg, rgba(255,120,120,0.38), rgba(255,120,120,0.18))", border: "rgba(255,120,120,0.6)" },
+    canceled: { text: "#d4d4de", bg: "linear-gradient(180deg, rgba(170,170,180,0.32), rgba(170,170,180,0.16))", border: "rgba(170,170,180,0.5)" },
+  },
+  priority: {
+    high: { text: "#ffd1d1", bg: "linear-gradient(180deg, rgba(255,120,120,0.38), rgba(255,120,120,0.18))", border: "rgba(255,120,120,0.6)" },
+    medium: { text: "#ffd7b0", bg: "linear-gradient(180deg, rgba(255,170,95,0.36), rgba(255,170,95,0.18))", border: "rgba(255,170,95,0.6)" },
+    low: { text: "#c6f7da", bg: "linear-gradient(180deg, rgba(110,210,160,0.34), rgba(110,210,160,0.16))", border: "rgba(110,210,160,0.55)" },
+  },
+};
+
 const Dropdown = ({
   value,
   options = [],
@@ -26,6 +42,7 @@ const Dropdown = ({
   className = "",
   disabled = false,
 }) => {
+  const { theme } = useTheme();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const menuRef = useRef(null);
@@ -34,11 +51,12 @@ const Dropdown = ({
 
   const current = options.find((o) => o.value === value);
   const paletteKey = variant || color || "status";
-  const palette = (PALETTE[paletteKey] && PALETTE[paletteKey][value]) || {
-    text: "#4a3c77",
-    bg: "rgba(255,255,255,0.9)",
-    border: "rgba(0,0,0,0.08)",
-  };
+  const isDark = theme === "dark";
+  const paletteGroup = isDark ? PALETTE_DARK : PALETTE;
+  const fallback = isDark
+    ? { text: "#f5f1ff", bg: "rgba(40, 28, 58, 0.9)", border: "rgba(255, 200, 255, 0.25)" }
+    : { text: "#4a3c77", bg: "rgba(255,255,255,0.9)", border: "rgba(0,0,0,0.08)" };
+  const palette = (paletteGroup[paletteKey] && paletteGroup[paletteKey][value]) || fallback;
 
   const optionClass = (val) => {
     if (paletteKey === "priority") {

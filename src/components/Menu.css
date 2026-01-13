@@ -1,10 +1,53 @@
 .MenuLayout {
-  height: 80vh;
-  display: flex;
-  justify-content: space-between;
-  padding: 20px;
+  position: relative;
+  width: 100%;
+  padding: 4px 4px 24px;
 }
 
-.containerTitle {
-  text-align: center;
+.menuContent {
+  width: 100%;
+  max-width: var(--layout-max-width);
+  margin: 0 auto;
+}
+
+.menuPanel {
+  position: fixed;
+  /* Fixed sidebar overlay keeps task list width stable when closed. */
+  top: 140px;
+  right: 24px;
+  width: clamp(260px, 22vw, 340px);
+  max-height: calc(100vh - 170px);
+  overflow-y: auto;
+  transform: translateX(120%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+  z-index: var(--z-modal, 1100);
+}
+
+.menuPanel.open {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.menuPanelBackdrop {
+  position: fixed;
+  inset: 0;
+  border: none;
+  background: rgba(20, 10, 30, 0.06);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  cursor: pointer;
+  z-index: calc(var(--z-modal, 1100) - 1);
+}
+
+@media (max-width: 900px) {
+  .menuPanel {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    top: 120px;
+    max-height: calc(100vh - 150px);
+  }
 }

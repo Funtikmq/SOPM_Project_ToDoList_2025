@@ -1,10 +1,10 @@
 import { useTranslate } from "../translation";
-  const { t } = useTranslate();
 
 const ListHead = ({ onSort, sortConfig }) => {
+  const { t } = useTranslate();
   const getArrow = (key) => {
     if (sortConfig.key !== key) return "";
-    return sortConfig.direction === "asc" ? " ↑" : " ↓";
+    return sortConfig.direction === "asc" ? " ^" : " v";
   };
 
   const headStyle = { cursor: "pointer" };
@@ -42,4 +42,5 @@ const ListHead = ({ onSort, sortConfig }) => {
     </div>
   );
 };
+
 export default ListHead;

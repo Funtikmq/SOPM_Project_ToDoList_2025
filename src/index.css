@@ -24,6 +24,7 @@
   --radius-md: 16px;
   --shadow-soft: 0 18px 40px rgba(20, 10, 60, 0.22);
   --shadow-strong: 0 20px 50px rgba(20, 10, 60, 0.3);
+  --layout-max-width: 1400px;
 
   --z-navbar: 1300;
   --z-dropdown: 1200;

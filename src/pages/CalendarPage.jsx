@@ -11,22 +11,22 @@ const CalendarPage = () => {
         <h2>{t("menu.calendar")}</h2>
         <div className="pageActions">
           <button className={`pillBtn ${view === "month" ? "active" : ""}`} onClick={() => setView("month")}>
-            Month
+            {t("calendar.month")}
           </button>
           <button className={`pillBtn ${view === "week" ? "active" : ""}`} onClick={() => setView("week")}>
-            Week
+            {t("calendar.week")}
           </button>
         </div>
       </div>
-      <p>Evenimente disponibile: {events.length}</p>
+      <p>{t("calendar.eventsAvailable")}: {events.length}</p>
       <div className="calendarList">
         {events.slice(0, 10).map((ev) => (
           <div key={ev.id} className="calendarCard">
             <div className="calendarTitle">{ev.title}</div>
             <div className="calendarMeta">
               <span>{(ev.start && ev.start.toISOString().slice(0, 10)) || "-"}</span>
-              <span className={`badge status-${ev.status || "active"}`}>{t(`status.${ev.status || "active"}`)}</span>
-              {ev.priority && <span className={`badge priority-${ev.priority}`}>{t(`priority.${ev.priority}`)}</span>}
+              <span className={`badge status-${ev.status || "active"}`}>{t(ev.status || "active")}</span>
+              {ev.priority && <span className={`badge priority-${ev.priority}`}>{t(ev.priority)}</span>}
             </div>
             <button
               className="pillBtn ghost"
@@ -36,11 +36,11 @@ const CalendarPage = () => {
                 moveEvent(ev.id, tomorrow);
               }}
             >
-              Mută pe mâine
+              {t("calendar.moveTomorrow")}
             </button>
           </div>
         ))}
-        {events.length === 0 && <div>Nu există task-uri cu deadline.</div>}
+        {events.length === 0 && <div>{t("calendar.noDeadlineTasks")}</div>}
       </div>
     </div>
   );

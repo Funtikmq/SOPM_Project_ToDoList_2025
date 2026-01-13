@@ -3,7 +3,7 @@ import CalendarTaskCard from "./CalendarTaskCard";
 import useCalendarDrag, { formatDateKey } from "./useCalendarDrag";
 import "./calendar.css";
 
-const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const weekdays = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
 const buildMonthDays = (currentDate) => {
   const year = currentDate.getFullYear();
@@ -50,7 +50,7 @@ const CalendarGrid = ({ currentDate, view = "month", tasksByDate = {}, onDropTas
       <div className="cal-weekdays">
         {weekdays.map((d) => (
           <div key={d} className="cal-weekday">
-            {t ? t(d.toLowerCase()) : d}
+            {t ? t(d) : d.toUpperCase()}
           </div>
         ))}
       </div>
@@ -79,6 +79,7 @@ const CalendarGrid = ({ currentDate, view = "month", tasksByDate = {}, onDropTas
                     onDragStart={handleDragStart}
                     onClick={() => onOpenTask?.(task.id)}
                     dragging={draggingId === task.id}
+                    t={t}
                   />
                 ))}
               </div>

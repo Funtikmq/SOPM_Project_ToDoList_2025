@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { useTasks } from "./TaskContext";
 
@@ -34,7 +35,7 @@ export const SearchProvider = ({ children }) => {
   );
 
   const clear = useCallback(() => {
-    setQuery("");
+    setQueryState("");
     setResults([]);
     setFilters({ search: "" });
   }, [setFilters]);

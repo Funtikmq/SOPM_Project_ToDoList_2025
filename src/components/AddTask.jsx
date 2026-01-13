@@ -1,23 +1,16 @@
 import { useState } from "react";
-import { createPortal } from "react-dom";
 import { useTranslate } from "../translation";
 import { useAuth } from "../context/AuthContext";
 import { useTasks } from "../context/TaskContext";
 import "./AddTask.css";
 import Dropdown from "./ui/Dropdown";
 import { calculateNextDate } from "../services/recurrenceUtils";
-import { generateTaskInsights } from "../services/aiService";
 
-const AddTask = () => {
+const AddTask = ({ onClose }) => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [priority, setPriority] = useState("medium");
   const [deadline, setDeadline] = useState("");
-  const [aiSubtasks, setAiSubtasks] = useState([]);
-  const [showAiModal, setShowAiModal] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiResult, setAiResult] = useState(null);
-  const [aiError, setAiError] = useState("");
   const [recurrenceType, setRecurrenceType] = useState("none");
   const [interval, setInterval] = useState(1);
   const [weekday, setWeekday] = useState("mon");
@@ -25,7 +18,7 @@ const AddTask = () => {
   const [endDate, setEndDate] = useState("");
   const [autoCreateWindow, setAutoCreateWindow] = useState(7);
   const { t } = useTranslate();
-  const { addTask, addSubtask } = useTasks();
+  const { addTask } = useTasks();
   const { user } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -64,19 +57,13 @@ const AddTask = () => {
         deadline,
         recurring,
       });
-      if (taskId && aiSubtasks.length) {
-        for (const sub of aiSubtasks) {
-          if (sub) await addSubtask(taskId, sub);
-        }
-      }
+      if (!taskId) return;
       alert(t("taskSaved"));
 
       setTitle("");
       setDesc("");
       setPriority("medium");
       setDeadline("");
-      setAiSubtasks([]);
-      setAiResult(null);
       setRecurrenceType("none");
       setInterval(1);
       setWeekday("mon");
@@ -105,14 +92,23 @@ const AddTask = () => {
 
   return (
     <div className="taskFormContainer">
-      <h3 className="containerTitle">{t("addTask")}</h3>
+      <div className="taskFormHeader">
+        <h3 className="containerTitle">{t("addTask")}</h3>
+        {onClose && (
+          <button
+            type="button"
+            className="addTaskClose"
+            onClick={onClose}
+            aria-label={t("common.close") || "Close"}
+          >
+            X
+          </button>
+        )}
+      </div>
 
       <form className="taskForm" onSubmit={handleSubmit}>
         <div className="formRow">
           <h5 className="formLabel">{t("title")}</h5>
-          <button type="button" className="aiAssistBtn" onClick={() => setShowAiModal(true)}>
-            ✨ AI Assist
-          </button>
         </div>
         <input
           type="text"
@@ -221,117 +217,8 @@ const AddTask = () => {
           </div>
         )}
 
-        {aiSubtasks.length > 0 && (
-          <div className="aiSubtasksPreview">
-            <div className="aiPreviewTitle">AI Subtasks</div>
-            <div className="aiPills">
-              {aiSubtasks.map((s, idx) => (
-                <span key={`${s}-${idx}`} className="aiPill">
-                  {s}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
         <input type="submit" className="taskSubmit" value={t("save")} />
       </form>
-
-      {showAiModal &&
-        createPortal(
-          <div className="aiModalOverlay" onClick={() => !aiLoading && setShowAiModal(false)}>
-            <div className="aiModal" onClick={(e) => e.stopPropagation()}>
-              <div className="aiModalHeader">
-                <h4>AI Task Assistant</h4>
-                <button className="aiClose" onClick={() => setShowAiModal(false)} disabled={aiLoading}>
-                  ×
-                </button>
-              </div>
-              <div className="aiModalBody">
-                <p className="aiHint">Get subtasks, deadline, and priority suggestions based on the title.</p>
-                <input
-                  type="text"
-                  className="taskInput"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Task title"
-                />
-                <button
-                  type="button"
-                  className="aiGenerateBtn"
-                  onClick={async () => {
-                    if (!title.trim()) {
-                      setAiError("Add a title first.");
-                      return;
-                    }
-                    setAiError("");
-                    setAiLoading(true);
-                    try {
-                      const res = await generateTaskInsights(title.trim());
-                      setAiResult(res);
-                    } catch (err) {
-                      console.warn(err);
-                      setAiError("Nu am putut genera sugestiile. Încearcă din nou.");
-                    } finally {
-                      setAiLoading(false);
-                    }
-                  }}
-                  disabled={aiLoading}
-                >
-                  {aiLoading ? "Generating..." : "Generate"}
-                </button>
-
-                {aiError && <div className="aiError">{aiError}</div>}
-
-                {aiResult && (
-                  <div className="aiResults">
-                    <div className="aiResultBlock">
-                      <div className="aiResultTitle">Suggested Priority</div>
-                      <div className="aiResultBadge">{aiResult.suggestedPriority || "-"}</div>
-                    </div>
-                    <div className="aiResultBlock">
-                      <div className="aiResultTitle">Suggested Deadline</div>
-                      <div className="aiResultBadge">{aiResult.suggestedDeadline || "-"}</div>
-                    </div>
-                    <div className="aiResultBlock">
-                      <div className="aiResultTitle">Subtasks</div>
-                      <div className="aiPills">
-                        {(aiResult.subtasks || []).map((s, idx) => (
-                          <span key={`${s}-${idx}`} className="aiPill">
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="aiResultBlock">
-                      <div className="aiResultTitle">Today's Plan</div>
-                      <ul className="aiPlanList">
-                        {(aiResult.dailyPlan || []).map((p, idx) => (
-                          <li key={idx}>{p}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="aiModalFooter">
-                <button
-                  className="aiApplyBtn"
-                  onClick={() => {
-                    if (aiResult?.suggestedPriority) setPriority(aiResult.suggestedPriority.toLowerCase());
-                    if (aiResult?.suggestedDeadline) setDeadline(aiResult.suggestedDeadline);
-                    if (aiResult?.subtasks?.length) setAiSubtasks(aiResult.subtasks);
-                    setShowAiModal(false);
-                  }}
-                  disabled={!aiResult || aiLoading}
-                >
-                  Apply to task
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
     </div>
   );
 };

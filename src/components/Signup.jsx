@@ -25,36 +25,38 @@ const Signup = () => {
   };
 
   return (
-    <div className="login-container">
-      <h2>Create account</h2>
+    <div className="loginPage">
+      <div className="login-container">
+        <h2>Create account</h2>
 
-      <form className="login-form" onSubmit={handleSignup}>
-        <input
-          type="email"
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <form className="login-form" onSubmit={handleSignup}>
+          <input
+            type="email"
+            placeholder="Email"
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-        <input
-          type="password"
-          placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <input
+            type="password"
+            placeholder="Password"
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-        <input
-          type="password"
-          placeholder="Confirm password"
-          onChange={(e) => setConfirm(e.target.value)}
-        />
+          <input
+            type="password"
+            placeholder="Confirm password"
+            onChange={(e) => setConfirm(e.target.value)}
+          />
 
-        <button className="login-btn" type="submit">
-          Sign Up
-        </button>
-      </form>
+          <button className="login-btn" type="submit">
+            Sign Up
+          </button>
+        </form>
 
-      <div className="auth-switch">
-        Already have an account?{" "}
-        <a onClick={() => (window.location.href = "/")}>Login</a>
+        <div className="auth-switch">
+          Already have an account?{" "}
+          <a onClick={() => (window.location.href = "/")}>Login</a>
+        </div>
       </div>
     </div>
   );

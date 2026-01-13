@@ -35,7 +35,6 @@ export const buildDefaultTaskFields = () => ({
   attachmentsCount: 0,
   commentsCount: 0,
   activityCount: 0,
-  ai: {},
   timeTracking: { ...DEFAULT_TIME_TRACKING },
   kanbanColumn: null,
   reminders: [],
@@ -71,7 +70,6 @@ export const normalizeTask = (task = {}, fallbackOwnerId) => {
     activityCount: typeof task.activityCount === "number" ? task.activityCount : 0,
     tags: Array.isArray(task.tags) ? task.tags : [],
     reminders: Array.isArray(task.reminders) ? task.reminders : [],
-    ai: task.ai || {},
     kanbanColumn: task.kanbanColumn || null,
     updatedAt: task.updatedAt || null,
   };

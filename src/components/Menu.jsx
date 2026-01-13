@@ -7,14 +7,22 @@ const Menu = () => {
   const [showAddTask, setShowAddTask] = useState(false);
 
   return (
-    <>
-      <div className="MenuLayout">
-        <List onToggleAddTask={() => setShowAddTask(!showAddTask)} />
-        <div style={{ display: showAddTask ? "block" : "none" }}>
-          <AddTask />
-        </div>
+    <div className="MenuLayout" data-panel={showAddTask ? "open" : "closed"}>
+      <div className="menuContent">
+        <List onToggleAddTask={() => setShowAddTask((prev) => !prev)} />
       </div>
-    </>
+      <aside className={`menuPanel ${showAddTask ? "open" : ""}`}>
+        <AddTask onClose={() => setShowAddTask(false)} />
+      </aside>
+      {showAddTask && (
+        <button
+          type="button"
+          className="menuPanelBackdrop"
+          aria-label="Close add task"
+          onClick={() => setShowAddTask(false)}
+        />
+      )}
+    </div>
   );
 };
 

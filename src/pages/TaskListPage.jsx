@@ -12,7 +12,7 @@ const TaskListPage = () => {
         <List onToggleAddTask={() => setShowAdd((prev) => !prev)} />
         {showAdd && (
           <div className="taskListAddPanel">
-            <AddTask />
+            <AddTask onClose={() => setShowAdd(false)} />
           </div>
         )}
       </div>

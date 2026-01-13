@@ -16,13 +16,6 @@ export const buildSearchTokens = (task = {}) => {
   // title
   splitWords(task.title || "").forEach((w) => tokens.add(w));
 
-  // tags
-  if (Array.isArray(task.tags)) {
-    task.tags.forEach((tag) => {
-      if (tag?.label) tokens.add(normalize(tag.label));
-    });
-  }
-
   // priority
   if (task.priority) tokens.add(normalize(task.priority));
 
