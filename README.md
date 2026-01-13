@@ -1,13 +1,13 @@
 I)
-Pentru rularea aplicatiei Web;
+Pentru rularea aplicatiei Web:
 
-1. Descarcati continutul branchului main și extrageți conținutul folderului Web.2
+1. Descarcati continutul branchului main și extrageți conținutul folderului Web.2;
 2. Asigurativa ca ati instalat npm. Rulati in terminal (npm --version), daca nu este instalat rulati (npm install);
 3. Porniti aplicatia din terminal (npm run dev);
-4. Accesati : http://localhost:5173
+4. Accesati : http://localhost:5173;
 
 II)
-Pentru rularea aplicatiei mobile;
+Pentru rularea aplicatiei mobile:
 
 1. Descarcati continutul branchului aplicatie-react-native;
 2. Asigurativa ca ati instalat npm. Rulati in terminal (npm --version), daca nu este instalat rulati (npm install);
