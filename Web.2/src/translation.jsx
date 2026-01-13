@@ -1,0 +1,271 @@
+export const translations = {
+  ro: {
+    // List
+    taskList: "Lista Sarcini",
+    status: "Status",
+    title: "Titlu",
+    priority: "Prioritate",
+    deadline: "Deadline",
+    addNewTask: "Adauga sarcina noua",
+    all: "Toate",
+    untilDate: "Pana la",
+    today: "Astazi",
+    thisWeek: "Urmatoarele 7 zile",
+    thisMonth: "Urmatoarele 30 zile",
+
+    // Status
+    upcoming: "Viitoare",
+    active: "Activa",
+    completed: "Finalizat",
+    overdue: "Intarziat",
+    canceled: "Anulat",
+
+    // Priority
+    high: "Mare",
+    medium: "Medie",
+    low: "Mica",
+
+    // AddTask
+    addTask: "Adauga Sarcina",
+    description: "Descriere",
+    save: "Salveaza",
+    cancel: "Anuleaza",
+    fillRequired: "Completeaza titlul si deadline-ul!",
+    taskSaved: "Task salvat!",
+    taskDeleted: "Task sters.",
+    undo: "Anuleaza",
+    subtasks: "Subtask-uri",
+    addSubtask: "Adauga subtask",
+    subtaskPlaceholder: "Nume subtask",
+    progress: "Progres",
+    markAllDone: "Finalizeaza tot",
+
+    // Task
+    modify: "Modifica",
+    descriptionLabel: "Descriere:",
+    noTasks: "Nu ai sarcini inca. Creeaza prima sarcina pentru a incepe.",
+    recycleBin: "Cos reciclare",
+    "recycle.title": "Cos reciclare",
+    "recycle.empty": "Cosul e gol. Nimic de restaurat.",
+    "recycle.restore": "Restaureaza",
+    "recycle.clear": "Goleste cosul",
+    restore: "Restaureaza",
+    binEmpty: "Cosul e gol. Nimic de restaurat.",
+    "common.close": "Inchide",
+    "common.loading": "Se incarca...",
+    "common.cancel": "Anuleaza",
+    noTitle: "Fara titlu",
+    "tasks.noTitle": "Fara titlu",
+    deleteTask: "Sterge task",
+    activityLog: "Istoric activitate",
+    "activity.empty": "Nicio activitate inca",
+    "activity.statusChanged": "Status modificat",
+    "activity.titleChanged": "Titlu modificat",
+    "activity.descriptionChanged": "Descriere modificata",
+    "activity.priorityChanged": "Prioritate modificata",
+    "activity.deadlineChanged": "Deadline modificat",
+    "activity.subtaskAdded": "Subtask adaugat",
+    "activity.subtaskRemoved": "Subtask sters",
+    "activity.subtaskCompleted": "Subtask completat",
+    "activity.collaboratorAdded": "Colaborator adaugat",
+    "activity.collaboratorRemoved": "Colaborator eliminat",
+    "activity.collaboratorRoleChanged": "Rol colaborator modificat",
+    "activity.commentAdded": "Comentariu adaugat",
+    "activity.taskCreated": "Task creat",
+    "activity.taskDeleted": "Task sters",
+    "calendar.title": "Calendar",
+    "calendar.month": "Luna",
+    "calendar.week": "Saptamana",
+    "calendar.today": "Astazi",
+    "calendar.noTasks": "Fara task-uri",
+    "calendar.dragToReschedule":
+      "Trage task-urile pe alta zi pentru a reprograma",
+    "calendar.deadlineUpdated": "Deadline actualizat",
+    "calendar.miniCalendar": "Calendar",
+    "menu.calendar": "Calendar",
+    "calendar.eventsAvailable": "Evenimente disponibile",
+    "calendar.moveTomorrow": "Muta pe maine",
+    "calendar.noDeadlineTasks": "Nu exista task-uri cu deadline.",
+
+    // Misc / shared
+    search: "Cauta",
+    noTags: "Nu exista etichete inca",
+    addTag: "Adauga eticheta",
+    tag: "Eticheta",
+    color: "Culoare",
+    add: "Adauga",
+    noDeadline: "Fara deadline",
+
+    // Comments
+    comments: "Comentarii",
+    noComments: "Niciun comentariu inca",
+    addComment: "Adauga comentariu...",
+    edit: "Editeaza",
+    delete: "Sterge",
+    edited: "editat",
+    post: "Posteaza",
+
+    // Stats bar labels
+    Total: "Total",
+    Active: "Activ",
+    Completed: "Finalizat",
+    Overdue: "Intarziat",
+
+    // ShareTaskModal
+    searchCollaborators: "Cauta colaboratori... (#username)",
+    searching: "Se cauta...",
+
+    // Settings
+    "settings.profileTitle": "Profil",
+    "settings.subtitle": "Actualizeaza datele contului tau",
+    "settings.displayName": "Nume afisat",
+    "settings.displayNamePlaceholder": "Ex: Nume Prenume",
+    "settings.username": "Username",
+    "settings.usernamePlaceholder": "ex: nume_utilizator",
+    "settings.usernameHint": "Minim 3 caractere, litere/cifre/_",
+    "settings.usernameInvalid": "Username invalid",
+    "settings.usernameTaken": "Username deja folosit",
+    "settings.save": "Salveaza",
+
+    // Errors
+    "errors.saveProfile": "Nu am putut salva profilul",
+  },
+  en: {
+    // List
+    taskList: "Task List",
+    status: "Status",
+    title: "Title",
+    priority: "Priority",
+    deadline: "Deadline",
+    addNewTask: "Add new task",
+    all: "All",
+    untilDate: "Until",
+    today: "Today",
+    thisWeek: "Next 7 days",
+    thisMonth: "Next 30 days",
+
+    // Status
+    upcoming: "Upcoming",
+    active: "Active",
+    completed: "Completed",
+    overdue: "Overdue",
+    canceled: "Canceled",
+
+    // Priority
+    high: "High",
+    medium: "Medium",
+    low: "Low",
+
+    // AddTask
+    addTask: "Add Task",
+    description: "Description",
+    save: "Save",
+    cancel: "Cancel",
+    fillRequired: "Please fill in title and deadline!",
+    taskSaved: "Task saved!",
+    taskDeleted: "Task deleted.",
+    undo: "Undo",
+    subtasks: "Subtasks",
+    addSubtask: "Add subtask",
+    subtaskPlaceholder: "Subtask name",
+    progress: "Progress",
+    markAllDone: "Mark all done",
+
+    // Task
+    modify: "Modify",
+    descriptionLabel: "Description:",
+    noTasks: "No tasks yet. Add one to get started!",
+    recycleBin: "Recycle Bin",
+    "recycle.title": "Recycle Bin",
+    "recycle.empty": "Bin is empty. Nothing to restore.",
+    "recycle.restore": "Restore",
+    "recycle.clear": "Empty bin",
+    restore: "Restore",
+    binEmpty: "Bin is empty. Nothing to restore.",
+    "common.close": "Close",
+    "common.loading": "Loading...",
+    "common.cancel": "Cancel",
+    noTitle: "No title",
+    "tasks.noTitle": "No title",
+    deleteTask: "Delete task",
+    activityLog: "Activity Log",
+    "activity.empty": "No activity yet",
+    "activity.statusChanged": "Status changed",
+    "activity.titleChanged": "Title changed",
+    "activity.descriptionChanged": "Description changed",
+    "activity.priorityChanged": "Priority changed",
+    "activity.deadlineChanged": "Deadline changed",
+    "activity.subtaskAdded": "Subtask added",
+    "activity.subtaskRemoved": "Subtask removed",
+    "activity.subtaskCompleted": "Subtask completed",
+    "activity.collaboratorAdded": "Collaborator added",
+    "activity.collaboratorRemoved": "Collaborator removed",
+    "activity.collaboratorRoleChanged": "Collaborator role changed",
+    "activity.commentAdded": "Comment added",
+    "activity.taskCreated": "Task created",
+    "activity.taskDeleted": "Task deleted",
+    "calendar.title": "Calendar",
+    "calendar.month": "Month",
+    "calendar.week": "Week",
+    "calendar.today": "Today",
+    "calendar.noTasks": "No tasks",
+    "calendar.dragToReschedule": "Drag tasks onto another day to reschedule",
+    "calendar.deadlineUpdated": "Deadline updated",
+    "calendar.miniCalendar": "Mini Calendar",
+    "menu.calendar": "Calendar",
+    "calendar.eventsAvailable": "Events available",
+    "calendar.moveTomorrow": "Move to tomorrow",
+    "calendar.noDeadlineTasks": "No tasks with deadlines.",
+
+    // Misc / shared
+    search: "Search",
+    noTags: "No tags yet",
+    addTag: "Add tag",
+    tag: "Tag",
+    color: "Color",
+    add: "Add",
+    noDeadline: "No deadline",
+
+    // Comments
+    comments: "Comments",
+    noComments: "No comments yet",
+    addComment: "Add a comment...",
+    edit: "Edit",
+    delete: "Delete",
+    edited: "edited",
+    post: "Post",
+
+    // Stats bar labels
+    Total: "Total",
+    Active: "Active",
+    Completed: "Completed",
+    Overdue: "Overdue",
+
+    // ShareTaskModal
+    searchCollaborators: "Search collaborators... (#username)",
+    searching: "Searching...",
+
+    // Settings
+    "settings.profileTitle": "Profile",
+    "settings.subtitle": "Update your account details",
+    "settings.displayName": "Display name",
+    "settings.displayNamePlaceholder": "e.g. Full Name",
+    "settings.username": "Username",
+    "settings.usernamePlaceholder": "e.g. username",
+    "settings.usernameHint": "Minimum 3 characters, letters/numbers/_",
+    "settings.usernameInvalid": "Invalid username",
+    "settings.usernameTaken": "Username already taken",
+    "settings.save": "Save",
+
+    // Errors
+    "errors.saveProfile": "Could not save profile",
+  },
+};
+
+export const useTranslate = () => {
+  const lang = localStorage.getItem("language") || "ro";
+
+  const t = (key) => translations[lang]?.[key] || key;
+
+  return { t, lang };
+};

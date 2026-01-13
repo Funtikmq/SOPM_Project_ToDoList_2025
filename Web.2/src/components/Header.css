@@ -1,0 +1,281 @@
+.headerLayout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  padding: 10px 16px;
+  gap: 12px;
+  color: var(--text-main);
+  position: relative;
+  z-index: var(--z-navbar, 120);
+}
+
+.topbarContainer {
+  width: 100%;
+  gap: 8px;
+}
+.topbarRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+.topbarRowPrimary {
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.topbarRowStats {
+  justify-content: center;
+  padding-top: 2px;
+}
+.topbarLeft {
+  flex: 0 0 auto;
+}
+.topbarCenter {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+.topbarRight {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+.statsWrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 580px;
+  margin: 2px auto 0;
+}
+.calendarBlock {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.miniCalInline {
+  flex: 0 0 auto;
+}
+.miniCalInline .miniCal {
+  max-width: 240px;
+  min-width: 220px;
+  padding: 10px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+}
+
+.headerUser {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.38);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(18px);
+}
+
+.userPhoto {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.userName {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.userNameRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.userNameInput {
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  color: var(--text-main);
+  min-width: 140px;
+}
+
+.smallIconButton {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text-main);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.smallIconButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(194, 58, 208, 0.16);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--accent);
+}
+
+.smallIconButton.ghost {
+  background: transparent;
+  box-shadow: none;
+}
+
+.userMail {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.headerButtons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.calendarButtonWrapper {
+  position: relative;
+}
+.calendarDropdown {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  z-index: 9999;
+}
+
+
+.binButton {
+  position: relative;
+}
+
+.binBadge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #c800ff, #8c7ae6);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 18px rgba(200, 0, 255, 0.35);
+}
+
+.iconButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text-main);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+}
+
+.iconButton:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(194, 58, 208, 0.2);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--accent);
+}
+
+.iconButton.iconActive {
+  background: linear-gradient(90deg, #ff5cff, #b95cff);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(255, 40, 255, 0.35), 0 8px 18px rgba(0, 0, 0, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.topbarRowStats .statsBar {
+  width: 100%;
+  justify-content: center;
+  padding: 0;
+}
+.topbarRowStats .statRow {
+  justify-content: center;
+}
+
+.theme-toggle-btn svg {
+  transition: transform 0.35s ease;
+}
+
+.theme-toggle-btn:hover svg {
+  transform: rotate(18deg) scale(1.05);
+}
+
+@media (max-width: 720px) {
+  .headerLayout {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .headerRight {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+[data-theme="dark"] .headerLayout {
+  color: #f5f1ff;
+}
+
+[data-theme="dark"] .headerUser {
+  background: var(--surface-glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 26px rgba(8, 4, 16, 0.55);
+}
+
+[data-theme="dark"] .userNameInput {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f5f1ff;
+}
+
+[data-theme="dark"] .smallIconButton,
+[data-theme="dark"] .iconButton {
+  color: #d2b5ff;
+  background: rgba(36, 20, 48, 0.92);
+  border: 1px solid var(--glass-border);
+  filter: drop-shadow(0 0 6px rgba(200, 80, 255, 0.4));
+}
+
+[data-theme="dark"] .smallIconButton:hover,
+[data-theme="dark"] .iconButton:hover {
+  background: rgba(46, 26, 60, 0.96);
+  box-shadow: 0 10px 24px rgba(8, 4, 16, 0.5);
+}

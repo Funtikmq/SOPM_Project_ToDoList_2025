@@ -1,0 +1,120 @@
+          </div>
+          <button className="filterButton" onClick={() => setFilterVisible((prev) => !prev)}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 432 472">
+              <path
+                fill="currentColor"
+                d="m169 399l43 32q10 9 25 9q6 0 20-4q23-12 23-39V246L419 73q17-21 4-45q-15-25-38-25H47Q18 3 9 26q-10 26 4 45l139 175v119q0 22 17 34zM47 45h338L237 229v168l-42-32V229z"
+              />
+            </svg>
+          </button>
+          <button className="filterButton" onClick={onToggleAddTask}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {filterVisible && (
+        <div className="filterPanel">
+          <label>
+            {t("status")}:
+            <select
+              value={filter.status}
+              onChange={(e) => setFilter({ ...filter, status: e.target.value })}
+            >
+              <option value="">{t("all")}</option>
+              {statusOrder.map((s) => (
+                <option key={s} value={s}>
+                  {t(s)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            {t("priority")}:
+            <select
+              value={filter.priority}
+              onChange={(e) => setFilter({ ...filter, priority: e.target.value })}
+            >
+              <option value="">{t("all")}</option>
+              {priorityOrder.map((p) => (
+                <option key={p} value={p}>
+                  {t(p)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            {t("untilDate")}:
+            <input
+              type="date"
+              value={filter.date}
+              onChange={(e) => setFilter({ ...filter, date: e.target.value })}
+            />
+          </label>
+        </div>
+      )}
+
+      <ul className="list">
+        <li className="listItem">
+          <ListHead onSort={handleSort} sortConfig={sortConfig} />
+        </li>
+
+        {sortedTasks.length === 0 && (
+          <li className="listItem emptyState">
+            <div className="emptyStateIcon">✨</div>
+            <div className="emptyStateText">
+              {t("taskList")} — {t("addNewTask")}
+            </div>
+            <button className="addTaskInlineButton" onClick={onToggleAddTask}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                className="addTaskIcon"
+              >
+                <path
+                  fill="currentColor"
+                  d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                />
+              </svg>
+              <span>{t("addNewTask")}</span>
+            </button>
+          </li>
+        )}
+
+        {sortedTasks.map((task) => (
+          <li className="listItem" key={task.id}>
+            <Task taskData={task} onUpdate={handleUpdate} onDelete={handleDelete} />
+          </li>
+        ))}
+
+        {sortedTasks.length > 0 && sortedTasks.length <= 3 && (
+          <li className="listItem addTaskListItem">
+            <button className="addTaskInlineButton" onClick={onToggleAddTask}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                className="addTaskIcon"
+              >
+                <path
+                  fill="currentColor"
+                  d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                />
+              </svg>
+              <span>{t("addNewTask")}</span>
+            </button>
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+};
+
+export default List;
