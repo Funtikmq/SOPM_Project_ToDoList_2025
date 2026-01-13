@@ -260,7 +260,7 @@
   font-weight: 800;
 }
 .profileHint {
-  color: var(--text-muted);
+  color: rgba(36, 27, 56, 0.7);
   font-size: 0.9rem;
 }
 .profileActions {
@@ -292,6 +292,9 @@
 [data-theme="dark"] .shareResults {
   background: rgba(38, 28, 56, 0.95);
   border-color: rgba(214, 144, 255, 0.35);
+}
+[data-theme="dark"] .profileHint {
+  color: var(--text-muted);
 }
 [data-theme="dark"] .collabRow {
   background: rgba(38, 28, 56, 0.95);

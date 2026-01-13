@@ -21,6 +21,11 @@ const ROLE_OPTIONS = [
   { value: "editor", label: "Editor" },
 ];
 
+const roleLabel = (role) => {
+  const found = ROLE_OPTIONS.find((opt) => opt.value === role);
+  return found ? found.label : "Viewer";
+};
+
 const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canManage }) => {
   const { t } = useTranslate();
   const [task, setTask] = useState(initialTask || null);
@@ -272,7 +277,11 @@ const ShareTaskModal = ({ open, onClose, taskId, initialTask, currentUser, canMa
                 <div>
                   <div className="collabName">
                     #{c.username}
-                    {c.isOwner && <span className="ownerPill">Owner</span>}
+                    {c.isOwner ? (
+                      <span className="ownerPill">Owner</span>
+                    ) : (
+                      <span className="rolePill">{roleLabel(c.role || "viewer")}</span>
+                    )}
                   </div>
                   <div className="collabDisplay">{c.displayName}</div>
                 </div>

@@ -14,13 +14,9 @@
 .statRow {
   display: grid;
   width: 100%;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(160px, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 16px;
   align-items: stretch;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-gutter: stable both-edges;
 }
 
 .statCard {
@@ -56,6 +52,20 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+@media (max-width: 1200px) {
+  .statRow {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-gutter: stable both-edges;
+  }
+
+  .statCard {
+    flex: 0 0 clamp(160px, 24vw, 220px);
+  }
 }
 
 .statValue {

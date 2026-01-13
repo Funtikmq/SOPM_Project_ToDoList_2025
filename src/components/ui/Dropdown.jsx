@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useTheme } from "../../context/ThemeContext";
 import "./Dropdown.css";
 
+// Paleta pentru status/prioritate in light mode.
 const PALETTE = {
   status: {
     upcoming: { text: "#7b5cff", bg: "linear-gradient(180deg, rgba(123,92,255,0.18), rgba(123,92,255,0.08))", border: "rgba(123,92,255,0.4)" },
@@ -18,6 +19,7 @@ const PALETTE = {
   },
 };
 
+// Paleta echivalenta pentru dark mode.
 const PALETTE_DARK = {
   status: {
     upcoming: { text: "#d8c8ff", bg: "linear-gradient(180deg, rgba(120,90,255,0.38), rgba(120,90,255,0.2))", border: "rgba(160,130,255,0.65)" },
@@ -70,6 +72,7 @@ const Dropdown = ({
     return "";
   };
 
+  // Pozitionam meniul in portal, aliniat sub buton.
   const updateMenuPosition = useCallback(() => {
     if (!wrapRef.current) return;
     const rect = wrapRef.current.getBoundingClientRect();
@@ -88,6 +91,7 @@ const Dropdown = ({
     openRef.current = open;
   }, [open]);
 
+  // Inchidem dropdown-ul la click in afara si il repoziionam la scroll/resize.
   useEffect(() => {
     const handleClick = (e) => {
       if (wrapRef.current?.contains(e.target)) return;
@@ -117,6 +121,7 @@ const Dropdown = ({
     };
   }, [updateMenuPosition]);
 
+  // Asiguram un singur dropdown deschis (broadcast global).
   const toggle = (e) => {
     e.stopPropagation();
     if (disabled) return;

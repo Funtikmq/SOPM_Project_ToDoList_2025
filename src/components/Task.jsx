@@ -8,6 +8,7 @@ import ActivityDrawer from "./ActivityDrawer";
 import { useAuth } from "../context/AuthContext";
 import { parseDeadline, useTasks } from "../context/TaskContext";
 
+// Optiuni pentru status si prioritate folosite in dropdown.
 const STATUS_OPTIONS = [
   { value: "upcoming", label: "Upcoming" },
   { value: "active", label: "Active" },
@@ -22,6 +23,7 @@ const PRIORITY_OPTIONS = [
   { value: "low", label: "Low" },
 ];
 
+// Verifica daca deadline-ul este aproape (pentru accent vizual).
 const isNearDeadline = (dateStr) => {
   const d = parseDeadline(dateStr);
   if (!d) return false;
@@ -70,6 +72,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
     () => (Array.isArray(task?.comments) ? task.comments : []),
     [task?.comments]
   );
+  // Roluri si permisiuni (owner/editor/viewer).
   const ownerId = task?.ownerId || task?.userId;
   const isOwner = user?.uid && ownerId === user.uid;
   const userCollab = collaborators.find((c) => c.uid === user?.uid);
@@ -81,11 +84,13 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
   const canManageCollaborators = role === "owner";
   const isShared = task?.shared || collaborators.length > 0;
 
+  // Sincronizam campurile editabile cand se schimba task-ul.
   useEffect(() => {
     setTempTitle(task?.title || "");
     setTempDeadline(task?.deadline || "");
   }, [task]);
 
+  // Calculeaza progresul subtask-urilor.
   const progress = useMemo(() => {
     if (!subtasks.length) return { done: 0, total: 0 };
     const done = subtasks.filter((s) => s.done).length;
@@ -118,6 +123,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
     return list;
   }, [collaborators, ownerId, isOwner, task?.ownerName, task?.ownerUsername, user?.displayName, user?.username]);
 
+  // Update partial pentru campuri editabile ale task-ului.
   const handleUpdate = async (patch) => {
     if (!canEdit) return;
     try {
@@ -198,6 +204,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
     setShowDateInput(false);
   };
 
+  // Pozitioneaza date picker-ul langa butonul deadline.
   const positionDatePicker = useCallback(() => {
     if (!deadlineButtonRef.current) return;
     const rect = deadlineButtonRef.current.getBoundingClientRect();
@@ -217,6 +224,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
     }
   }, [positionDatePicker, showDateInput]);
 
+  // Inchidere date picker la click in afara si repoziionare la scroll/resize.
   useEffect(() => {
     if (!showDateInput) return undefined;
     const handleOutside = (e) => {
@@ -373,6 +381,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
           >
             {task.deadline ? task.deadline : t ? t("noDeadline") : "No deadline"}
           </button>
+          {/* Date picker in portal ca sa nu fie taiat de container */}
           {showDateInput &&
             canEdit &&
             createPortal(
@@ -519,6 +528,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
         </div>
       </div>
 
+      {/* Comentarii doar pentru task-uri partajate */}
       {isShared && (
         <CommentsSection
           comments={comments}
@@ -536,6 +546,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
         />
       )}
 
+      {/* Drawer pentru istoricul activitatii */}
       {openActivityFor === task.id && (
         <ActivityDrawer
           taskId={task.id}

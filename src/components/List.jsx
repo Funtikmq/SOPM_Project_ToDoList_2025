@@ -40,6 +40,7 @@ const EmptyState = ({ onAdd, t }) => (
 
 const List = ({ onToggleAddTask }) => {
   const { tasks, updateTask, deleteTask, undoDelete } = useTasks();
+  // State local pentru sortare, filtre si cautare in lista.
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [showFilters, setShowFilters] = useState(false);
   const [filter, setFilter] = useState({ status: "", priority: "", date: "" });
@@ -57,6 +58,7 @@ const List = ({ onToggleAddTask }) => {
     };
   }, []);
 
+  // Trimite update catre context (si Firestore) pentru task-ul selectat.
   const handleUpdate = async (id, updatedFields) => updateTask(id, updatedFields);
 
   const clearUndoTimer = () => {
@@ -99,11 +101,13 @@ const List = ({ onToggleAddTask }) => {
     setSortConfig({ key, direction });
   };
 
+  // Ordine fixa pentru sortare pe status/prioritate.
   const statusOrder = ["upcoming", "active", "completed", "overdue", "canceled"];
   const priorityOrder = ["high", "medium", "low"];
 
   const filterDate = filter.date ? parseDeadline(filter.date) : null;
 
+  // Normalizeaza textul pentru cautare (lowercase + fara diacritice).
   const normalize = (str = "") =>
     str
       .toString()
@@ -111,8 +115,10 @@ const List = ({ onToggleAddTask }) => {
       .replace(/\p{Diacritic}/gu, "")
       .toLowerCase();
 
+  // Tokenizam cautarea ca sa putem cauta dupa mai multe cuvinte.
   const searchTokens = useMemo(() => normalize(search).split(/[^a-z0-9]+/i).filter(Boolean), [search]);
 
+  // Filtram task-urile dupa search + filtre (status/prioritate/data).
   const filteredTasks = tasks.filter((task) => {
     // search across title, priority, status, deadline, collaborators usernames
     const corpus = [
@@ -136,6 +142,7 @@ const List = ({ onToggleAddTask }) => {
     return matchSearch && matchStatus && matchPriority && matchDate;
   });
 
+  // Sortare stabila pe coloana selectata din header.
   const sortedTasks = [...filteredTasks].sort((a, b) => {
     if (!sortConfig.key) return 0;
 
@@ -164,6 +171,7 @@ const List = ({ onToggleAddTask }) => {
 
   return (
     <div className="listContainer">
+      {/* Header lista + butoane actiuni */}
       <div className="listHeaderTop">
         <h3 className="containerTitle">
           <span>{t("taskList")}</span>
@@ -186,6 +194,7 @@ const List = ({ onToggleAddTask }) => {
         </div>
       </div>
 
+      {/* Drawer pentru filtre */}
       {showFilters && (
         <div className="filterDrawer">
           <div className="filterRow">
@@ -240,6 +249,7 @@ const List = ({ onToggleAddTask }) => {
         </div>
       )}
 
+      {/* Lista efectiva de task-uri */}
       <div className="taskListBody">
         <ul className="list taskListTable">
           <li className="listItem">

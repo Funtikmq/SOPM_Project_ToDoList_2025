@@ -37,16 +37,19 @@ const TaskContext = createContext({
   deleteComment: async () => {},
 });
 
+// Normalizeaza deadline ca data, folosim final de zi pentru comparatii corecte.
 export const parseDeadline = (deadline) => {
   if (!deadline) return null;
   const parsed = new Date(`${deadline}T23:59:59`);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
+// Normalizeaza statusuri vechi/locale ca sa fie consistente in UI si stats.
 const normalizeStatus = (status) => {
   if (!status) return "active";
   const raw = status.toString().trim().toLowerCase();
   const cleaned = raw.startsWith("status.") ? raw.slice(7) : raw;
+  const ascii = cleaned.normalize("NFD").replace(/\p{Diacritic}/gu, "");
   const map = {
     active: "active",
     upcoming: "upcoming",
@@ -60,9 +63,10 @@ const normalizeStatus = (status) => {
     intarziat: "overdue",
     anulat: "canceled",
   };
-  return map[cleaned] || "active";
+  return map[ascii] || "active";
 };
 
+// Normalizeaza task-ul venit din Firestore (colaboratori, owner, status).
 const normalizeTask = (task, fallbackUid) => {
   const collaborators = Array.isArray(task.collaborators) ? task.collaborators : [];
   const ownerId = task.ownerId || task.userId || fallbackUid;
@@ -77,6 +81,7 @@ const normalizeTask = (task, fallbackUid) => {
   return { ...task, status, collaborators, ownerId, participants, shared };
 };
 
+// Calculeaza stats din lista curenta, fara cache, doar pe status.
 const calcStats = (tasks) => {
   const total = tasks.length;
   const upcoming = tasks.filter((t) => t.status === "upcoming").length;
@@ -96,6 +101,7 @@ export const TaskProvider = ({ children }) => {
   const subtasksUnsubRef = useRef({});
   const commentsUnsubRef = useRef({});
 
+  // Atasam task-urile utilizatorului si rulam o migrare usoara pentru campuri vechi.
   useEffect(() => {
     if (!user) {
       setTasks([]);
@@ -163,6 +169,7 @@ export const TaskProvider = ({ children }) => {
   }, [user]);
 
   // Maintain subtasks listeners per task (subcollection `/tasks/{id}/subtasks`)
+  // Ascultam subtask-urile pentru fiecare task activ.
   useEffect(() => {
     if (!user || !tasks.length) return undefined;
 
@@ -196,6 +203,7 @@ export const TaskProvider = ({ children }) => {
     return undefined;
   }, [tasks, user]);
 
+  // Cleanup global pentru listener-ele de subtask-uri si comentarii.
   useEffect(
     () => () => {
       Object.values(subtasksUnsubRef.current).forEach((fn) => fn());
@@ -209,6 +217,7 @@ export const TaskProvider = ({ children }) => {
   );
 
   // Maintain comments listeners per task (subcollection `/tasks/{id}/comments`)
+  // Ascultam comentariile pentru fiecare task activ.
   useEffect(() => {
     if (!user || !tasks.length) return undefined;
 
@@ -241,6 +250,7 @@ export const TaskProvider = ({ children }) => {
     return undefined;
   }, [tasks, user]);
 
+  // Combinam task-urile cu subtask-uri si comentarii din subcolectii.
   const tasksWithSubtasks = useMemo(
     () =>
       tasks.map((t) => ({
@@ -251,6 +261,7 @@ export const TaskProvider = ({ children }) => {
     [tasks, subtasksMap, commentsMap]
   );
 
+  // Grupam task-urile pe deadline pentru calendar.
   const tasksByDate = useMemo(() => {
     const map = {};
     tasksWithSubtasks.forEach((t) => {
@@ -262,6 +273,7 @@ export const TaskProvider = ({ children }) => {
     return map;
   }, [tasksWithSubtasks]);
 
+  // Wrapper pentru logarea activitatii in istoricul task-ului.
   const recordActivity = useCallback(
     async (taskId, payload) => {
       if (!user || !taskId) return;
@@ -275,6 +287,7 @@ export const TaskProvider = ({ children }) => {
     [user]
   );
 
+  // Creeaza task nou si il salveaza in Firestore cu tokeni de cautare.
   const addTask = useCallback(
     async ({
       title,
@@ -332,6 +345,7 @@ export const TaskProvider = ({ children }) => {
     [recordActivity, user]
   );
 
+  // Sterge task-ul: il muta in trash si il elimina din colectia principala.
   const deleteTask = useCallback(
     async (id) => {
       if (!user || !id) return null;
@@ -382,6 +396,7 @@ export const TaskProvider = ({ children }) => {
     [recordActivity, tasks, user]
   );
 
+  // Undo pentru stergere: reface task-ul din trash.
   const undoDelete = useCallback(
     async (undoData) => {
       if (!user || !undoData?.task || !undoData?.trashId) return;
@@ -399,6 +414,7 @@ export const TaskProvider = ({ children }) => {
     [user]
   );
 
+  // Restore din Recycle Bin cu normalizare si actualizare tokens.
   const restoreTask = useCallback(
     async ({ originalId, docId, ...rest }) => {
       if (!user || !originalId) return;
@@ -562,6 +578,7 @@ export const TaskProvider = ({ children }) => {
     [user]
   );
 
+  // Update task + logare activitate pentru campuri importante.
   const updateTask = useCallback(
     async (id, updatedFields) => {
       if (!user || !id) return;
@@ -618,6 +635,7 @@ export const TaskProvider = ({ children }) => {
     [user]
   );
 
+  // Expunem state-ul si actiunile prin context.
   const value = useMemo(
     () => ({
       tasks: tasksWithSubtasks,

@@ -3,12 +3,14 @@ import { useTranslate } from "../translation";
 import MiniCalendar from "./calendar/MiniCalendar";
 import "./StatsBar.css";
 
+// Bara de stats foloseste valorile calculate in TaskContext.
 const StatsBar = ({ compact = false, hideMini = false }) => {
   const { stats, tasksByDate } = useTasks();
   const { t, lang } = useTranslate();
 
   return (
     <div className={`statsBar glass-surface ${compact ? "statsBarCompact" : ""}`}>
+      {/* Randul principal de carduri cu numaratori */}
       <div className="statRow">
         <StatCard label={t("Total")} value={stats.total} icon="list" />
         <StatCard label={t("Upcoming")} value={stats.upcoming} icon="calendar" />
@@ -17,6 +19,7 @@ const StatsBar = ({ compact = false, hideMini = false }) => {
         <StatCard label={t("Overdue")} value={stats.overdue} danger icon="alarm" />
         <StatCard label={t("Canceled")} value={stats.canceled} icon="close" />
       </div>
+      {/* Mini calendar optional, ascuns in anumite layout-uri */}
       {!hideMini && (
         <div className="statCard miniCalCard">
           <MiniCalendar tasksByDate={tasksByDate} t={t} lang={lang} />
