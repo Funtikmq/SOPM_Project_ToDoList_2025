@@ -103,9 +103,11 @@ export const translations = {
 
     // Stats bar labels
     Total: "Total",
+    Upcoming: "Viitoare",
     Active: "Activ",
     Completed: "Finalizat",
     Overdue: "Intarziat",
+    Canceled: "Anulat",
 
     // ShareTaskModal
     searchCollaborators: "Cauta colaboratori... (#username)",
@@ -249,9 +251,11 @@ export const translations = {
 
     // Stats bar labels
     Total: "Total",
+    Upcoming: "Upcoming",
     Active: "Active",
     Completed: "Completed",
     Overdue: "Overdue",
+    Canceled: "Canceled",
 
     // ShareTaskModal
     searchCollaborators: "Search collaborators... (#username)",

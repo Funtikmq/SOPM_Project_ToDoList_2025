@@ -7,8 +7,6 @@ import CommentsSection from "./CommentsSection";
 import ActivityDrawer from "./ActivityDrawer";
 import { useAuth } from "../context/AuthContext";
 import { parseDeadline, useTasks } from "../context/TaskContext";
-import RecurrenceBadge from "./RecurrenceBadge";
-import RecurringHistoryDrawer from "./recurrence/RecurringHistoryDrawer";
 
 const STATUS_OPTIONS = [
   { value: "upcoming", label: "Upcoming" },
@@ -59,7 +57,6 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
   const [commentText, setCommentText] = useState("");
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [openActivityFor, setOpenActivityFor] = useState(null);
-  const [openRecurringFor, setOpenRecurringFor] = useState(null);
 
   const collaborators = useMemo(
     () => (Array.isArray(task?.collaborators) ? task.collaborators : []),
@@ -292,24 +289,7 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
               />
             )}
             {isShared && <span className="sharedIcon" aria-label="shared task">🤝</span>}
-            {task.recurring?.isRecurring && (
-              <button
-                type="button"
-                className="recurrenceBtn"
-                title="Recurring history"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setOpenRecurringFor(task.id);
-                }}
-              >
-                🔁
-              </button>
-            )}          </div>
-          {task?.recurring?.isRecurring && (
-            <div className="tagsRow">
-              <RecurrenceBadge recurring={task.recurring} />
-            </div>
-          )}
+          </div>
           <div className="shareActionsRow">
             <button
               type="button"
@@ -554,10 +534,6 @@ const Task = ({ task: taskProp, taskData, onUpdate, onDelete, onToggleExpand, ex
           onDelete={handleDeleteComment}
           t={t}
         />
-      )}
-
-      {openRecurringFor === task.id && (
-        <RecurringHistoryDrawer taskId={task.id} onClose={() => setOpenRecurringFor(null)} />
       )}
 
       {openActivityFor === task.id && (

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTheme } from "../../context/ThemeContext";
 import "./Dropdown.css";
@@ -46,6 +46,7 @@ const Dropdown = ({
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   const menuRef = useRef(null);
+  const openRef = useRef(false);
   const idRef = useRef(Math.random().toString(36).slice(2, 8));
   const [menuStyle, setMenuStyle] = useState({ top: 0, left: 0, width: 0 });
 
@@ -69,15 +70,22 @@ const Dropdown = ({
     return "";
   };
 
+  const updateMenuPosition = useCallback(() => {
+    if (!wrapRef.current) return;
+    const rect = wrapRef.current.getBoundingClientRect();
+    setMenuStyle({
+      top: rect.bottom + 6,
+      left: rect.left,
+      width: rect.width,
+    });
+  }, []);
+
   useLayoutEffect(() => {
-    if (open && wrapRef.current) {
-      const rect = wrapRef.current.getBoundingClientRect();
-      setMenuStyle({
-        top: rect.bottom + 6 + window.scrollY,
-        left: rect.left + window.scrollX,
-        width: rect.width,
-      });
-    }
+    if (open) updateMenuPosition();
+  }, [open, updateMenuPosition]);
+
+  useEffect(() => {
+    openRef.current = open;
   }, [open]);
 
   useEffect(() => {
@@ -86,19 +94,28 @@ const Dropdown = ({
       if (menuRef.current?.contains(e.target)) return;
       setOpen(false);
     };
-    const handleScroll = () => setOpen(false);
+    const handleScroll = () => {
+      if (!openRef.current) return;
+      updateMenuPosition();
+    };
+    const handleResize = () => {
+      if (!openRef.current) return;
+      updateMenuPosition();
+    };
     const handleExternalOpen = (e) => {
       if (e.detail !== idRef.current) setOpen(false);
     };
     document.addEventListener("mousedown", handleClick);
     window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleResize);
     window.addEventListener("ui-dropdown-open", handleExternalOpen);
     return () => {
       document.removeEventListener("mousedown", handleClick);
       window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleResize);
       window.removeEventListener("ui-dropdown-open", handleExternalOpen);
     };
-  }, []);
+  }, [updateMenuPosition]);
 
   const toggle = (e) => {
     e.stopPropagation();

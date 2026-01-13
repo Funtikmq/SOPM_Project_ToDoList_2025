@@ -23,7 +23,6 @@ const ROLE_OWNER = "owner";
 const ROLE_EDITOR = "editor";
 const ROLE_VIEWER = "viewer";
 
-const DEFAULT_RECURRING = { mode: "none" };
 const DEFAULT_TIME_TRACKING = { totalSeconds: 0 };
 
 export const buildDefaultTaskFields = () => ({
@@ -31,7 +30,6 @@ export const buildDefaultTaskFields = () => ({
   collaborators: [],
   shared: false,
   tags: [],
-  recurring: { ...DEFAULT_RECURRING },
   attachmentsCount: 0,
   commentsCount: 0,
   activityCount: 0,
@@ -63,7 +61,6 @@ export const normalizeTask = (task = {}, fallbackOwnerId) => {
     participants,
     collaborators,
     shared,
-    recurring: task.recurring || { ...DEFAULT_RECURRING },
     timeTracking: task.timeTracking || { ...DEFAULT_TIME_TRACKING },
     attachmentsCount: typeof task.attachmentsCount === "number" ? task.attachmentsCount : 0,
     commentsCount: typeof task.commentsCount === "number" ? task.commentsCount : 0,

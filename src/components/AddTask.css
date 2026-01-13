@@ -126,41 +126,6 @@
   line-height: 1.4;
 }
 
-.recurrenceRow {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.recurrenceSelect {
-  flex: 1;
-  border: 2px solid rgba(200, 0, 255, 0.28);
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 6px 14px rgba(200, 0, 255, 0.08);
-  text-transform: capitalize;
-}
-
-.recurrenceSmall {
-  max-width: 90px;
-}
-
-.recurrenceMeta {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.recurrencePreview {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.7);
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
-}
-
 .taskInput::placeholder,
 .taskText::placeholder {
   color: #999;

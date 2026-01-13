@@ -93,6 +93,7 @@
   gap: 6px;
   padding: 12px 16px;
   position: relative;
+  min-width: 0;
   overflow: visible !important;
   z-index: var(--z-card, 10);
 }
@@ -114,6 +115,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  min-width: 0;
 }
 .tagsRow {
   display: flex;
@@ -136,6 +138,7 @@
   gap: 10px;
   padding: 8px 10px;
   min-height: 46px;
+  min-width: 0;
   border-radius: 12px;
   border: 1px dashed rgba(150, 110, 255, 0.35);
   background: rgba(255, 255, 255, 0.7);
@@ -164,227 +167,32 @@
   justify-content: space-between;
 }
 
-.recurrenceChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.65);
-  border: 1px solid var(--glass-border);
-  color: var(--text-main);
-  font-weight: 700;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-  white-space: nowrap;
-}
-
-[data-theme="dark"] .recurrenceChip {
-  background: rgba(36, 20, 48, 0.9);
-  color: #f5f1ff;
-  border-color: var(--glass-border);
-}
-
-.recurrenceBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(212, 91, 255, 0.4);
-  color: var(--accent);
-  font-weight: 700;
-  font-size: 0.82rem;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-  max-width: 100%;
-}
-
-[data-theme="dark"] .recurrenceBadge {
-  background: rgba(40, 24, 60, 0.6);
-  border-color: rgba(212, 91, 255, 0.5);
-  color: #f1d6ff;
-}
-
-.recurrenceBtn {
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  border: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.65);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.recurrenceBtn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 20px rgba(200, 0, 255, 0.2);
-  color: var(--accent);
-}
-
-[data-theme="dark"] .recurrenceBtn {
-  background: rgba(40, 24, 60, 0.9);
-  color: #f1d6ff;
-  border-color: var(--glass-border);
-}
-
-.recurrenceOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(10, 0, 20, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  justify-content: flex-end;
-  z-index: 9999;
-}
-
-.recurrenceDrawer {
-  width: 380px;
-  max-width: 90vw;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.85);
-  border-left: 1px solid rgba(212, 91, 255, 0.4);
-  box-shadow: -16px 0 38px rgba(0, 0, 0, 0.18);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  animation: slideInRecurrence 0.25s ease;
-}
-
-[data-theme="dark"] .recurrenceDrawer {
-  background: rgba(24, 16, 36, 0.92);
-  border-left: 1px solid rgba(212, 91, 255, 0.35);
-  box-shadow: -16px 0 40px rgba(0, 0, 0, 0.5);
-}
-
-@keyframes slideInRecurrence {
-  from {
-    transform: translateX(30px);
-    opacity: 0;
+@media (max-width: 1100px) {
+  .shareActionsRow {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    row-gap: 8px;
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+
+  .shareBadgeRow {
+    flex: 1 1 240px;
+    max-width: 100%;
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+
+  .activityBtn {
+    flex: 0 1 auto;
   }
 }
 
-.recurrenceHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.recurrenceTitle {
-  font-weight: 800;
-  color: var(--text-main);
-  font-size: 1.05rem;
-}
-
-.recurrenceSubtitle {
-  color: var(--text-muted);
-  font-size: 0.85rem;
-}
-
-.recurrenceClose {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  border: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.65);
-  cursor: pointer;
-}
-
-.recurrenceList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow-y: auto;
-}
-
-.recurrenceEmpty {
-  color: var(--text-muted);
-  font-weight: 700;
-  padding: 8px 2px;
-}
-
-.recurrenceItem {
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
-}
-
-[data-theme="dark"] .recurrenceItem {
-  background: rgba(36, 24, 48, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-}
-
-.recurrenceIcon {
-  font-size: 1.2rem;
-}
-
-.recurrenceContent {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.recurrenceMeta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.recurrenceType {
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.recurrenceDate {
-  font-size: 0.8rem;
-}
-
-.recurrenceText {
-  color: var(--text-main);
-  font-weight: 600;
-}
-
-.recurrenceOpenBtn {
-  align-self: flex-start;
-  border: none;
-  border-radius: 10px;
-  padding: 6px 10px;
-  background: linear-gradient(135deg, #c800ff, #8c7ae6);
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 6px 14px rgba(200, 0, 255, 0.2);
-}
-
-.recurrenceOpenBtn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 20px rgba(200, 0, 255, 0.28);
-}
 .shareLabel {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-weight: 700;
   color: var(--text-muted);
+  min-width: 0;
 }
 .shareEmoji {
   font-size: 14px;
@@ -420,6 +228,8 @@
   font-weight: 600;
   color: var(--text-main);
   text-align: center;
+  max-width: 100%;
+  word-break: break-word;
 }
 
 .taskTitleInput {

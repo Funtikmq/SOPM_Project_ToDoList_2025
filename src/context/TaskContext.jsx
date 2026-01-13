@@ -18,12 +18,11 @@ import {
 import { db } from "../firebase/firebase";
 import { useAuth } from "./AuthContext";
 import { logActivity } from "../services/activityService";
-import { calculateNextDate } from "../services/recurrenceUtils";
 import { buildSearchTokens } from "../services/searchTokens";
 
 const TaskContext = createContext({
   tasks: [],
-  stats: { total: 0, active: 0, completed: 0, overdue: 0 },
+  stats: { total: 0, upcoming: 0, active: 0, completed: 0, overdue: 0, canceled: 0 },
   addTask: async () => {},
   updateTask: async () => {},
   deleteTask: async () => {},
@@ -36,14 +35,32 @@ const TaskContext = createContext({
   addComment: async () => {},
   editComment: async () => {},
   deleteComment: async () => {},
-  completeRecurringTask: async () => {},
-  calculateNextDate: () => null,
 });
 
 export const parseDeadline = (deadline) => {
   if (!deadline) return null;
   const parsed = new Date(`${deadline}T23:59:59`);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const normalizeStatus = (status) => {
+  if (!status) return "active";
+  const raw = status.toString().trim().toLowerCase();
+  const cleaned = raw.startsWith("status.") ? raw.slice(7) : raw;
+  const map = {
+    active: "active",
+    upcoming: "upcoming",
+    completed: "completed",
+    overdue: "overdue",
+    canceled: "canceled",
+    cancelled: "canceled",
+    activa: "active",
+    viitoare: "upcoming",
+    finalizat: "completed",
+    intarziat: "overdue",
+    anulat: "canceled",
+  };
+  return map[cleaned] || "active";
 };
 
 const normalizeTask = (task, fallbackUid) => {
@@ -56,27 +73,19 @@ const normalizeTask = (task, fallbackUid) => {
         ? [ownerId]
         : [];
   const shared = typeof task.shared === "boolean" ? task.shared : collaborators.length > 0;
-  return { ...task, collaborators, ownerId, participants, shared };
-};
-
-// Derived stats should always reflect current tasks state (no cached counters).
-const isOverdue = (task, now = new Date()) => {
-  if (!task) return false;
-  if (task.status === "completed" || task.status === "canceled") return false;
-  if (task.status === "overdue") return true;
-  const dl = parseDeadline(task.deadline || task.dueDate);
-  if (!dl) return false;
-  return dl.getTime() < now.getTime();
+  const status = normalizeStatus(task.status);
+  return { ...task, status, collaborators, ownerId, participants, shared };
 };
 
 const calcStats = (tasks) => {
   const total = tasks.length;
+  const upcoming = tasks.filter((t) => t.status === "upcoming").length;
   const active = tasks.filter((t) => t.status === "active").length;
   const completed = tasks.filter((t) => t.status === "completed").length;
-  const now = new Date();
-  const overdue = tasks.filter((t) => isOverdue(t, now)).length;
+  const canceled = tasks.filter((t) => t.status === "canceled").length;
+  const overdue = tasks.filter((t) => t.status === "overdue").length;
 
-  return { total, active, completed, overdue };
+  return { total, upcoming, active, completed, overdue, canceled };
 };
 
 export const TaskProvider = ({ children }) => {
@@ -272,7 +281,6 @@ export const TaskProvider = ({ children }) => {
       description = "",
       priority = "medium",
       deadline = "",
-      recurring,
       tags = [],
       collaborators = [],
     }) => {
@@ -280,19 +288,6 @@ export const TaskProvider = ({ children }) => {
       const timestamp = Date.now();
       const cleanTitle = title.trim();
       const cleanId = `${cleanTitle.replace(/\s+/g, "_") || "task"}_${timestamp}`;
-      const recurringData = recurring?.isRecurring
-        ? {
-            isRecurring: true,
-            type: recurring.type || "daily",
-            interval: recurring.interval || 1,
-            byWeekday: recurring.byWeekday || ["mon"],
-            byMonthday: recurring.byMonthday || 1,
-            endDate: recurring.endDate || null,
-            timezone: recurring.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
-            anchorTaskId: recurring.anchorTaskId || cleanId,
-            autoCreateWindow: recurring.autoCreateWindow || 7,
-          }
-        : { isRecurring: false };
       const payload = normalizeTask(
         {
           id: cleanId,
@@ -309,8 +304,6 @@ export const TaskProvider = ({ children }) => {
           collaborators,
           tags,
           shared: false,
-          recurring: recurringData,
-          generatedFrom: recurring?.generatedFrom || null,
           searchTokens: buildSearchTokens({
             title: cleanTitle,
             tags,
@@ -569,66 +562,6 @@ export const TaskProvider = ({ children }) => {
     [user]
   );
 
-  const generateNextTaskInstance = useCallback(
-    async (anchorTask) => {
-      if (!anchorTask?.recurring?.isRecurring) return null;
-      const nextDate = calculateNextDate(anchorTask.recurring, anchorTask.deadline);
-      if (!nextDate) return null;
-
-      const nextId = `${anchorTask.recurring.anchorTaskId || anchorTask.id}_${Date.now()}`;
-      const basePayload = {
-        ...anchorTask,
-        id: nextId,
-        status: "active",
-        deadline: nextDate,
-        createdAt: Date.now(),
-        updatedAt: serverTimestamp(),
-        recurring: {
-          ...anchorTask.recurring,
-          anchorTaskId: anchorTask.recurring.anchorTaskId || anchorTask.id,
-        },
-        generatedFrom: {
-          anchorTaskId: anchorTask.recurring.anchorTaskId || anchorTask.id,
-          recurringRule: anchorTask.recurring.type,
-        },
-      };
-
-      await setDoc(doc(db, "tasks", nextId), basePayload, { merge: true });
-
-      // clone subtasks reset to unchecked
-      try {
-        const subSnap = await getDocs(collection(db, "tasks", anchorTask.id, "subtasks"));
-        const batch = writeBatch(db);
-        subSnap.forEach((d) => {
-          const data = d.data();
-          const newSubId = d.id;
-          batch.set(doc(db, "tasks", nextId, "subtasks", newSubId), {
-            ...data,
-            done: false,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-            lastEditedBy: anchorTask.ownerId || user?.uid,
-          });
-        });
-        await batch.commit();
-      } catch (err) {
-        console.warn("clone subtasks for next instance failed", err);
-      }
-      return nextId;
-    },
-    [user?.uid]
-  );
-
-  const completeRecurringTask = useCallback(
-    async (taskId, prevTask) => {
-      const task = prevTask || tasks.find((t) => t.id === taskId);
-      if (!task?.recurring?.isRecurring) return;
-      await updateDoc(doc(db, "tasks", taskId), { completedAt: serverTimestamp() });
-      await generateNextTaskInstance(task);
-    },
-    [generateNextTaskInstance, tasks]
-  );
-
   const updateTask = useCallback(
     async (id, updatedFields) => {
       if (!user || !id) return;
@@ -668,24 +601,9 @@ export const TaskProvider = ({ children }) => {
             )
         );
 
-        // handle recurring completion -> generate next instance
-        if (
-          prevTask.recurring?.isRecurring &&
-          updatedFields.status === "completed" &&
-          prevTask.status !== "completed"
-        ) {
-          await completeRecurringTask(id, prevTask);
-        }
       }
     },
-    [completeRecurringTask, recordActivity, tasks, user]
-  );
-
-  const createRecurringTask = useCallback(
-    async (payload) => {
-      return addTask(payload);
-    },
-    [addTask]
+    [recordActivity, tasks, user]
   );
 
   const deleteComment = useCallback(
@@ -705,7 +623,6 @@ export const TaskProvider = ({ children }) => {
       tasks: tasksWithSubtasks,
       tasksByDate,
       stats,
-      createRecurringTask,
       addTask,
       updateTask,
       deleteTask,
@@ -718,13 +635,11 @@ export const TaskProvider = ({ children }) => {
       addComment,
       editComment,
       deleteComment,
-      completeRecurringTask,
     }),
     [
       tasksWithSubtasks,
       tasksByDate,
       stats,
-      createRecurringTask,
       addTask,
       updateTask,
       deleteTask,
@@ -737,7 +652,6 @@ export const TaskProvider = ({ children }) => {
       addComment,
       editComment,
       deleteComment,
-      completeRecurringTask,
     ]
   );
 
