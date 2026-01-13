@@ -1,7 +1,7 @@
 I)
 Pentru rularea aplicatiei Web;
 
-1. Descarcati continutul fisiereului Web.2
+1. Descarcati continutul branchului main și extrageți conținutul folderului Web.2
 2. Asigurativa ca ati instalat npm. Rulati in terminal (npm --version), daca nu este instalat rulati (npm install);
 3. Porniti aplicatia din terminal (npm run dev);
 4. Accesati : http://localhost:5173
